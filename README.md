@@ -64,7 +64,7 @@ Users accumulate Points (PT) through various contents provided within Mossverse 
 
 ### MonoRepo
 
-![image](https://user-images.githubusercontent.com/4978617/183641614-2a5562a6-1bf3-48c5-b04a-a38a00984628.png)
+![MonoRepo](https://user-images.githubusercontent.com/109493423/197946263-c19435bd-be3a-43e6-b743-5f3798418610.png)
 
 
 ## Mossverse Development Milestones
