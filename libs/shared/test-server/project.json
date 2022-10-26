@@ -1,0 +1,32 @@
+{
+  "sourceRoot": "libs/shared/test-server/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:swc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/shared/test-server",
+        "main": "libs/shared/test-server/src/index.ts",
+        "tsConfig": "libs/shared/test-server/tsconfig.lib.json",
+        "assets": ["libs/shared/test-server/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/shared/test-server/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/shared/test-server"],
+      "options": {
+        "jestConfig": "libs/shared/test-server/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

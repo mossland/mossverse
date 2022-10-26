@@ -1,0 +1,33 @@
+{
+  "sourceRoot": "libs/shared/contract/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:swc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/shared/contract",
+        "main": "libs/shared/contract/src/index.ts",
+        "tsConfig": "libs/shared/contract/tsconfig.lib.json",
+        "assets": ["libs/shared/contract/*.md"]
+      }
+    },
+    "script": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "commands": [
+          "cross-env ENVIRONMENT={args.env} npx hardhat run --network {args.chain} ./scripts/{args.file}.ts"
+        ],
+        "cwd": "libs/shared/contract"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/shared/contract/**/*.ts"]
+      }
+    }
+  },
+  "tags": []
+}

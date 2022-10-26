@@ -1,0 +1,33 @@
+{
+  "sourceRoot": "libs/@decentverse/server/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/@decentverse/server/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/@decentverse/server"],
+      "options": {
+        "jestConfig": "libs/@decentverse/server/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "build": {
+      "executor": "@nrwl/js:swc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/@decentverse/server",
+        "tsConfig": "libs/@decentverse/server/tsconfig.lib.json",
+        "packageJson": "libs/@decentverse/server/package.json",
+        "main": "libs/@decentverse/server/src/index.ts",
+        "assets": ["libs/@decentverse/server/*.md"]
+      }
+    }
+  },
+  "tags": []
+}

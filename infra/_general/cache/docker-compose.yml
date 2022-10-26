@@ -1,0 +1,14 @@
+version: "3.2"
+services:
+  redis:
+    container_name: redis
+    image: redis
+    restart: unless-stopped
+    ports:
+      - 26379:6379
+  redis-test:
+    container_name: redis-test
+    image: redis
+    restart: unless-stopped
+    ports:
+      - 16379:6379

@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "projects": {
+    "@decentverse/client": "libs/@decentverse/client",
+    "@decentverse/server": "libs/@decentverse/server",
+    "mossland/backend": "apps/mossland/backend",
+    "mossland/frontend": "apps/mossland/frontend",
+    "mossland/frontend-e2e": "apps/mossland/frontend-e2e",
+    "platform/data-access": "libs/platform/data-access",
+    "platform/module": "libs/platform/module",
+    "platform/ui-web": "libs/platform/ui-web",
+    "shared/assets": "libs/shared/assets",
+    "shared/contract": "libs/shared/contract",
+    "shared/data-access": "libs/shared/data-access",
+    "shared/module": "libs/shared/module",
+    "shared/test-client": "libs/shared/test-client",
+    "shared/test-server": "libs/shared/test-server",
+    "shared/ui-web": "libs/shared/ui-web",
+    "shared/util": "libs/shared/util",
+    "shared/util-client": "libs/shared/util-client",
+    "shared/util-server": "libs/shared/util-server"
+  }
+}

@@ -1,0 +1,22 @@
+version: "3.2"
+services:
+  mossland-db:
+    image: mongo:latest
+    container_name: mossland-db
+    restart: unless-stopped
+    ports:
+      - 47017:27017
+    volumes:
+      - /mongodb/mossland-db/data:/data/db
+      - /mongodb/mossland-db/auth/db.key:/auth/db.key
+    command: mongod --replSet mossland-repl --dbpath /data/db --auth --keyFile /auth/db.key
+  mossland-db-test:
+    image: mongo:latest
+    container_name: mossland-db-test
+    restart: unless-stopped
+    ports:
+      - 37017:27017
+    volumes:
+      - /mongodb/mossland-db-test/data:/data/db
+      - /mongodb/mossland-db-test/auth/db.key:/auth/db.key
+    command: mongod --replSet mossland-repl-test --dbpath /data/db --auth --keyFile /auth/db.key

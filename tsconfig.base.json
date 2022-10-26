@@ -1,0 +1,40 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2017", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "strictNullChecks": true,
+    "baseUrl": ".",
+    "paths": {
+      "@decentverse/client": ["libs/@decentverse/client/src/index.ts"],
+      "@decentverse/client/ui-web": [
+        "libs/@decentverse/client/src/ui-web/index.ts"
+      ],
+      "@decentverse/server": ["libs/@decentverse/server/src/index.ts"],
+      "@platform/data-access": ["libs/platform/data-access/src/index.ts"],
+      "@platform/module": ["libs/platform/module/src/index.ts"],
+      "@platform/ui-web": ["libs/platform/ui-web/src/index.ts"],
+      "@shared/assets": ["libs/shared/assets/src/index.ts"],
+      "@shared/contract": ["libs/shared/contract/index.ts"],
+      "@shared/data-access": ["libs/shared/data-access/src/index.ts"],
+      "@shared/module": ["libs/shared/module/src/index.ts"],
+      "@shared/test-client": ["libs/shared/test-client/src/index.ts"],
+      "@shared/test-server": ["libs/shared/test-server/src/index.ts"],
+      "@shared/ui-web": ["libs/shared/ui-web/src/index.ts"],
+      "@shared/util": ["libs/shared/util/src/index.ts"],
+      "@shared/util-client": ["libs/shared/util-client/src/index.ts"],
+      "@shared/util-server": ["libs/shared/util-server/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}
