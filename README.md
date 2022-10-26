@@ -55,7 +55,7 @@ Users accumulate Points (PT) through various contents provided within Mossverse 
 
 - Inventory system: ERC-20, volatility point, Internal Currencies function
 
-![image](https://user-images.githubusercontent.com/38033515/182839903-560fdbe9-d146-480d-8298-e6a5d4d2fe25.png)
+![image](https://user-images.githubusercontent.com/109493423/197943356-a33e1cc0-1b98-495b-b820-596327f08c7b.png)
 
 ![image](https://user-images.githubusercontent.com/38033515/182496602-1d910539-8e58-4d5a-8a2e-e2381e4b2625.png)
 
