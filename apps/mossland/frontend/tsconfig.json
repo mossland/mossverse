@@ -6,12 +6,12 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "types": ["node", "jest"],
-    "strict": false,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "incremental": true
+    "incremental": true,
+    "strict": false,
+    "noEmit": true
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "next-env.d.ts"],
   "exclude": ["node_modules"]

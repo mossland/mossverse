@@ -84,7 +84,7 @@ contract AkamirGenesis is Ownable, ERC721A, ReentrancyGuard {
         uint256 price = getAuctionPrice(_saleStartTime);
 
         uint256 totalCost = (price - getDiscountPrice(price, lockUntil)) * quantity;
-        _safeMint(msg.sender, quantity, lockUntil);
+        _safeMint(msg.sender, quantity);
         refundIfOver(totalCost);
     }
 
@@ -104,7 +104,7 @@ contract AkamirGenesis is Ownable, ERC721A, ReentrancyGuard {
 
         uint256 totalCost = (price - getDiscountPrice(price, lockUntil)) * quantity;
 
-        _safeMint(msg.sender, quantity, lockUntil);
+        _safeMint(msg.sender, quantity);
         refundIfOver(totalCost);
 
         allowlist[msg.sender] -= quantity;
@@ -131,7 +131,7 @@ contract AkamirGenesis is Ownable, ERC721A, ReentrancyGuard {
 
         uint256 totalCost = (publicPrice - getDiscountPrice(publicPrice, lockUntil)) * quantity;
 
-        _safeMint(msg.sender, quantity, lockUntil);
+        _safeMint(msg.sender, quantity);
         refundIfOver(totalCost);
     }
 
@@ -292,12 +292,12 @@ contract AkamirGenesis is Ownable, ERC721A, ReentrancyGuard {
         require(quantity % maxPerAddressDuringMint == 0, "can only mint a multiple of the maxBatchSize");
         uint256 numChunks = quantity / maxPerAddressDuringMint;
         for (uint256 i = 0; i < numChunks; i++) {
-            _safeMint(msg.sender, maxPerAddressDuringMint, lockUntil);
+            _safeMint(msg.sender, maxPerAddressDuringMint);
         }
     }
 
     function unlockToken(uint256 tokenId) external onlyOwner {
-        unlock(tokenId);
+        _unlock(tokenId);
     }
 
     // // metadata URI
@@ -333,14 +333,14 @@ contract AkamirGenesis is Ownable, ERC721A, ReentrancyGuard {
     }
 
     function getOwnershipData(uint256 tokenId) external view returns (TokenOwnership memory) {
-        return ownershipOf(tokenId);
+        return _ownershipOf(tokenId);
     }
 
     function getOwnershipDatas(uint256[] memory tokenIds) external view returns (TokenOwnership[] memory) {
         TokenOwnership[] memory ownerships = new TokenOwnership[](tokenIds.length);
         unchecked {
             for (uint256 i = 0; i < tokenIds.length; i++) {
-                ownerships[i] = ownershipOf(tokenIds[i]);
+                ownerships[i] = _ownershipOf(tokenIds[i]);
             }
         }
         return ownerships;

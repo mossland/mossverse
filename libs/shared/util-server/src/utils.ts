@@ -1,6 +1,6 @@
 import { Logger } from "@nestjs/common";
 
-import { Model, FilterQuery, Document } from "mongoose";
+import { Model, FilterQuery, Document, Types } from "mongoose";
 import * as crypto from "crypto-js";
 import { ethers } from "ethers";
 
@@ -128,3 +128,5 @@ export const getAddrFromSig = async (
     throw new Error(err as string);
   }
 };
+export const sameIds = (a: Types.ObjectId[], b: Types.ObjectId[]) =>
+  a.every((id) => b.some((_id) => _id.equals(id))) && b.every((id) => a.some((_id) => _id.equals(id)));

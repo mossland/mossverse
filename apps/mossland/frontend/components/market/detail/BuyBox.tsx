@@ -1,44 +1,25 @@
 import React from "react";
 import styled from "styled-components";
-import { listingStore, receiptStore, userStore, utils } from "@platform/data-access";
-import { keyringStore, walletStore } from "@shared/data-access";
-import { toast } from "react-toastify";
+import { Market } from "@platform/ui-web";
 
 export const BuyBox = () => {
-  const self = userStore.use.self();
-  const item = listingStore.use.listing();
-  if (!item) return <></>;
-  const wallet = walletStore.use.wallet();
-  const buyItem = listingStore.use.buyItem();
-  const sign = keyringStore.use.sign();
-  const initUser = userStore.use.init();
-  const initListing = listingStore.use.init();
-  const buyable = utils.isBuyable(item, self);
-  const onBuy = async () => {
-    if (!self || !item || !wallet! || !buyable) return;
+  const service = Market.useMarket();
 
-    listingStore.setState({ priceTag: item.priceTags[0], num: 1 });
-    await sign(wallet.network.provider);
-    const receipt = await buyItem();
-    await initUser();
-    await initListing();
-    listingStore.setState({ listing: null });
-    receiptStore.setState({ receipt });
-  };
+  if (!service.listing) return null;
   return (
     <BuyBoxContainer>
-      {item.status !== "soldout" ? (
+      {service.listing.status !== "soldout" ? (
         <>
           <div>
             <div className="label">Price</div>
             <div className="price">
-              <img src={item.priceTags?.[0].thing?.image.url ?? ""} />
-              {item.priceTags?.[0].price}
+              <img src={service.listing.priceTags?.[0].thing?.image.url ?? ""} />
+              {service.listing.priceTags?.[0].price}
             </div>
           </div>
           <div
-            className={`buy-button ${(!self || !item || !wallet || !buyable) && "disabled"}`}
-            onClick={async () => await onBuy()}
+            className={`buy-button ${service.checkIsBuyDisabled() && "disabled"}`}
+            onClick={async () => await service.onBuy()}
           >
             Buy
           </div>

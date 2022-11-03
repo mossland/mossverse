@@ -47,8 +47,8 @@ export const groupByFields = <TElement extends { [key: string]: string | number 
   return group;
 };
 
-export const update = <K extends string | number | symbol, V>(key: K, value: V): { [key in K]: V } => {
-  const update = {} as { [key in K]: V };
+export const update = <K extends string | number | symbol, V>(key: K, value: V, obj = {}): { [key in K]: V } => {
+  const update = (obj ?? {}) as { [key in K]: V };
   update[key] = value;
   return update;
 };

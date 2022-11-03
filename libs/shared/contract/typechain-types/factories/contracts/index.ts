@@ -4,6 +4,8 @@
 export * as akamirCollectionSol from "./AkamirCollection.sol";
 export * as akamirFractionSol from "./AkamirFraction.sol";
 export * as erc1155Sol from "./ERC1155.sol";
+export * as erc721ASol from "./ERC721A.sol";
+export * as erc721ATokenLegacySol from "./ERC721ATokenLegacy.sol";
 export * as vaultFactorySol from "./VaultFactory.sol";
 export * as extensions from "./extensions";
 export * as mocks from "./mocks";
@@ -12,5 +14,6 @@ export { AkaMarket__factory } from "./AkaMarket__factory";
 export { AkaToken__factory } from "./AkaToken__factory";
 export { Akamir__factory } from "./Akamir__factory";
 export { AkamirGenesis__factory } from "./AkamirGenesis__factory";
-export { ERC721A__factory } from "./ERC721A__factory";
+export { ERC721AToken__factory } from "./ERC721AToken__factory";
+export { IERC721A__factory } from "./IERC721A__factory";
 export { Multicall__factory } from "./Multicall__factory";

@@ -6,12 +6,13 @@ import "@nomiclabs/hardhat-etherscan";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "hardhat-abi-exporter";
 import "hardhat-gas-reporter";
+import "tsconfig-paths/register";
+
 // dotenv.config({ path: __dirname + "/.env" });
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { env } = require("./env");
-console.log(env);
 if (process.env["REPORT_GAS"]) require("hardhat-gas-reporter");
-
+console.log(env.klaytn);
 const config: HardhatUserConfig = {
   paths: {
     root: "./",
@@ -55,47 +56,35 @@ const config: HardhatUserConfig = {
     // baobab:
     //   env.klaytn.networkName === "baobab"
     //     ? {
-    //         url: `https://node-api.klaytnapi.com/v1/klaytn`,
-    //         httpHeaders: {
-    //           Authorization: `Basic ${Buffer.from(
-    //             `${env.klaytn.kasAccessKeyId}:${env.klaytn.kasSecretAccessKey}`
-    //           ).toString("base64")}`,
-    //           "x-chain-id": "1001",
-    //         },
+    //         url: `https://baobab02.fandom.finance/`,
     //         accounts: [env.klaytn.privateKey],
     //         chainId: 1001,
     //         gas: 8500000,
     //       }
     //     : undefined,
-    // cypress:
-    //   env.klaytn.networkName === "cypress"
+    cypress:
+      env.klaytn.networkName === "cypress"
+        ? {
+            url: `https://klaytn04.fandom.finance`,
+            accounts: [env.klaytn.privateKey],
+            chainId: 8217,
+            gas: 8500000,
+          }
+        : undefined,
+    // "aka-ethereum":
+    //   env.ethereum.networkName === "aka-ethereum"
     //     ? {
-    //         url: `https://node-api.klaytnapi.com/v1/klaytn`,
-    //         httpHeaders: {
-    //           Authorization: `Basic ${Buffer.from(
-    //             `${env.klaytn.kasAccessKeyId}:${env.klaytn.kasSecretAccessKey}`
-    //           ).toString("base64")}`,
-    //           "x-chain-id": "8217",
-    //         },
-    //         accounts: [env.klaytn.privateKey],
-    //         chainId: 8217,
-    //         gas: 8500000,
+    //         url: "https://debugnet.ethereum.akamir.com", // Localhost (default: none)
+    //         accounts: [env.ethereum.privateKey],
     //       }
     //     : undefined,
-    "aka-ethereum":
-      env.ethereum.networkName === "aka-ethereum"
-        ? {
-            url: "https://debugnet.ethereum.akamir.com", // Localhost (default: none)
-            accounts: [env.ethereum.privateKey],
-          }
-        : undefined,
-    "aka-klaytn":
-      env.klaytn.networkName === "aka-klaytn"
-        ? {
-            url: "https://debugnet.klaytn.akamir.com", // Localhost (default: none)
-            accounts: [env.klaytn.privateKey],
-          }
-        : undefined,
+    // "aka-klaytn":
+    //   env.klaytn.networkName === "aka-klaytn"
+    //     ? {
+    //         url: "https://debugnet.klaytn.akamir.com", // Localhost (default: none)
+    //         accounts: [env.klaytn.privateKey],
+    //       }
+    //     : undefined,
   },
 
   // gasReporter: { currency: "USD", gasPrice: 100, showTimeSpent: true },
@@ -111,5 +100,5 @@ const config: HardhatUserConfig = {
   //   { path: "./abi/ugly", pretty: false },
   // ],
 };
-console.log(config);
 export default config;
+console.log(config.networks);

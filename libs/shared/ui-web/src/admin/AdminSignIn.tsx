@@ -1,12 +1,12 @@
-import { adminStore } from "@shared/data-access";
+import { store, gql } from "@shared/data-access";
 import { Button, Form, Input, Card } from "antd";
 import { toast } from "react-toastify";
 import { Field } from "@shared/ui-web";
 
 export const AdminSignIn = () => {
-  const accountId = adminStore.use.accountId();
-  const password = adminStore.use.password();
-  const signin = adminStore.use.signin();
+  const accountId = store.admin.use.accountId();
+  const password = store.admin.use.password();
+  const signin = store.admin.use.signin();
   return (
     <Card title="Sign In" size="small">
       <Form
@@ -18,8 +18,8 @@ export const AdminSignIn = () => {
         onFinishFailed={(e) => toast.error(e)}
         autoComplete="off"
       >
-        <Field.ID value={accountId} onChange={(accountId) => adminStore.setState({ accountId })} />
-        <Field.Password value={password} onChange={(password) => adminStore.setState({ password })} />
+        <Field.ID value={accountId} onChange={(accountId) => store.admin.setState({ accountId })} />
+        <Field.Password value={password} onChange={(password) => store.admin.setState({ password })} />
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
           <Button type="primary" htmlType="submit" block>
             Submit

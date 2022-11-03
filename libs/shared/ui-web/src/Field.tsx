@@ -1,7 +1,23 @@
 import { CloseOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
-import { types } from "@shared/data-access";
-import { Form, Card, Modal, InputNumber, Button, Input, Space, DatePicker, Select, Switch } from "antd";
+import { gql } from "@shared/data-access";
+import {
+  Form,
+  Card,
+  Modal,
+  InputNumber,
+  Button,
+  Input,
+  Space,
+  DatePicker,
+  Select,
+  Switch,
+  Tag,
+  InputRef,
+  UploadFile,
+  Upload,
+} from "antd";
 import moment from "moment";
+import { useRef, useState } from "react";
 import styled from "styled-components";
 
 type TextProps = {
@@ -53,7 +69,7 @@ export const Number = ({ label, value, onChange, min, max, required, disabled }:
         min={min}
         max={max}
         value={value ?? 0}
-        onChange={(e) => onChange(parseInt(e.target.value))}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
         disabled={disabled}
       />
     </Space>
@@ -92,28 +108,41 @@ export const DoubleNumber = ({ label, value, onChange, required, disabled }: Dou
 
 type ImageProps = {
   label: string;
-  value: types.File | null;
-  onChange: (value: FileList) => void;
+  file: gql.File | null;
+  addFiles: (value: FileList) => void;
   onRemove: () => void;
   required?: boolean;
   disabled?: boolean;
 };
-export const Img = ({ value, onChange, onRemove, label, required, disabled }: ImageProps) => {
+export const Img = ({ file, addFiles, onRemove, label, required, disabled }: ImageProps) => {
   return (
     <Space style={{ marginTop: 10 }}>
       <div className="label">
         {required && <span>*</span>}
         {label}
       </div>
-      {value ? (
+      {file ? (
         <>
-          <img alt={label} src={value.url} height={300} />
+          <img alt={label} src={file.url} height={300} />
           <Button onClick={onRemove} disabled={disabled}>
             remove
           </Button>
         </>
       ) : (
-        <input type="file" onChange={(e) => e.target.files && onChange(e.target.files)} disabled={disabled} />
+        <Upload
+          multiple
+          listType="picture-card"
+          onChange={(e) => {
+            if (e.file.status !== "uploading" || e.file.percent) return;
+            addFiles([e.file.originFileObj] as any);
+          }}
+          disabled={disabled}
+        >
+          <div>
+            <PlusOutlined />
+            <div style={{ marginTop: 8 }}>Upload</div>
+          </div>
+        </Upload>
       )}
     </Space>
   );
@@ -121,37 +150,46 @@ export const Img = ({ value, onChange, onRemove, label, required, disabled }: Im
 
 type ImagesProps = {
   label?: string | null;
-  files: types.File[] | null;
-  addFiles: (value: FileList) => Promise<types.File[]>;
-  onUpdate: (values: types.File[]) => void;
+  files: gql.File[] | null;
+  addFiles: (value: FileList) => Promise<gql.File[]>;
+  onUpdate: (values: gql.File[]) => void;
   secret?: boolean;
   disabled?: boolean;
 };
 export const Imgs = ({ label, files, addFiles, onUpdate, disabled }: ImagesProps) => {
+  const uploadFiles: UploadFile[] =
+    files?.map((file) => ({
+      uid: file.id,
+      name: file.id,
+      url: file.url,
+    })) ?? [];
   return (
-    <>
-      <Space style={{ marginTop: 10 }}>
+    <div>
+      <Space>
         {label && <div className="label">{label}</div>}
-        <input
-          type="file"
-          onChange={async (e) => {
-            if (!e.target.files) return;
-            const fs = await addFiles(e.target.files);
-            onUpdate([...(files ?? []), ...fs]);
-          }}
-          disabled={disabled}
-        />
-      </Space>
-      {files &&
-        files.map((file, idx) => (
-          <>
-            <img alt={label ?? ""} src={file.url} height={300} />
-            <Button onClick={() => onUpdate(files.filter((f, i) => i !== idx))} disabled={disabled}>
-              remove
-            </Button>
-          </>
+        {uploadFiles.map((uploadFile, idx) => (
+          <Upload
+            key={uploadFile.uid}
+            listType="picture-card"
+            fileList={[uploadFile]}
+            onRemove={() => onUpdate(files?.filter((f, i) => i !== idx) ?? [])}
+          />
         ))}
-    </>
+        <Upload
+          multiple
+          listType="picture-card"
+          onChange={(e) => {
+            if (e.file.status !== "uploading" || e.file.percent) return;
+            addFiles([e.file.originFileObj] as any);
+          }}
+        >
+          <div>
+            <PlusOutlined />
+            <div style={{ marginTop: 8 }}>Upload</div>
+          </div>
+        </Upload>
+      </Space>
+    </div>
   );
 };
 
@@ -198,7 +236,7 @@ export const TextArea = ({ label, value, onChange }: TextAreaProps) => {
   return (
     <Space style={{ marginTop: 10 }}>
       <div className="label">{label}</div>
-      <Input.TextArea rows={4} value={value || ""} onChange={(e) => onChange(e.target.value)} />
+      <Input.TextArea rows={3} value={value || ""} onChange={(e) => onChange(e.target.value)} />
     </Space>
   );
 };
@@ -223,18 +261,41 @@ type RangePickerProps = {
   max?: Date;
   openAt: Date | null;
   closeAt: Date | null;
+  showTime?: boolean;
   onChange: (openAt: Date | null, closeAt: Date | null) => void;
 };
-export const RangePicker = ({ label, openAt, min, max, closeAt, onChange }: RangePickerProps) => {
+export const RangePicker = ({ label, openAt, min, max, closeAt, onChange, showTime }: RangePickerProps) => {
   return (
     <Space style={{ marginTop: 10 }}>
       <div className="label">{label}</div>
       <DatePicker.RangePicker
+        showTime={showTime}
         value={openAt && closeAt ? [moment(openAt), moment(closeAt)] : [null, null]}
         disabledDate={(d) => !d || d.isAfter(moment(max)) || d.isSameOrBefore(moment(min))}
         onChange={(e) => {
-          onChange(e?.[0] ? e[0].toDate() : null, e?.[1] ? e[1].toDate() : null);
+          onChange(e?.[0] ? new Date(e[0].toDate()) : null, e?.[1] ? new Date(e[1].toDate()) : null);
         }}
+      />
+    </Space>
+  );
+};
+
+type DateProps = {
+  label: string;
+  min?: Date;
+  max?: Date;
+  date: Date | null;
+  showTime?: boolean;
+  onChange: (date: Date | null) => void;
+};
+export const DatePick = ({ label, date, min, max, onChange, showTime }: DateProps) => {
+  return (
+    <Space style={{ marginTop: 10 }}>
+      <div className="label">{label}</div>
+      <DatePicker
+        showTime={showTime}
+        value={date ? moment(date) : null}
+        onChange={(e) => e && onChange(new Date(e.toDate()))}
       />
     </Space>
   );
@@ -242,16 +303,17 @@ export const RangePicker = ({ label, openAt, min, max, closeAt, onChange }: Rang
 
 type Item = { id: string; label: string };
 type SelectProps = {
+  mode?: "multiple" | "tags";
   label: string;
   items: Item[];
-  value: string | null;
-  onChange: (value: string) => void;
+  value: string | string[] | null;
+  onChange: (value: string | string[]) => void;
 };
-export const SelectItem = ({ label, items, value, onChange }: SelectProps) => {
+export const SelectItem = ({ mode, label, items, value, onChange }: SelectProps) => {
   return (
     <Space style={{ marginTop: 10 }}>
       <div className="label">{label}</div>
-      <Select value={value} onChange={(value) => onChange(value)}>
+      <Select mode={mode} style={{ width: 300 }} value={value} onChange={(value) => onChange(value)}>
         {items.map((item) => (
           <Select.Option key={item.id} value={item.id}>
             {item.label}
@@ -274,8 +336,16 @@ type TagsProps = {
   disabled?: boolean;
 };
 export const Tags = ({ label, value, values, onChange, onUpdate, placeholder, required, disabled }: TagsProps) => {
+  const inputRef = useRef<InputRef>(null);
+  const [inputVisible, setInputVisible] = useState(false);
+  const addTag = () => {
+    if (!value || !value.length) return;
+    onChange("");
+    onUpdate([...(values ?? []), value]);
+    setInputVisible(false);
+  };
   return (
-    <>
+    <div>
       <Space style={{ marginTop: 10 }}>
         {label && (
           <div className="label">
@@ -283,29 +353,30 @@ export const Tags = ({ label, value, values, onChange, onUpdate, placeholder, re
             {label}
           </div>
         )}
-        <Input
-          value={value ?? ""}
-          placeholder={placeholder}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={disabled}
-        />
-        <Button
-          icon={<PlusOutlined />}
-          onClick={() => {
-            if (!value || !value.length) return;
-            onChange("");
-            onUpdate([...(values ?? []), value]);
-          }}
-        />
+        {values &&
+          values.map((val, idx) => (
+            <Tag closable onClose={() => onUpdate(values.filter((v, i) => i !== idx))} key={val}>
+              {val}
+            </Tag>
+          ))}
+        {inputVisible ? (
+          <Input
+            ref={inputRef}
+            type="text"
+            size="small"
+            className="tag-input"
+            value={value ?? ""}
+            onChange={(e) => onChange(e.target.value)}
+            onBlur={addTag}
+            onPressEnter={addTag}
+          />
+        ) : (
+          <Tag className="site-tag-plus" onClick={() => setInputVisible(true)}>
+            <PlusOutlined /> New Tag
+          </Tag>
+        )}
       </Space>
-      {values &&
-        values.map((val, idx) => (
-          <div>
-            {val}
-            <Button icon={<CloseOutlined />} onClick={() => onUpdate(values.filter((v, i) => i !== idx))} />
-          </div>
-        ))}
-    </>
+    </div>
   );
 };
 

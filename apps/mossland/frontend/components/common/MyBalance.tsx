@@ -1,11 +1,7 @@
 import React, { useEffect } from "react";
-import { userStore, useUser } from "@platform/data-access";
 import { MyBalanceInfo } from "@platform/ui-web";
 import styled from "styled-components";
-import { walletStore } from "@shared/data-access";
-import { Connect } from "./Connect";
-import { MyProfile } from "./";
-import { BalanceItem } from "libs/platform/ui-web/src/market";
+import { gql, utils, store } from "../../stores";
 import { Utils } from "@shared/util";
 
 type MyBalanceProps = {
@@ -15,13 +11,13 @@ type MyBalanceProps = {
 
 export const MyBalance = (props: MyBalanceProps) => {
   // const address = useUser((state) => state.address);
-  const self = userStore.use.self();
-  // const wallet = walletStore.use.wallet();
+  const self = store.platform.user.use.self();
+  // const wallet = store.shared.wallet.use.wallet();
   const MMOC = self && self.items.find((item) => item.thing.name === "MMOC");
 
   useEffect(() => {
     if (!self?.keyring) return;
-    walletStore.setState({ wallet: self.keyring.wallets[0] });
+    store.shared.wallet.setState({ wallet: self.keyring.wallets[0] });
   }, [self?.keyring]);
 
   return (

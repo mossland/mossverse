@@ -1,19 +1,11 @@
 import React from "react";
-import { userStore, useUser } from "@platform/data-access";
-import { MyBalanceInfo } from "@platform/ui-web";
 import styled from "styled-components";
-import { walletStore } from "@shared/data-access";
-import { Title } from "./Title";
 
 type MyProfileProps = {
   nickname: string;
 };
 
 export const MyProfile = ({ nickname }: MyProfileProps) => {
-  // const address = useUser((state) => state.address);
-  const self = userStore.use.self();
-  const wallet = walletStore.use.wallet();
-
   return (
     <StyledMyProfile>
       <div className="nickname">

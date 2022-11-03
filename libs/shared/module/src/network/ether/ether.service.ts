@@ -17,6 +17,7 @@ import {
   Multicall as MulticallContract,
   market,
   AkaMarket,
+  ERC721AToken,
 } from "@shared/contract";
 import { InjectQueue } from "@nestjs/bull";
 import { Queue } from "bull";
@@ -82,7 +83,7 @@ export class EtherService extends LogService implements NetworkFunctionality, On
     return instance;
   }
   loadErc721Contract(address: string) {
-    const contract = new ethers.Contract(address, erc721.abi, this.wallet) as unknown as ERC721A;
+    const contract = new ethers.Contract(address, erc721.abi, this.wallet) as unknown as ERC721AToken;
     const instance = new Erc721(address, contract, {
       abi: erc721.abi,
       multicall: this.multicall,

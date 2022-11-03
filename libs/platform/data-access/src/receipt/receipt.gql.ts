@@ -1,89 +1,72 @@
-import { query, mutate } from "../index";
-import * as types from "../types";
-import gql from "graphql-tag";
+import graphql from "graphql-tag";
 import { cnst } from "@shared/util";
+import {
+  createGraphQL,
+  createFragment,
+  Field,
+  InputType,
+  mutate,
+  query,
+  ObjectType,
+  BaseGql,
+  InputOf,
+} from "@shared/util-client";
+import { gql as shared } from "@shared/data-access";
+import { User } from "../user/user.gql";
+import { Listing } from "../listing/listing.gql";
+import { Exchange, PriceTagInput, ShipInfo, ShipInfoInput } from "../_scalar";
 
-// * Receipt Query
-export type ReceiptQuery = { receipt: types.Receipt };
-export const receiptQuery = gql`
-  ${types.receiptFragment}
-  query receipt($receiptId: ID!) {
-    receipts(receiptId: $receiptId) {
-      ...receiptFragment
-    }
-  }
-`;
+@InputType("ReceiptInput")
+export class ReceiptInput {
+  @Field(() => User, { nullable: true })
+  from: User | null;
 
-export const receipt = async (receiptId: string) => (await query<ReceiptQuery>(receiptsQuery, { receiptId })).receipt;
+  @Field(() => shared.Wallet, { nullable: true })
+  fromWallet: shared.Wallet | null;
 
-// * Receipts Query
-export type ReceiptsQuery = { receipts: types.Receipt[] };
-export const receiptsQuery = gql`
-  ${types.receiptFragment}
-  query receipts($query: JSON!, $skip: Int, $limit: Int) {
-    receipts(query: $query, skip: $skip, limit: $limit) {
-      ...receiptFragment
-    }
-  }
-`;
-export const receipts = async (qry: any, skip = 0, limit = 0) =>
-  (await query<ReceiptsQuery>(receiptsQuery, { query: qry, skip, limit })).receipts;
+  @Field(() => User, { nullable: true })
+  to: User | null;
 
-// * Create Receipt Mutation
-export type CreateReceiptMutation = { createReceipt: types.Receipt };
-export const createReceiptMutation = gql`
-  ${types.receiptFragment}
-  mutation createReceipt($data: ReceiptInput!) {
-    createReceipt(data: $data) {
-      ...receiptFragment
-    }
-  }
-`;
-export const createReceipt = async (data: types.ReceiptInput) =>
-  (await mutate<CreateReceiptMutation>(createReceiptMutation, { data })).createReceipt;
+  @Field(() => shared.Wallet, { nullable: true })
+  toWallet: shared.Wallet | null;
 
-// * Update Receipt Mutation
-export type UpdateReceiptMutation = { updateReceipt: types.Receipt };
-export const updateReceiptMutation = gql`
-  ${types.receiptFragment}
-  mutation updateReceipt($receiptId: ID!, $data: ReceiptInput!) {
-    updateReceipt(receiptId: $receiptId, data: $data) {
-      ...receiptFragment
-    }
-  }
-`;
-export const updateReceipt = async (receiptId: string, data: types.ReceiptInput) =>
-  (await mutate<UpdateReceiptMutation>(updateReceiptMutation, { receiptId, data })).updateReceipt;
+  @Field(() => Listing, { nullable: true })
+  listing: Listing | null;
 
-// * Remove Receipt Mutation
-export type RemoveReceiptMutation = { removeReceipt: types.Receipt };
-export const removeReceiptMutation = gql`
-  ${types.receiptFragment}
-  mutation removeReceiptMutation($receiptId: ID!) {
-    removeReceiptMutation(receiptId: $receiptId) {
-      ...receiptFragment
-    }
-  }
-`;
+  @Field(() => [Exchange])
+  inputs: Exchange[];
 
-export const removeReceipt = async (receiptId: string) =>
-  (await mutate<RemoveReceiptMutation>(removeReceiptMutation, { receiptId })).removeReceipt;
+  @Field(() => [Exchange])
+  outputs: Exchange[];
 
-// * Open Receipt Mutation
-export type OpenReceiptMutation = { openReceipt: types.Receipt };
-export const openReceiptMutation = gql`
-  ${types.receiptFragment}
-  mutation openReceipt($receiptId: ID!, $data: ReceiptInput!) {
-    openReceipt(receiptId: $receiptId, data: $data) {
-      ...receiptFragment
-    }
-  }
-`;
+  @Field(() => ShipInfo, { nullable: true })
+  shipInfo: ShipInfo | null;
+}
+
+@ObjectType("Receipt", { _id: "id" })
+export class Receipt extends BaseGql(ReceiptInput) {
+  @Field(() => String)
+  status: cnst.ReceiptStatus;
+}
+
+export const receiptGraphQL = createGraphQL<"receipt", Receipt, ReceiptInput>(Receipt, ReceiptInput);
+export const {
+  getReceipt,
+  listReceipt,
+  receiptCount,
+  receiptExists,
+  createReceipt,
+  updateReceipt,
+  removeReceipt,
+  receiptFragment,
+  purifyReceipt,
+  defaultReceipt,
+} = receiptGraphQL;
 
 // * MyReceipts Query
-export type MyReceiptsQuery = { myReceipts: types.Receipt[] };
-export const myReceiptsQuery = gql`
-  ${types.receiptFragment}
+export type MyReceiptsQuery = { myReceipts: Receipt[] };
+export const myReceiptsQuery = graphql`
+  ${receiptFragment}
   query myReceipts($userId: ID!, $type: String!) {
     myReceipts(userId: $userId, type: $type) {
       ...receiptFragment
@@ -93,3 +76,21 @@ export const myReceiptsQuery = gql`
 
 export const myReceipts = async (userId: string, type: cnst.ReceiptType) =>
   (await query<MyReceiptsQuery>(myReceiptsQuery, { userId, type })).myReceipts;
+
+export type PurchaseListingMutation = { purchaseListing: Receipt };
+export const purchaseListingMutation = graphql`
+  ${receiptFragment}
+  mutation purchaseListing($listingId: ID!, $priceTag: PriceTagInput!, $num: Float!, $shipInfo: ShipInfoInput) {
+    purchaseListing(listingId: $listingId, priceTag: $priceTag, num: $num, shipInfo: $shipInfo) {
+      ...receiptFragment
+    }
+  }
+`;
+export const purchaseListing = async (
+  listingId: string,
+  priceTag: InputOf<PriceTagInput>,
+  num: number,
+  shipInfo?: InputOf<ShipInfoInput>
+) =>
+  (await mutate<PurchaseListingMutation>(purchaseListingMutation, { listingId, priceTag, num, shipInfo }))
+    .purchaseListing;

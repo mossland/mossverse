@@ -1,22 +1,21 @@
 import React, { useEffect } from "react";
 import styled from "styled-components";
-import { survey, surveyStore, types, userStore } from "@platform/data-access";
+import { gql, store } from "@platform/data-access";
 import { Radio, Space } from "antd";
 import { Utils } from "@shared/util";
-import { keyringStore, networkStore, walletStore } from "@shared/data-access";
 
 type SurveyDetailBodyProps = {
-  survey: types.Survey;
+  survey: gql.Survey;
   voted: boolean;
   answer: string | null;
   selection: number | null;
 };
 
 export const DetailBody = ({ survey, voted, answer, selection }: SurveyDetailBodyProps) => {
-  const sign = keyringStore.use.sign();
-  const self = userStore.use.self();
-  const wallet = walletStore.use.wallet();
-  const responseSurvey = surveyStore.use.responseSurvey();
+  const sign = store.shared.keyring.use.sign();
+  const self = store.user.use.self();
+  const wallet = store.shared.wallet.use.wallet();
+  const respondSurvey = store.survey.use.respondSurvey();
 
   const isVotable = (): boolean => {
     if (!voted && self && self.keyring?.wallets.find((wallet) => wallet.network.id === survey.contract.network.id))
@@ -27,12 +26,12 @@ export const DetailBody = ({ survey, voted, answer, selection }: SurveyDetailBod
     if (!self || !self.keyring) return alert("로그인 한 유저만 투표할 수 있습니다.");
     if (!wallet) return alert("해당 컨트랙 네트워크의 지갑을 소유하고 있지 않습니다.");
     await sign(wallet.network.provider);
-    await responseSurvey(wallet);
+    await respondSurvey(wallet);
   };
 
   const onCancel = () => {
-    surveyStore.setState({ ...types.defaultSurveyResponse, survey: null, response: null });
-    networkStore.setState({ network: null });
+    store.survey.setState({ ...gql.defaultSurveyResponse, survey: null, response: null });
+    store.shared.network.setState({ network: null });
   };
 
   return (
@@ -66,7 +65,7 @@ const SubjectiveForm = ({ answer, isVoted }: SubjectiveFormProps) => {
         value={answer ?? ""}
         disabled={isVoted}
         placeholder="주관식 입니다."
-        onChange={(e) => surveyStore.setState({ answer: e.target.value })}
+        onChange={(e) => store.survey.setState({ answer: e.target.value })}
         className="subject-input"
       ></textarea>
     </div>

@@ -41,6 +41,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Ownable__factory>;
     getContractFactory(
+      name: "Pausable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Pausable__factory>;
+    getContractFactory(
       name: "ERC1155",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC1155__factory>;
@@ -225,17 +229,61 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.VaultFactory__factory>;
     getContractFactory(
+      name: "ERC721A__IERC721Receiver",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721A__IERC721Receiver__factory>;
+    getContractFactory(
       name: "ERC721A",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721A__factory>;
     getContractFactory(
-      name: "ERC721AOwnersExplicit",
+      name: "ERC721AToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ERC721AOwnersExplicit__factory>;
+    ): Promise<Contracts.ERC721AToken__factory>;
     getContractFactory(
-      name: "ERC721AOwnersExplicitMock",
+      name: "ERC721AToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ERC721AOwnersExplicitMock__factory>;
+    ): Promise<Contracts.ERC721AToken__factory>;
+    getContractFactory(
+      name: "ERC4907A",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC4907A__factory>;
+    getContractFactory(
+      name: "ERC721ABurnable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721ABurnable__factory>;
+    getContractFactory(
+      name: "ERC721AQueryable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721AQueryable__factory>;
+    getContractFactory(
+      name: "IERC4907A",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC4907A__factory>;
+    getContractFactory(
+      name: "IERC721ABurnable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721ABurnable__factory>;
+    getContractFactory(
+      name: "IERC721AQueryable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721AQueryable__factory>;
+    getContractFactory(
+      name: "IERC721A",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721A__factory>;
+    getContractFactory(
+      name: "ERC4907AMock",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC4907AMock__factory>;
+    getContractFactory(
+      name: "ERC721ABurnableMock",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721ABurnableMock__factory>;
+    getContractFactory(
+      name: "ERC721ABurnableStartTokenIdMock",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721ABurnableStartTokenIdMock__factory>;
     getContractFactory(
       name: "ERC721AGasReporterMock",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -245,9 +293,37 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721AMock__factory>;
     getContractFactory(
+      name: "ERC721AQueryableMock",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721AQueryableMock__factory>;
+    getContractFactory(
+      name: "ERC721AQueryableStartTokenIdMock",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721AQueryableStartTokenIdMock__factory>;
+    getContractFactory(
+      name: "ERC721AStartTokenIdMock",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721AStartTokenIdMock__factory>;
+    getContractFactory(
+      name: "ERC721ATransferCounterMock",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721ATransferCounterMock__factory>;
+    getContractFactory(
+      name: "ERC721AWithERC2309Mock",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721AWithERC2309Mock__factory>;
+    getContractFactory(
       name: "ERC721ReceiverMock",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721ReceiverMock__factory>;
+    getContractFactory(
+      name: "IERC721AMock",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC721AMock__factory>;
+    getContractFactory(
+      name: "StartTokenIdHelper",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.StartTokenIdHelper__factory>;
     getContractFactory(
       name: "Multicall",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -368,6 +444,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.Ownable>;
+    getContractAt(
+      name: "Pausable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Pausable>;
     getContractAt(
       name: "ERC1155",
       address: string,
@@ -599,20 +680,75 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.VaultFactory>;
     getContractAt(
+      name: "ERC721A__IERC721Receiver",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721A__IERC721Receiver>;
+    getContractAt(
       name: "ERC721A",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ERC721A>;
     getContractAt(
-      name: "ERC721AOwnersExplicit",
+      name: "ERC721AToken",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.ERC721AOwnersExplicit>;
+    ): Promise<Contracts.ERC721AToken>;
     getContractAt(
-      name: "ERC721AOwnersExplicitMock",
+      name: "ERC721AToken",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.ERC721AOwnersExplicitMock>;
+    ): Promise<Contracts.ERC721AToken>;
+    getContractAt(
+      name: "ERC4907A",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC4907A>;
+    getContractAt(
+      name: "ERC721ABurnable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721ABurnable>;
+    getContractAt(
+      name: "ERC721AQueryable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721AQueryable>;
+    getContractAt(
+      name: "IERC4907A",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC4907A>;
+    getContractAt(
+      name: "IERC721ABurnable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721ABurnable>;
+    getContractAt(
+      name: "IERC721AQueryable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721AQueryable>;
+    getContractAt(
+      name: "IERC721A",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721A>;
+    getContractAt(
+      name: "ERC4907AMock",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC4907AMock>;
+    getContractAt(
+      name: "ERC721ABurnableMock",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721ABurnableMock>;
+    getContractAt(
+      name: "ERC721ABurnableStartTokenIdMock",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721ABurnableStartTokenIdMock>;
     getContractAt(
       name: "ERC721AGasReporterMock",
       address: string,
@@ -624,10 +760,45 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ERC721AMock>;
     getContractAt(
+      name: "ERC721AQueryableMock",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721AQueryableMock>;
+    getContractAt(
+      name: "ERC721AQueryableStartTokenIdMock",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721AQueryableStartTokenIdMock>;
+    getContractAt(
+      name: "ERC721AStartTokenIdMock",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721AStartTokenIdMock>;
+    getContractAt(
+      name: "ERC721ATransferCounterMock",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721ATransferCounterMock>;
+    getContractAt(
+      name: "ERC721AWithERC2309Mock",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721AWithERC2309Mock>;
+    getContractAt(
       name: "ERC721ReceiverMock",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ERC721ReceiverMock>;
+    getContractAt(
+      name: "IERC721AMock",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC721AMock>;
+    getContractAt(
+      name: "StartTokenIdHelper",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.StartTokenIdHelper>;
     getContractAt(
       name: "Multicall",
       address: string,

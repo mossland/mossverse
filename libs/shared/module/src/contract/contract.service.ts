@@ -21,8 +21,10 @@ import { TokenService } from "../token/token.service";
 import { WalletService } from "../wallet/wallet.service";
 
 @Injectable()
-export class ContractService extends AddrLoadService<Contract.Mdl, Contract.Doc, Contract.Input>
-  implements OnModuleInit, OnModuleDestroy {
+export class ContractService
+  extends AddrLoadService<Contract.Mdl, Contract.Doc, Contract.Input>
+  implements OnModuleInit, OnModuleDestroy
+{
   destroyers: (() => Promise<void> | void)[] = [];
   constructor(
     @InjectModel(Contract.name)
@@ -34,11 +36,15 @@ export class ContractService extends AddrLoadService<Contract.Mdl, Contract.Doc,
     super(ContractService.name, Contract);
   }
   async onModuleInit() {
-    const contracts = await this.Contract.find({ status: "active" });
-    await Promise.all(contracts.map(async (contract) => await this.#listenContract(contract)));
+    // const contracts = await this.Contract.find({ status: "active" });
+    // await Promise.all(contracts.map(async (contract) => await this.#listenContract(contract)));
   }
   async onModuleDestroy() {
     await Promise.all(this.destroyers.map(async (destroyer) => await destroyer()));
+  }
+  async myInventory(walletId: Id) {
+    const wallet = await this.walletService.get(walletId);
+    return (await this.inventory(wallet)).items;
   }
   async inventory(wallet: db.Wallet.Doc) {
     const contracts = await this.Contract.find({ status: "active", network: wallet.network });
@@ -357,7 +363,9 @@ export class ContractService extends AddrLoadService<Contract.Mdl, Contract.Doc,
       return false;
     }
   }
-
+  async create(data: Contract.Input) {
+    return await this.generateContract(data);
+  }
   async generateContract(data: Contract.Input, ids: number[] = []) {
     const intf = await this.networkService.getInterface(data.network, data.address);
     // return true;

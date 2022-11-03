@@ -1,6 +1,3 @@
-import { types } from "@shared/data-access";
-import { Form, Card, Modal, InputNumber, Button, Input, Space } from "antd";
-import styled from "styled-components";
 interface StackImageProps {
   srcs: (string | null | undefined)[];
   width: number;

@@ -1,5 +1,6 @@
+// ! This File Needs to be Refactor
 import styled from "styled-components";
-import { keyringStore } from "@shared/data-access";
+import { store } from "@shared/data-access";
 import { ConnectButton } from "./index";
 import { KlaytnIcon, LuniverseIcon, EthereumIcon, ModalContainer } from "../common";
 
@@ -10,14 +11,14 @@ export type LoginSelectorProps = {
 };
 
 export const LoginSelector = ({ klaytn, ethereum, luniverse }: LoginSelectorProps) => {
-  const isOpenModal = keyringStore.use.isOpenModal();
+  const isOpenModal = store.keyring.use.isOpenModal();
 
   if (!isOpenModal) return null;
 
   return (
     <ModalContainer
       showModal={isOpenModal}
-      closeShowModal={() => keyringStore.setState({ isOpenModal: false })}
+      closeShowModal={() => store.keyring.setState({ isOpenModal: false })}
       title="Select Network"
     >
       <LoginSelectorContainer>

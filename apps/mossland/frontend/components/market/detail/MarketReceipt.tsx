@@ -1,14 +1,18 @@
-import { types } from "@platform/data-access";
+import { gql, utils, store } from "../../../stores";
 import React from "react";
 import styled from "styled-components";
 import Image from "next/image";
+import { Market } from "@platform/ui-web";
 
-type MarketReceiptProps = {
-  receipt: types.Receipt;
-};
+// type MarketReceiptProps = {
+//   receipt: gql.platform.Receipt;
+// };
 
-export const MarketReceipt = ({ receipt }: MarketReceiptProps) => {
-  const exchangeExporter = (i: types.Exchange, className: "inputs" | "outputs") => {
+export const MarketReceipt = () => {
+  const service = Market.useMarket();
+
+  // receipt={service.receipt}
+  const exchangeExporter = (i: gql.platform.Exchange, className: "inputs" | "outputs") => {
     return (
       <div key={i.id} className={className}>
         {"\b\b>"}
@@ -37,13 +41,13 @@ export const MarketReceipt = ({ receipt }: MarketReceiptProps) => {
     <MarketDescContainer>
       <div className="result-text">Trade success!</div>
       {/* <div className="from-to">{`${receipt.from.nickname} -> ${receipt.to.nickname}`}</div> */}
-      {`${receipt.to.nickname}`}
-      {receipt.inputs.map((i) => exchangeExporter(i, "inputs"))}
-      {receipt.outputs.map((i) => exchangeExporter(i, "outputs"))}
+      {`${service.receipt?.to?.nickname ?? "unknown"}`}
+      {service.receipt?.inputs.map((i) => exchangeExporter(i, "inputs"))}
+      {service.receipt?.outputs.map((i) => exchangeExporter(i, "outputs"))}
       {`You`}
-      {receipt.inputs.map((i) => exchangeExporter(i, "outputs"))}
-      {receipt.outputs.map((i) => exchangeExporter(i, "inputs"))}
-      {`order number : ${receipt.id}`}
+      {service.receipt?.inputs.map((i) => exchangeExporter(i, "outputs"))}
+      {service.receipt?.outputs.map((i) => exchangeExporter(i, "inputs"))}
+      {`order number : ${service.receipt?.id}`}
     </MarketDescContainer>
   );
 };

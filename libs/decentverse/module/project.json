@@ -1,0 +1,35 @@
+{
+  "name": "decentverse/module",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/decentverse/module/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/decentverse/module/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/decentverse/module"],
+      "options": {
+        "jestConfig": "libs/decentverse/module/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "build": {
+      "executor": "@nrwl/js:swc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/decentverse/module",
+        "tsConfig": "libs/decentverse/module/tsconfig.lib.json",
+        "packageJson": "libs/decentverse/module/package.json",
+        "main": "libs/decentverse/module/src/index.ts",
+        "assets": ["libs/decentverse/module/*.md"]
+      }
+    }
+  },
+  "tags": []
+}

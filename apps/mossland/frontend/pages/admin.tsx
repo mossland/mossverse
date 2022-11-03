@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
-import { MapEditor, Assets, Emojis, Characters } from "@decentverse/client/ui-web";
+import { MapEditor, Assets, Emojis, Characters } from "@decentverse/ui-web";
 import { Layout } from "antd";
 import styled from "styled-components";
-import { setLink, useAdmin, adminStore } from "@shared/data-access";
+import { gql, utils, store } from "../stores";
 import {
   AdminAuth,
   AdminLayout,
@@ -40,9 +40,9 @@ const menus: AdminMenuKey[] = [
 ];
 
 export default function Admin() {
-  const admin = adminStore.use.admin();
-  const adminMenu = adminStore.use.adminMenu();
-  if (!admin) return <AdminAuth uri={env.endpoint} />;
+  const me = store.shared.admin.use.me();
+  const adminMenu = store.shared.admin.use.adminMenu();
+  if (!me) return <AdminAuth uri={env.endpoint} />;
   return (
     <AdminLayout isWide={adminMenu === "mapEditor"}>
       <AdminMenu menus={menus} defaultMenu="mapEditor" />

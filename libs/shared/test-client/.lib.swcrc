@@ -9,10 +9,6 @@
       "react": {
         "runtime": "automatic"
       }
-    },
-    "minify": {
-      "compress": true,
-      "mangle": true
     }
   },
   "module": {

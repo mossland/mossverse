@@ -1,1 +1,1 @@
-export * from "./scalar.types";
+export * from "./scalar.gql";

@@ -1,6 +1,4 @@
 import React from "react";
-import { InputNumber, Input, Button } from "antd";
-import { types, checkIsActiveSurvey } from "@platform/data-access";
 import styled from "styled-components";
 import { Utils } from "@shared/util";
 import { VotingTag, Period, ActiveTag, MyVoteTag, MyDaoTag, ClosedTag } from "./";
@@ -23,6 +21,7 @@ export const Item = ({ title, selected, voted, opened, closeAt, openAt, onClick 
       <div className="title-container">
         <SurveyIcon />
         <div className="title">{title}</div>
+        {/* <div className="title">{title}</div> */}
       </div>
       <div className={"sub-title-container"}>
         {opened && new Date(closeAt).getTime() > Date.now() && <ActiveTag />}

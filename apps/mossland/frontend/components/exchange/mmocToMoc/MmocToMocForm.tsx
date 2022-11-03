@@ -1,28 +1,22 @@
 import React from "react";
 import styled from "styled-components";
-import { useExchangeUi, userStore } from "@platform/data-access";
 import { darken } from "polished";
-import { useUser } from "@platform/data-access";
-import { Utils } from "@shared/util";
-import { mocWalletStore } from "apps/mossland/frontend/stores";
-import { Field } from "@shared/ui-web";
-import { ethers } from "ethers";
-import { walletStore } from "@shared/data-access";
+import { gql, utils, store } from "../../../stores";
 
 export const MmocToMocForm = () => {
-  const self = userStore.use.self();
-  const wallet = walletStore.use.wallet();
-  const depositAmount = mocWalletStore.use.depositAmount();
-  const depositAddress = mocWalletStore.use.depositAddress();
+  const self = store.platform.user.use.self();
+  const wallet = store.shared.wallet.use.wallet();
+  const depositAmount = store.mocWallet.use.depositAmount();
+  const depositAddress = store.mocWallet.use.depositAddress();
   const max = () => {
     if (!self) return 0;
     const item = self.items.find((item) => item.thing.name === "MMOC");
     if (!item) return 0;
     return Math.floor(item.num);
   };
-  // const updateInputBefore = useExchangeUi((state) => state.updateInputBefore);
-  // const inputBefore = useExchangeUi((state) => state.inputBefore);
-  // const after = useExchangeUi((state) => state.after);
+  // const updateInputBefore = useExchange((state) => state.updateInputBefore);
+  // const inputBefore = useExchange((state) => state.inputBefore);
+  // const after = useExchange((state) => state.after);
   // const balanceInMMOC = useUser((state) => state.balanceInMMOC);
   return (
     <MmocToMocFormContainer disabled={!wallet}>
@@ -31,7 +25,7 @@ export const MmocToMocForm = () => {
         {/* <input
           className="text-input"
           value={depositAddress}
-          onChange={(e) => mocWalletStore.setState({ depositAddress: e.target.value })}
+          onChange={(e) => store.mocWallet.setState({ depositAddress: e.target.value })}
         /> */}
         <input
           disabled={!wallet}
@@ -40,16 +34,16 @@ export const MmocToMocForm = () => {
           type="number"
           value={depositAmount}
           onBlur={(e) =>
-            mocWalletStore.setState({ depositAmount: max() < e.target.valueAsNumber ? 0 : e.target.valueAsNumber })
+            store.mocWallet.setState({ depositAmount: max() < e.target.valueAsNumber ? 0 : e.target.valueAsNumber })
           }
-          onChange={(e) => mocWalletStore.setState({ depositAmount: e.target.valueAsNumber })}
+          onChange={(e) => store.mocWallet.setState({ depositAmount: e.target.valueAsNumber })}
         />
         <div className="unit">MMOC</div>
         <div
           id="max-button"
           className={`max-button`}
           onClick={() =>
-            mocWalletStore.setState({
+            store.mocWallet.setState({
               depositAmount: max(),
             })
           }
@@ -64,12 +58,12 @@ export const MmocToMocForm = () => {
           disabled={!wallet}
           className="text-input"
           value={depositAddress}
-          onChange={(e) => mocWalletStore.setState({ depositAddress: e.target.value })}
+          onChange={(e) => store.mocWallet.setState({ depositAddress: e.target.value })}
         />
         {/* <Field.Text
           label=""
           value={depositAddress}
-          onChange={(depositAddress) => mocWalletStore.setState({ depositAddress })}
+          onChange={(depositAddress) => store.mocWallet.setState({ depositAddress })}
         /> */}
       </div>
     </MmocToMocFormContainer>

@@ -13,11 +13,7 @@
       "decoratorMetadata": true,
       "legacyDecorator": true
     },
-    "keepClassNames": true,
-    "minify": {
-      "compress": true,
-      "mangle": true
-    }
+    "keepClassNames": true
   },
   "module": {
     "type": "commonjs",

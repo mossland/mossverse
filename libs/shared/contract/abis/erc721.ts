@@ -3,13 +3,28 @@ export const abi: any = [
     inputs: [
       {
         internalType: "string",
-        name: "name_",
+        name: "name",
         type: "string",
       },
       {
         internalType: "string",
-        name: "symbol_",
+        name: "symbol",
         type: "string",
+      },
+      {
+        internalType: "uint256",
+        name: "_maxSupply",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "_metadataUri",
+        type: "string",
+      },
+      {
+        internalType: "bool",
+        name: "_isRevealed",
+        type: "bool",
       },
     ],
     stateMutability: "nonpayable",
@@ -27,32 +42,12 @@ export const abi: any = [
   },
   {
     inputs: [],
-    name: "ApprovalToCurrentOwner",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "ApproveLockedToken",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "ApproveToCaller",
-    type: "error",
-  },
-  {
-    inputs: [],
     name: "BalanceQueryForZeroAddress",
     type: "error",
   },
   {
     inputs: [],
-    name: "LockCallerNotOwnerNorApproved",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "LockNotUpperThanTwoYear",
+    name: "InvalidQueryRange",
     type: "error",
   },
   {
@@ -67,7 +62,27 @@ export const abi: any = [
   },
   {
     inputs: [],
+    name: "MintERC2309QuantityExceedsLimit",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "MintToZeroAddress",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "MintZeroQuantity",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "OwnerQueryForNonexistentToken",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "OwnershipNotInitializedForExtraData",
     type: "error",
   },
   {
@@ -155,6 +170,69 @@ export const abi: any = [
     inputs: [
       {
         indexed: true,
+        internalType: "uint256",
+        name: "fromTokenId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "toTokenId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+    ],
+    name: "ConsecutiveTransfer",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousOwner",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "OwnershipTransferred",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "Paused",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
         internalType: "address",
         name: "from",
         type: "address",
@@ -176,6 +254,19 @@ export const abi: any = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "Unpaused",
+    type: "event",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -190,7 +281,7 @@ export const abi: any = [
     ],
     name: "approve",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
@@ -207,6 +298,114 @@ export const abi: any = [
         internalType: "uint256",
         name: "",
         type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "burn",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "contractURI",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "explicitOwnershipOf",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "addr",
+            type: "address",
+          },
+          {
+            internalType: "uint64",
+            name: "startTimestamp",
+            type: "uint64",
+          },
+          {
+            internalType: "bool",
+            name: "burned",
+            type: "bool",
+          },
+          {
+            internalType: "uint24",
+            name: "extraData",
+            type: "uint24",
+          },
+        ],
+        internalType: "struct IERC721A.TokenOwnership",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256[]",
+        name: "tokenIds",
+        type: "uint256[]",
+      },
+    ],
+    name: "explicitOwnershipsOf",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "addr",
+            type: "address",
+          },
+          {
+            internalType: "uint64",
+            name: "startTimestamp",
+            type: "uint64",
+          },
+          {
+            internalType: "bool",
+            name: "burned",
+            type: "bool",
+          },
+          {
+            internalType: "uint24",
+            name: "extraData",
+            type: "uint24",
+          },
+        ],
+        internalType: "struct IERC721A.TokenOwnership[]",
+        name: "",
+        type: "tuple[]",
       },
     ],
     stateMutability: "view",
@@ -258,14 +457,43 @@ export const abi: any = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "_account",
+        type: "address",
+      },
+      {
+        internalType: "bytes32[]",
+        name: "_proof",
+        type: "bytes32[]",
+      },
+      {
+        internalType: "uint16",
+        name: "step",
+        type: "uint16",
+      },
+    ],
+    name: "isWhiteListed",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "uint256",
         name: "tokenId",
         type: "uint256",
       },
       {
-        internalType: "uint256",
-        name: "lockUntil",
-        type: "uint256",
+        internalType: "uint64",
+        name: "_lockUntil",
+        type: "uint64",
       },
     ],
     name: "lock",
@@ -291,9 +519,9 @@ export const abi: any = [
         type: "uint256",
       },
       {
-        internalType: "uint256",
-        name: "lockUntil",
-        type: "uint256",
+        internalType: "uint64",
+        name: "_lockUntil",
+        type: "uint64",
       },
       {
         internalType: "bytes",
@@ -309,108 +537,80 @@ export const abi: any = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
         internalType: "uint256",
-        name: "tokenId",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "lockUntil",
+        name: "",
         type: "uint256",
       },
     ],
-    name: "lockTransferFrom",
-    outputs: [],
-    stateMutability: "nonpayable",
+    name: "lockUntil",
+    outputs: [
+      {
+        internalType: "uint64",
+        name: "",
+        type: "uint64",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "maxSupply",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
     inputs: [
       {
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        internalType: "uint256[]",
-        name: "tokenIds",
-        type: "uint256[]",
+        internalType: "uint16",
+        name: "step",
+        type: "uint16",
       },
       {
         internalType: "uint256",
-        name: "lockUntil",
+        name: "amount",
         type: "uint256",
       },
       {
-        internalType: "bytes",
-        name: "_data",
-        type: "bytes",
+        internalType: "bytes32[]",
+        name: "proof",
+        type: "bytes32[]",
       },
     ],
-    name: "lockTransferFromMany",
+    name: "mint",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
     inputs: [
       {
-        internalType: "address",
-        name: "from",
-        type: "address",
+        internalType: "uint16",
+        name: "",
+        type: "uint16",
       },
       {
         internalType: "address",
-        name: "to",
+        name: "",
         type: "address",
       },
-      {
-        internalType: "uint256[]",
-        name: "tokenIds",
-        type: "uint256[]",
-      },
+    ],
+    name: "mintLogs",
+    outputs: [
       {
         internalType: "uint256",
-        name: "lockUntil",
+        name: "",
         type: "uint256",
       },
     ],
-    name: "lockTransferFromMany",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256[]",
-        name: "tokenIds",
-        type: "uint256[]",
-      },
-      {
-        internalType: "uint256",
-        name: "lockUntil",
-        type: "uint256",
-      },
-    ],
-    name: "locks",
-    outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -421,6 +621,19 @@ export const abi: any = [
         internalType: "string",
         name: "",
         type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",
@@ -446,6 +659,33 @@ export const abi: any = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "pause",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "paused",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -465,7 +705,7 @@ export const abi: any = [
     ],
     name: "safeTransferFrom",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
@@ -493,7 +733,79 @@ export const abi: any = [
     ],
     name: "safeTransferFrom",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "saleInfoNum",
+    outputs: [
+      {
+        internalType: "uint16",
+        name: "",
+        type: "uint16",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint16",
+        name: "",
+        type: "uint16",
+      },
+    ],
+    name: "saleInfos",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "price",
+        type: "uint256",
+      },
+      {
+        internalType: "uint64",
+        name: "startTime",
+        type: "uint64",
+      },
+      {
+        internalType: "uint64",
+        name: "endTime",
+        type: "uint64",
+      },
+      {
+        internalType: "bytes32",
+        name: "merkleRoot",
+        type: "bytes32",
+      },
+      {
+        internalType: "uint256",
+        name: "perTx",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "perWallet",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "maxLimit",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "minted",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -510,6 +822,82 @@ export const abi: any = [
       },
     ],
     name: "setApprovalForAll",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "_metadataUri",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "_metadataSuffix",
+        type: "string",
+      },
+      {
+        internalType: "bool",
+        name: "_isReveal",
+        type: "bool",
+      },
+    ],
+    name: "setMetadata",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256[]",
+        name: "amounts",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint256[]",
+        name: "prices",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint64[]",
+        name: "startTimes",
+        type: "uint64[]",
+      },
+      {
+        internalType: "uint64[]",
+        name: "endTimes",
+        type: "uint64[]",
+      },
+      {
+        internalType: "bytes32[]",
+        name: "merkleRoots",
+        type: "bytes32[]",
+      },
+      {
+        internalType: "uint256[]",
+        name: "perTxs",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint256[]",
+        name: "perWallets",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint256[]",
+        name: "maxLimits",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint16",
+        name: "startIdx",
+        type: "uint16",
+      },
+    ],
+    name: "setSaleInfoList",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -593,7 +981,7 @@ export const abi: any = [
     inputs: [
       {
         internalType: "uint256",
-        name: "tokenId",
+        name: "_tokenId",
         type: "uint256",
       },
     ],
@@ -619,36 +1007,38 @@ export const abi: any = [
     name: "tokensOfOwner",
     outputs: [
       {
-        components: [
-          {
-            internalType: "address",
-            name: "addr",
-            type: "address",
-          },
-          {
-            internalType: "uint64",
-            name: "startTimestamp",
-            type: "uint64",
-          },
-          {
-            internalType: "uint64",
-            name: "lockUntil",
-            type: "uint64",
-          },
-          {
-            internalType: "uint64",
-            name: "tokenIndex",
-            type: "uint64",
-          },
-          {
-            internalType: "bool",
-            name: "burned",
-            type: "bool",
-          },
-        ],
-        internalType: "struct ERC721A.TokenOwnership[]",
+        internalType: "uint256[]",
         name: "",
-        type: "tuple[]",
+        type: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "start",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "stop",
+        type: "uint256",
+      },
+    ],
+    name: "tokensOfOwnerIn",
+    outputs: [
+      {
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]",
       },
     ],
     stateMutability: "view",
@@ -686,6 +1076,52 @@ export const abi: any = [
       },
     ],
     name: "transferFrom",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "unlock",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "unpause",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "withdraw",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

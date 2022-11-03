@@ -1,53 +1,51 @@
-import { query, mutate } from "../apollo";
-import gql from "graphql-tag";
-import * as types from "../types";
+import graphql from "graphql-tag";
+import { cnst } from "@shared/util";
+import {
+  createGraphQL,
+  createFragment,
+  Field,
+  InputType,
+  mutate,
+  query,
+  ObjectType,
+  Int,
+  BaseGql,
+} from "@shared/util-client";
 
-export type CreateNetworkMutation = { createNetwork: types.Network };
-export const createNetworkMutation = gql`
-  ${types.networkFragment}
-  mutation createNetwork($data: NetworkInput!) {
-    createNetwork(data: $data) {
-      ...networkFragment
-    }
-  }
-`;
+@InputType("NetworkInput")
+export class NetworkInput {
+  @Field(() => String)
+  name: string;
 
-export const createNetwork = async (data: types.NetworkInput) =>
-  (await mutate<CreateNetworkMutation>(createNetworkMutation, { data })).createNetwork;
+  @Field(() => String)
+  endPoint: string;
 
-export type NetworkQuery = { network: types.Network };
-export const networkQuery = gql`
-  ${types.networkFragment}
-  query network($networkId: ID!) {
-    network(networkId: $networkId) {
-      ...networkFragment
-    }
-  }
-`;
+  @Field(() => String)
+  type: cnst.NetworkType;
 
-export type UpdateNetworkMutation = { updateNetwork: types.Network };
-export const updateNetworkMutation = gql`
-  ${types.networkFragment}
-  mutation updateNetwork($networkId: ID!, $data: NetworkInput!) {
-    updateNetwork(networkId: $networkId, data: $data) {
-      ...networkFragment
-    }
-  }
-`;
-export const updateNetwork = async (networkId: string, data: types.NetworkInput) =>
-  (await mutate<UpdateNetworkMutation>(updateNetworkMutation, { networkId, data })).updateNetwork;
+  @Field(() => String)
+  provider: cnst.NetworkProvider;
 
-export const network = async (networkId: string) => (await query<NetworkQuery>(networkQuery, { networkId })).network;
+  @Field(() => Int)
+  networkId: number;
+}
 
-export type NetworksQuery = { networks: types.Network[] };
-export const networksQuery = gql`
-  ${types.networkFragment}
-  query networks($query: JSON!, $limit: Int, $skip: Int) {
-    networks(limit: $limit, query: $query, skip: $skip) {
-      ...networkFragment
-    }
-  }
-`;
+@ObjectType("Network", { _id: "id" })
+export class Network extends BaseGql(NetworkInput) {
+  @Field(() => String)
+  status: cnst.NetworkStatus;
+}
 
-export const networks = async (qry: any, skip = 0, limit = 0) =>
-  (await query<NetworksQuery>(networksQuery, { query: qry, skip, limit })).networks;
+export const networkGraphQL = createGraphQL<"network", Network, NetworkInput>(Network, NetworkInput);
+export const {
+  getNetwork,
+  listNetwork,
+  networkCount,
+  networkExists,
+  createNetwork,
+  updateNetwork,
+  removeNetwork,
+  networkFragment,
+  purifyNetwork,
+  defaultNetwork,
+} = networkGraphQL;

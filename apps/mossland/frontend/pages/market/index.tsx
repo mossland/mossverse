@@ -8,18 +8,18 @@ import {
   MyTokensHeader,
   MarketHeader,
 } from "../../components";
-import { listingStore, userStore } from "@platform/data-access";
+
+import { gql, utils, store } from "../../stores";
 import { PlatformLayout } from "@platform/ui-web";
 import { useInterval } from "@shared/util-client";
 import { GqlProvider } from "@shared/ui-web";
 import { usePageInit } from "../../hooks";
 import { env } from "../../env";
-import { setToken } from "@shared/data-access";
 
-export function Market() {
+export function MarketPage() {
   usePageInit();
-  const filter = listingStore.use.filter();
-  const marketAddr = process.env.NEXT_PUBLIC_REACT_APP_MARKET_CONTRACT;
+  const filter = store.platform.listing.use.filter();
+  const marketAddr = env.klaytn.marketAddr;
 
   // const data = { foo: "bar" };
   // const event = new CustomEvent("myCustomEvent", { detail: data });
@@ -33,10 +33,10 @@ export function Market() {
   // };
 
   useEffect(() => {
-    listingStore.setState({ marketAddr });
+    store.platform.listing.setState({ marketAddr });
   }, []);
   return (
-    <GqlProvider uri={env.endpoint}>
+    <GqlProvider uri={env.endpoint} ws={env.ws} networkType={env.networkType}>
       <PlatformLayout>
         {filter === "myTokens" ? (
           <MyTokensHeader />
@@ -58,4 +58,4 @@ export function Market() {
   );
 }
 
-export default Market;
+export default MarketPage;

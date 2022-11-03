@@ -9,6 +9,7 @@ import type {
   CallOverrides,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -27,27 +28,24 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
-export declare namespace ERC721A {
+export declare namespace IERC721A {
   export type TokenOwnershipStruct = {
     addr: PromiseOrValue<string>;
     startTimestamp: PromiseOrValue<BigNumberish>;
-    lockUntil: PromiseOrValue<BigNumberish>;
-    tokenIndex: PromiseOrValue<BigNumberish>;
     burned: PromiseOrValue<boolean>;
+    extraData: PromiseOrValue<BigNumberish>;
   };
 
   export type TokenOwnershipStructOutput = [
     string,
     BigNumber,
-    BigNumber,
-    BigNumber,
-    boolean
+    boolean,
+    number
   ] & {
     addr: string;
     startTimestamp: BigNumber;
-    lockUntil: BigNumber;
-    tokenIndex: BigNumber;
     burned: boolean;
+    extraData: number;
   };
 }
 
@@ -56,32 +54,35 @@ export interface ERC721AMockInterface extends utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "baseURI()": FunctionFragment;
+    "burn(uint256)": FunctionFragment;
+    "burn(uint256,bool)": FunctionFragment;
     "exists(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getAux(address)": FunctionFragment;
+    "getOwnershipAt(uint256)": FunctionFragment;
+    "getOwnershipOf(uint256)": FunctionFragment;
+    "initializeOwnershipAt(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "lock(uint256,uint256)": FunctionFragment;
-    "lockTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
-    "lockTransferFrom(address,address,uint256,uint256)": FunctionFragment;
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)": FunctionFragment;
-    "lockTransferFromMany(address,address,uint256[],uint256)": FunctionFragment;
-    "locks(uint256[],uint256)": FunctionFragment;
-    "mint(address,uint256,uint256,bytes,bool)": FunctionFragment;
+    "lock(uint256,uint64)": FunctionFragment;
+    "lockTransferFrom(address,address,uint256,uint64,bytes)": FunctionFragment;
+    "lockUntil(uint256)": FunctionFragment;
+    "mint(address,uint256)": FunctionFragment;
     "name()": FunctionFragment;
+    "nextTokenId()": FunctionFragment;
     "numberMinted(address)": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
-    "safeMint(address,uint256,uint256)": FunctionFragment;
-    "safeMint(address,uint256,uint256,bytes)": FunctionFragment;
+    "safeMint(address,uint256,bytes)": FunctionFragment;
+    "safeMint(address,uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setAux(address,uint64)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
-    "tokenByIndex(uint256)": FunctionFragment;
-    "tokenOfOwnerByIndex(address,uint256)": FunctionFragment;
+    "toString(uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
-    "tokensOfOwner(address)": FunctionFragment;
+    "totalBurned()": FunctionFragment;
+    "totalMinted()": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
   };
@@ -91,32 +92,35 @@ export interface ERC721AMockInterface extends utils.Interface {
       | "approve"
       | "balanceOf"
       | "baseURI"
+      | "burn(uint256)"
+      | "burn(uint256,bool)"
       | "exists"
       | "getApproved"
       | "getAux"
+      | "getOwnershipAt"
+      | "getOwnershipOf"
+      | "initializeOwnershipAt"
       | "isApprovedForAll"
       | "lock"
-      | "lockTransferFrom(address,address,uint256,uint256,bytes)"
-      | "lockTransferFrom(address,address,uint256,uint256)"
-      | "lockTransferFromMany(address,address,uint256[],uint256,bytes)"
-      | "lockTransferFromMany(address,address,uint256[],uint256)"
-      | "locks"
+      | "lockTransferFrom"
+      | "lockUntil"
       | "mint"
       | "name"
+      | "nextTokenId"
       | "numberMinted"
       | "ownerOf"
-      | "safeMint(address,uint256,uint256)"
-      | "safeMint(address,uint256,uint256,bytes)"
+      | "safeMint(address,uint256,bytes)"
+      | "safeMint(address,uint256)"
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
       | "setApprovalForAll"
       | "setAux"
       | "supportsInterface"
       | "symbol"
-      | "tokenByIndex"
-      | "tokenOfOwnerByIndex"
+      | "toString"
       | "tokenURI"
-      | "tokensOfOwner"
+      | "totalBurned"
+      | "totalMinted"
       | "totalSupply"
       | "transferFrom"
   ): FunctionFragment;
@@ -131,6 +135,14 @@ export interface ERC721AMockInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "baseURI", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "burn(uint256)",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "burn(uint256,bool)",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<boolean>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "exists",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -143,6 +155,18 @@ export interface ERC721AMockInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getOwnershipAt",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getOwnershipOf",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "initializeOwnershipAt",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
@@ -151,7 +175,7 @@ export interface ERC721AMockInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "lockTransferFrom(address,address,uint256,uint256,bytes)",
+    functionFragment: "lockTransferFrom",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
@@ -161,48 +185,18 @@ export interface ERC721AMockInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "lockTransferFrom(address,address,uint256,uint256)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "lockTransferFromMany(address,address,uint256[],uint256,bytes)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>[],
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "lockTransferFromMany(address,address,uint256[],uint256)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>[],
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "locks",
-    values: [PromiseOrValue<BigNumberish>[], PromiseOrValue<BigNumberish>]
+    functionFragment: "lockUntil",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<boolean>
-    ]
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "nextTokenId",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "numberMinted",
     values: [PromiseOrValue<string>]
@@ -212,21 +206,16 @@ export interface ERC721AMockInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "safeMint(address,uint256,uint256)",
+    functionFragment: "safeMint(address,uint256,bytes)",
     values: [
       PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "safeMint(address,uint256,uint256,bytes)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BytesLike>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "safeMint(address,uint256)",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "safeTransferFrom(address,address,uint256)",
@@ -259,20 +248,20 @@ export interface ERC721AMockInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "tokenByIndex",
+    functionFragment: "toString",
     values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tokenOfOwnerByIndex",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "tokenURI",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "tokensOfOwner",
-    values: [PromiseOrValue<string>]
+    functionFragment: "totalBurned",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalMinted",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
@@ -290,6 +279,14 @@ export interface ERC721AMockInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "baseURI", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "burn(uint256)",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "burn(uint256,bool)",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "exists", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
@@ -297,40 +294,44 @@ export interface ERC721AMockInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "getAux", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "getOwnershipAt",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getOwnershipOf",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "initializeOwnershipAt",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "lock", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "lockTransferFrom(address,address,uint256,uint256,bytes)",
+    functionFragment: "lockTransferFrom",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "lockTransferFrom(address,address,uint256,uint256)",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "lockTransferFromMany(address,address,uint256[],uint256,bytes)",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "lockTransferFromMany(address,address,uint256[],uint256)",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "locks", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "lockUntil", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "nextTokenId",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "numberMinted",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "safeMint(address,uint256,uint256)",
+    functionFragment: "safeMint(address,uint256,bytes)",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "safeMint(address,uint256,uint256,bytes)",
+    functionFragment: "safeMint(address,uint256)",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -351,17 +352,14 @@ export interface ERC721AMockInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenByIndex",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenOfOwnerByIndex",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "toString", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "tokensOfOwner",
+    functionFragment: "totalBurned",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalMinted",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -376,11 +374,13 @@ export interface ERC721AMockInterface extends utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "ConsecutiveTransfer(uint256,uint256,address,address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ConsecutiveTransfer"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
 
@@ -407,6 +407,20 @@ export type ApprovalForAllEvent = TypedEvent<
 >;
 
 export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
+
+export interface ConsecutiveTransferEventObject {
+  fromTokenId: BigNumber;
+  toTokenId: BigNumber;
+  from: string;
+  to: string;
+}
+export type ConsecutiveTransferEvent = TypedEvent<
+  [BigNumber, BigNumber, string, string],
+  ConsecutiveTransferEventObject
+>;
+
+export type ConsecutiveTransferEventFilter =
+  TypedEventFilter<ConsecutiveTransferEvent>;
 
 export interface TransferEventObject {
   from: string;
@@ -450,7 +464,7 @@ export interface ERC721AMock extends BaseContract {
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     balanceOf(
@@ -459,6 +473,17 @@ export interface ERC721AMock extends BaseContract {
     ): Promise<[BigNumber]>;
 
     baseURI(overrides?: CallOverrides): Promise<[string]>;
+
+    "burn(uint256)"(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    "burn(uint256,bool)"(
+      tokenId: PromiseOrValue<BigNumberish>,
+      approvalCheck: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     exists(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -475,6 +500,21 @@ export interface ERC721AMock extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getOwnershipAt(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[IERC721A.TokenOwnershipStructOutput]>;
+
+    getOwnershipOf(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[IERC721A.TokenOwnershipStructOutput]>;
+
+    initializeOwnershipAt(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
@@ -483,60 +523,33 @@ export interface ERC721AMock extends BaseContract {
 
     lock(
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+    lockTransferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    "lockTransferFrom(address,address,uint256,uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    locks(
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+    lockUntil(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     mint(
       to: PromiseOrValue<string>,
       quantity: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      safe: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     name(overrides?: CallOverrides): Promise<[string]>;
+
+    nextTokenId(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     numberMinted(
       owner: PromiseOrValue<string>,
@@ -548,18 +561,16 @@ export interface ERC721AMock extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    "safeMint(address,uint256,uint256)"(
+    "safeMint(address,uint256,bytes)"(
       to: PromiseOrValue<string>,
       quantity: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    "safeMint(address,uint256,uint256,bytes)"(
+    "safeMint(address,uint256)"(
       to: PromiseOrValue<string>,
       quantity: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -567,7 +578,7 @@ export interface ERC721AMock extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
@@ -575,7 +586,7 @@ export interface ERC721AMock extends BaseContract {
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     setApprovalForAll(
@@ -597,26 +608,19 @@ export interface ERC721AMock extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
-    tokenByIndex(
-      index: PromiseOrValue<BigNumberish>,
+    toString(
+      x: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    tokenOfOwnerByIndex(
-      owner: PromiseOrValue<string>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    ): Promise<[string]>;
 
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    tokensOfOwner(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[ERC721A.TokenOwnershipStructOutput[]]>;
+    totalBurned(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    totalMinted(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -624,14 +628,14 @@ export interface ERC721AMock extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
 
   approve(
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   balanceOf(
@@ -640,6 +644,17 @@ export interface ERC721AMock extends BaseContract {
   ): Promise<BigNumber>;
 
   baseURI(overrides?: CallOverrides): Promise<string>;
+
+  "burn(uint256)"(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  "burn(uint256,bool)"(
+    tokenId: PromiseOrValue<BigNumberish>,
+    approvalCheck: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   exists(
     tokenId: PromiseOrValue<BigNumberish>,
@@ -656,6 +671,21 @@ export interface ERC721AMock extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getOwnershipAt(
+    index: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<IERC721A.TokenOwnershipStructOutput>;
+
+  getOwnershipOf(
+    index: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<IERC721A.TokenOwnershipStructOutput>;
+
+  initializeOwnershipAt(
+    index: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   isApprovedForAll(
     owner: PromiseOrValue<string>,
     operator: PromiseOrValue<string>,
@@ -664,60 +694,33 @@ export interface ERC721AMock extends BaseContract {
 
   lock(
     tokenId: PromiseOrValue<BigNumberish>,
-    lockUntil: PromiseOrValue<BigNumberish>,
+    _lockUntil: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+  lockTransferFrom(
     from: PromiseOrValue<string>,
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
-    lockUntil: PromiseOrValue<BigNumberish>,
+    _lockUntil: PromiseOrValue<BigNumberish>,
     _data: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  "lockTransferFrom(address,address,uint256,uint256)"(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    lockUntil: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
-    tokenIds: PromiseOrValue<BigNumberish>[],
-    lockUntil: PromiseOrValue<BigNumberish>,
-    _data: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "lockTransferFromMany(address,address,uint256[],uint256)"(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
-    tokenIds: PromiseOrValue<BigNumberish>[],
-    lockUntil: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  locks(
-    tokenIds: PromiseOrValue<BigNumberish>[],
-    lockUntil: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  lockUntil(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   mint(
     to: PromiseOrValue<string>,
     quantity: PromiseOrValue<BigNumberish>,
-    lockUntil: PromiseOrValue<BigNumberish>,
-    _data: PromiseOrValue<BytesLike>,
-    safe: PromiseOrValue<boolean>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   name(overrides?: CallOverrides): Promise<string>;
+
+  nextTokenId(overrides?: CallOverrides): Promise<BigNumber>;
 
   numberMinted(
     owner: PromiseOrValue<string>,
@@ -729,18 +732,16 @@ export interface ERC721AMock extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  "safeMint(address,uint256,uint256)"(
+  "safeMint(address,uint256,bytes)"(
     to: PromiseOrValue<string>,
     quantity: PromiseOrValue<BigNumberish>,
-    lockUntil: PromiseOrValue<BigNumberish>,
+    _data: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  "safeMint(address,uint256,uint256,bytes)"(
+  "safeMint(address,uint256)"(
     to: PromiseOrValue<string>,
     quantity: PromiseOrValue<BigNumberish>,
-    lockUntil: PromiseOrValue<BigNumberish>,
-    _data: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -748,7 +749,7 @@ export interface ERC721AMock extends BaseContract {
     from: PromiseOrValue<string>,
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   "safeTransferFrom(address,address,uint256,bytes)"(
@@ -756,7 +757,7 @@ export interface ERC721AMock extends BaseContract {
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
     _data: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   setApprovalForAll(
@@ -778,26 +779,19 @@ export interface ERC721AMock extends BaseContract {
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
-  tokenByIndex(
-    index: PromiseOrValue<BigNumberish>,
+  toString(
+    x: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  tokenOfOwnerByIndex(
-    owner: PromiseOrValue<string>,
-    index: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  ): Promise<string>;
 
   tokenURI(
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
 
-  tokensOfOwner(
-    owner: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<ERC721A.TokenOwnershipStructOutput[]>;
+  totalBurned(overrides?: CallOverrides): Promise<BigNumber>;
+
+  totalMinted(overrides?: CallOverrides): Promise<BigNumber>;
 
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -805,7 +799,7 @@ export interface ERC721AMock extends BaseContract {
     from: PromiseOrValue<string>,
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
@@ -822,6 +816,17 @@ export interface ERC721AMock extends BaseContract {
 
     baseURI(overrides?: CallOverrides): Promise<string>;
 
+    "burn(uint256)"(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "burn(uint256,bool)"(
+      tokenId: PromiseOrValue<BigNumberish>,
+      approvalCheck: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     exists(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -837,6 +842,21 @@ export interface ERC721AMock extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getOwnershipAt(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<IERC721A.TokenOwnershipStructOutput>;
+
+    getOwnershipOf(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<IERC721A.TokenOwnershipStructOutput>;
+
+    initializeOwnershipAt(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
@@ -845,60 +865,33 @@ export interface ERC721AMock extends BaseContract {
 
     lock(
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+    lockTransferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "lockTransferFrom(address,address,uint256,uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+    lockUntil(
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<void>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    locks(
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
 
     mint(
       to: PromiseOrValue<string>,
       quantity: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      safe: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<void>;
 
     name(overrides?: CallOverrides): Promise<string>;
+
+    nextTokenId(overrides?: CallOverrides): Promise<BigNumber>;
 
     numberMinted(
       owner: PromiseOrValue<string>,
@@ -910,18 +903,16 @@ export interface ERC721AMock extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    "safeMint(address,uint256,uint256)"(
+    "safeMint(address,uint256,bytes)"(
       to: PromiseOrValue<string>,
       quantity: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _data: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "safeMint(address,uint256,uint256,bytes)"(
+    "safeMint(address,uint256)"(
       to: PromiseOrValue<string>,
       quantity: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -959,26 +950,19 @@ export interface ERC721AMock extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
-    tokenByIndex(
-      index: PromiseOrValue<BigNumberish>,
+    toString(
+      x: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenOfOwnerByIndex(
-      owner: PromiseOrValue<string>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<string>;
 
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
 
-    tokensOfOwner(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<ERC721A.TokenOwnershipStructOutput[]>;
+    totalBurned(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalMinted(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1013,6 +997,19 @@ export interface ERC721AMock extends BaseContract {
       approved?: null
     ): ApprovalForAllEventFilter;
 
+    "ConsecutiveTransfer(uint256,uint256,address,address)"(
+      fromTokenId?: PromiseOrValue<BigNumberish> | null,
+      toTokenId?: null,
+      from?: PromiseOrValue<string> | null,
+      to?: PromiseOrValue<string> | null
+    ): ConsecutiveTransferEventFilter;
+    ConsecutiveTransfer(
+      fromTokenId?: PromiseOrValue<BigNumberish> | null,
+      toTokenId?: null,
+      from?: PromiseOrValue<string> | null,
+      to?: PromiseOrValue<string> | null
+    ): ConsecutiveTransferEventFilter;
+
     "Transfer(address,address,uint256)"(
       from?: PromiseOrValue<string> | null,
       to?: PromiseOrValue<string> | null,
@@ -1029,7 +1026,7 @@ export interface ERC721AMock extends BaseContract {
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     balanceOf(
@@ -1038,6 +1035,17 @@ export interface ERC721AMock extends BaseContract {
     ): Promise<BigNumber>;
 
     baseURI(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "burn(uint256)"(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    "burn(uint256,bool)"(
+      tokenId: PromiseOrValue<BigNumberish>,
+      approvalCheck: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
     exists(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1054,6 +1062,21 @@ export interface ERC721AMock extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getOwnershipAt(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getOwnershipOf(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    initializeOwnershipAt(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
@@ -1062,60 +1085,33 @@ export interface ERC721AMock extends BaseContract {
 
     lock(
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+    lockTransferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    "lockTransferFrom(address,address,uint256,uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    locks(
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    lockUntil(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     mint(
       to: PromiseOrValue<string>,
       quantity: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      safe: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     name(overrides?: CallOverrides): Promise<BigNumber>;
+
+    nextTokenId(overrides?: CallOverrides): Promise<BigNumber>;
 
     numberMinted(
       owner: PromiseOrValue<string>,
@@ -1127,18 +1123,16 @@ export interface ERC721AMock extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "safeMint(address,uint256,uint256)"(
+    "safeMint(address,uint256,bytes)"(
       to: PromiseOrValue<string>,
       quantity: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    "safeMint(address,uint256,uint256,bytes)"(
+    "safeMint(address,uint256)"(
       to: PromiseOrValue<string>,
       quantity: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1146,7 +1140,7 @@ export interface ERC721AMock extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
@@ -1154,7 +1148,7 @@ export interface ERC721AMock extends BaseContract {
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     setApprovalForAll(
@@ -1176,14 +1170,8 @@ export interface ERC721AMock extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
-    tokenByIndex(
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenOfOwnerByIndex(
-      owner: PromiseOrValue<string>,
-      index: PromiseOrValue<BigNumberish>,
+    toString(
+      x: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1192,10 +1180,9 @@ export interface ERC721AMock extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    tokensOfOwner(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    totalBurned(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalMinted(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1203,7 +1190,7 @@ export interface ERC721AMock extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
@@ -1211,7 +1198,7 @@ export interface ERC721AMock extends BaseContract {
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     balanceOf(
@@ -1220,6 +1207,17 @@ export interface ERC721AMock extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     baseURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "burn(uint256)"(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "burn(uint256,bool)"(
+      tokenId: PromiseOrValue<BigNumberish>,
+      approvalCheck: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
 
     exists(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1236,6 +1234,21 @@ export interface ERC721AMock extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getOwnershipAt(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getOwnershipOf(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    initializeOwnershipAt(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     isApprovedForAll(
       owner: PromiseOrValue<string>,
       operator: PromiseOrValue<string>,
@@ -1244,60 +1257,33 @@ export interface ERC721AMock extends BaseContract {
 
     lock(
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+    lockTransferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    "lockTransferFrom(address,address,uint256,uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    locks(
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    lockUntil(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     mint(
       to: PromiseOrValue<string>,
       quantity: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      safe: PromiseOrValue<boolean>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    nextTokenId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     numberMinted(
       owner: PromiseOrValue<string>,
@@ -1309,18 +1295,16 @@ export interface ERC721AMock extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "safeMint(address,uint256,uint256)"(
+    "safeMint(address,uint256,bytes)"(
       to: PromiseOrValue<string>,
       quantity: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    "safeMint(address,uint256,uint256,bytes)"(
+    "safeMint(address,uint256)"(
       to: PromiseOrValue<string>,
       quantity: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1328,7 +1312,7 @@ export interface ERC721AMock extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
@@ -1336,7 +1320,7 @@ export interface ERC721AMock extends BaseContract {
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     setApprovalForAll(
@@ -1358,14 +1342,8 @@ export interface ERC721AMock extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    tokenByIndex(
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    tokenOfOwnerByIndex(
-      owner: PromiseOrValue<string>,
-      index: PromiseOrValue<BigNumberish>,
+    toString(
+      x: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1374,10 +1352,9 @@ export interface ERC721AMock extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    tokensOfOwner(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    totalBurned(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    totalMinted(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1385,7 +1362,7 @@ export interface ERC721AMock extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

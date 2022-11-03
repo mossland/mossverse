@@ -2,32 +2,26 @@ import React, { useEffect } from "react";
 import styled from "styled-components";
 import { DatePicker } from "antd";
 import moment from "moment";
-import { listingStore, types, userStore } from "@platform/data-access";
+import { gql, utils, store } from "../../../stores";
+import { Market } from "@platform/ui-web";
 
-type SellBoxProps = {
-  myItem?: types.MyItem | null;
-  listing?: types.Listing | null;
-  onClickSell?: React.MouseEventHandler<HTMLDivElement> | undefined;
-};
+export const SellBox = () => {
+  const service = Market.useMarket();
 
-export const SellBox = ({ myItem, listing, onClickSell }: SellBoxProps) => {
-  const isSelling = listing ? true : false;
-  const self = userStore.use.self();
-  const priceTag = listingStore.use.priceTag();
-  const closeAt = listingStore.use.closeAt();
+  const isSelling = service.listing ? true : false;
   const minDate = new Date().getTime();
   const maxDate = minDate + 1000 * 60 * 60 * 24 * 90;
-
   useEffect(() => {
-    !closeAt && listingStore.setState({ closeAt: new Date(maxDate) });
+    service.closeAt.getTime() <= 0 && store.platform.listing.setState({ closeAt: new Date(maxDate) });
   }, []);
+
   return (
     <SellBoxContainer>
       <div className="form-box">
         <div className="label">Price</div>
         <div className="price-input">
-          {self &&
-            self.items
+          {service.self &&
+            service.self.items
               .filter((item) => item.thing.name === "MMOC")
               .map((item, index) => (
                 <div key={item.thing.id}>
@@ -36,18 +30,19 @@ export const SellBox = ({ myItem, listing, onClickSell }: SellBoxProps) => {
                     readOnly={isSelling}
                     type="text"
                     id="price"
-                    value={priceTag?.price ?? ""}
+                    value={service.priceTag?.price ?? ""}
                     min={1}
-                    max={myItem ? myItem.num : 1}
+                    max={service.myItem ? service.myItem.num : 1}
                     onChange={(e) => {
-                      listingStore.setState({
+                      store.platform.listing.setState({
                         priceTag: {
+                          // id: "",
+                          token: null,
                           thing: item.thing,
                           price: parseInt(e.target.value) > 0 ? parseInt(e.target.value) : 0,
                           type: "thing",
                         },
                       });
-                      // listingStore.setState({ {priceTags: parseInt(e.target.value) > 0 ? parseInt(e.target.value) : 0} });
                     }}
                   />
                 </div>
@@ -59,17 +54,17 @@ export const SellBox = ({ myItem, listing, onClickSell }: SellBoxProps) => {
         <DatePicker
           disabled={isSelling}
           disabledDate={(d) => !d || d.isAfter(moment(maxDate)) || d.isSameOrBefore(moment(minDate))}
-          value={moment(closeAt) ?? moment(new Date())}
-          onChange={(e) => {
-            console.log(e);
-            listingStore.setState({ closeAt: e ? e.toDate() : null });
-          }}
+          value={service.closeAt.getTime() > 0 ? moment(service.closeAt) : moment(maxDate)}
+          onChange={(e) => store.platform.listing.setState({ closeAt: e ? e.toDate() : new Date(-1) })}
         />
       </div>
       {isSelling ? (
         <div className="button button--cancel">Cancel</div>
       ) : (
-        <div className={`button button--sell ${(!priceTag?.price || !closeAt) && "disabled"}`} onClick={onClickSell}>
+        <div
+          className={`button button--sell ${(!service.priceTag?.price || !service.closeAt) && "disabled"}`}
+          onClick={service.onSell}
+        >
           Sell
         </div>
       )}

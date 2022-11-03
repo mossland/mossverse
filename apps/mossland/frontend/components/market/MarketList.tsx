@@ -1,93 +1,100 @@
-import { listingStore, types, userStore } from "@platform/data-access";
-import { walletStore } from "@shared/data-access";
 import React, { useEffect } from "react";
-import styled from "styled-components";
-import { MarketItem, MyItem } from "./";
+import styled, { css } from "styled-components";
+import { Market } from "@platform/ui-web";
+
+import { utils, gql } from "@platform/data-access";
 
 export const MarketList = () => {
-  const self = userStore.use.self();
-  const myItems = userStore.use.myItems();
-  const filterMyItems = userStore.use.filterMyItems();
-  const initListing = listingStore.use.init();
-  const filter = listingStore.use.filter();
-  const myTokensFilter = listingStore.use.myTokensFilter();
-  const listings = listingStore.use.listings();
-  const operation = listingStore.use.operation();
-  const onClickItem = (listing: types.Listing) => {
-    listingStore.setState({ listing });
-  };
-  const onClickMyItem = (myItem: types.MyItem) => {
-    userStore.setState({ myItem });
-  };
+  const service = Market.useMarket();
+  const getOpacity = (listing: gql.Listing) => (listing.status === "soldout" ? 0.5 : 1);
 
   //! 개선 필요
   useEffect(() => {
-    if (!listings) return;
-    filterMyItems(listings);
-  }, [listings]);
+    if (!service.listings) return;
+    service.filterMyItems(service.listings);
+  }, [service.listings]);
 
   useEffect(() => {
-    initListing();
+    service.initListing({ status: "active" });
   }, []);
 
-  const getFilter = (listing: types.Listing) => {
-    if (filter === "all") return self ? listing.user.id !== self.id : true;
-    if (filter === "mossMarket") return self ? listing.user.id !== self.id && !listing.token : !listing.token;
-    if (filter === "p2p")
-      return self ? listing.user.id !== self.id && !listing.thing && !listing.product : !listing.product;
-    if (filter === "myTokens") return self ? listing.user && listing.user.id === self.id : false;
-    return false;
-  };
+  if (service.operation !== "idle") return null;
 
-  const isSelling = filter !== "myTokens" || (filter === "myTokens" && myTokensFilter === "onSale");
-  const sellingCount = (isSelling && listings.filter((listing) => getFilter(listing)).length) || 0;
-
-  if (operation !== "idle") return null;
-
-  if (!(sellingCount + myItems.length)) {
+  if (!(service.sellingCount + service.myItems.length)) {
     return (
-      <EmptyContainer>
-        {filter === "myTokens" ? <>You don&apos;t own any NFTs yet.</> : <>There are no tradable Products.</>}
-      </EmptyContainer>
+      <Market.EmptyList>
+        {service.filter === "myTokens" ? <>You don&apos;t own any NFTs yet.</> : <>There are no tradable Products.</>}
+      </Market.EmptyList>
     );
   }
 
   return (
-    <MarketListContainer>
-      {listings
-        .filter((listing) => getFilter(listing))
-        .map((cur, index) => (
-          <MarketItem key={index} item={cur} onClick={() => onClickItem(cur)} />
+    <Market.List>
+      {service.listings
+        .filter((listing) => service.getFilter(listing))
+        .map((listing, index) => {
+          return (
+            <Market.ItemContainer
+              key={index}
+              onClick={() => service.onClickItem(listing)}
+              opacity={getOpacity(listing)}
+            >
+              <Market.ItemImage src={utils.getListingImage(listing) || ""} />
+              <Market.ItemInfo className={service.filter === "myTokens" ? "selling" : ""}>
+                <Market.ItemInfoTitle>{utils.getListingName(listing)}</Market.ItemInfoTitle>
+                <Market.ItemInfoDesc>
+                  <Market.ItemInfoPrice>
+                    {listing.priceTags?.[0]?.thing && (
+                      <>
+                        <img src={listing.priceTags?.[0].thing?.image.url} />
+                        {listing.priceTags?.[0].price}
+                      </>
+                    )}
+                    {listing.priceTags?.[0]?.token && (
+                      <>
+                        <img src={listing.priceTags?.[0].token?.image?.url} />
+                        {listing.priceTags?.[0].price}
+                      </>
+                    )}
+                  </Market.ItemInfoPrice>
+                </Market.ItemInfoDesc>
+              </Market.ItemInfo>
+            </Market.ItemContainer>
+          );
+        })}
+      {service.filter === "myTokens" &&
+        service.myTokensFilter === "all" &&
+        service.myItems.map((item, index) => (
+          <Market.ItemContainer key={index} onClick={() => service.onClickMyItem(item)}>
+            <Market.ItemImage src={utils.getMyItemImage(item) || ""} />
+
+            <Market.ItemInfo>
+              <Market.ItemInfoTitle>{utils.getMyItemName(item)}</Market.ItemInfoTitle>
+              <Market.ItemInfoDesc>
+                <div />
+                <StyledMyTokenButton className="my-token-button button--sell">Sell</StyledMyTokenButton>
+              </Market.ItemInfoDesc>
+            </Market.ItemInfo>
+          </Market.ItemContainer>
         ))}
-      {filter === "myTokens" &&
-        myTokensFilter === "all" &&
-        myItems.map((cur, index) => <MyItem key={index} item={cur} onClick={() => onClickMyItem(cur)} />)}
-    </MarketListContainer>
+    </Market.List>
   );
 };
 
-const EmptyContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: calc(100vh - 143px);
-  font-size: 22px;
+const StyledMyTokenButton = styled.div`
+  font-size: 10px;
+  padding: 3px 13px;
+  border-radius: 4px;
+  &.button--sell {
+    background-color: #ffd749;
+    margin-right: 5px;
+  }
+  &.button--cancel {
+    background-color: #f4f4f4;
+    border: 1px solid #555555;
+  }
 `;
 
-const MarketListContainer = styled.div`
-  padding: 20px 33px;
-  display: grid;
-  height: calc(100vh - 143px);
-  overflow-y: scroll;
-  flex-wrap: wrap;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr 1fr;
-  @media screen and (max-width: 800px) {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    height: calc(100vh - 100px);
-  }
-  align-items: flex-start;
-  grid-gap: 10px;
+const StyledItemInfoPrice = css`
+  background-color: #ffd749;
 `;

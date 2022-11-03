@@ -1,48 +1,37 @@
 import { useEffect } from "react";
 import { PlatformLayout } from "@platform/ui-web";
-import { SurveyList, SurveyDetail, SurveyHeader, SurveyCreateButton, SurveyCreate } from "../../components";
-import { keyringStore, networkStore } from "@shared/data-access";
+import { Header, CreateButton, CreateBox, Body } from "../../components";
 import styled from "styled-components";
 import { cnst } from "@shared/util";
 import { GqlProvider } from "@shared/ui-web";
 import { usePageInit } from "../../hooks";
 import { env } from "../../env";
-import { mocSurveyStore } from "apps/mossland/frontend/stores";
+import { gql, utils, store } from "../../stores";
 
 export function Survey() {
   usePageInit();
-  const initSurvey = mocSurveyStore.use.init();
-  const isWriteMode = mocSurveyStore.use.isWriteMode();
-
+  const initMocSurvey = store.mocSurvey.use.initMocSurvey();
+  const isWriteMode = store.mocSurvey.use.isWriteMode();
+  // console.log("");
   useEffect(() => {
-    initSurvey();
+    initMocSurvey({ status: { $in: ["opened", "closed"] } });
   }, []);
 
   return (
-    <GqlProvider uri={env.endpoint}>
+    <GqlProvider uri={env.endpoint} ws={env.ws} networkType={env.networkType}>
       <PlatformLayout>
-        <SurveyHeader />
-        <SurveyBody>
-          <SurveyList />
-          <SurveyDetail />
-        </SurveyBody>
-        <SurveyCreateButton />
+        <Header />
+        <Body />
+        <CreateButton />
         {isWriteMode && (
           <SurveyCreateMobile className="only-mobile">
-            <SurveyCreate />
+            <CreateBox />
           </SurveyCreateMobile>
         )}
       </PlatformLayout>
     </GqlProvider>
   );
 }
-
-const SurveyBody = styled.div`
-  height: calc(100vh - 107px);
-  display: flex;
-  border-top: 2px solid ${(props) => props.theme.color.black};
-  overflow-y: auto;
-`;
 
 const SurveyCreateMobile = styled.div`
   position: absolute;

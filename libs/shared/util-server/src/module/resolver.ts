@@ -5,8 +5,8 @@ import { LoadService } from "./service";
 import { Model, Document } from "mongoose";
 import { Utils } from "@shared/util";
 const { capitalize, lowerlize } = Utils;
-import { UseGuards } from "@nestjs/common";
-import { Allow, Signature } from "../middlewares";
+import { Ip, UseGuards } from "@nestjs/common";
+import { Account, Allow, Auth, Signature, UserIp } from "../middlewares";
 import JSON from "graphql-type-json";
 import * as pluralize from "pluralize";
 
@@ -44,26 +44,48 @@ export function BaseResolver<
   abstract class BaseResolver {
     constructor(private readonly service: LoadService<Mdl, Doc, Input>) {}
 
-    @UseGuards(get ?? Allow.Public)
+    @UseGuards(get ?? Allow.Public) // will be deprecated
     @Query(() => classRef, { name: `${lowerlize(classRef.name)}` })
-    async get(@Args({ name: "id", type: () => ID }) id: string): Promise<Doc> {
+    async getLegacy(@Args({ name: "id", type: () => ID }) id: string): Promise<Doc> {
+      return await this.service.get(new Id(id));
+    }
+    @UseGuards(get ?? Allow.Public)
+    @Query(() => classRef, { name: `get${classRef.name}` })
+    async get(@Args({ name: `${Utils.lowerlize(classRef.name)}Id`, type: () => ID }) id: string): Promise<Doc> {
+      // async get(@Args({ name: "id", type: () => ID }) id: string): Promise<Doc> {
       return await this.service.get(new Id(id));
     }
 
     @UseGuards(list ?? Allow.Public)
     @Query(() => [classRef], { name: `${pluralize(lowerlize(classRef.name))}` })
-    async list(
+    // @Query(() => [classRef], { name: `list${lowerlize(classRef.name)}` })
+    async listLegacy(
+      // will be deprecated
       @Args({ name: "query", type: () => JSON }) query: DbQuery<Doc>,
       @Args({ name: "skip", type: () => Int, nullable: true }) skip: number,
       @Args({ name: "limit", type: () => Int, nullable: true }) limit: number
     ): Promise<Doc[]> {
       return await this.service.list(query, skip, limit);
     }
-
     @UseGuards(list ?? Allow.Public)
-    @Query(() => Int, { name: `${classRef.name.toLowerCase()}Count` })
+    @Query(() => [classRef], { name: `list${classRef.name}` })
+    async list(
+      @Args({ name: "query", type: () => JSON }) query: DbQuery<Doc>,
+      @Args({ name: "skip", type: () => Int, nullable: true }) skip: number,
+      @Args({ name: "limit", type: () => Int, nullable: true }) limit: number,
+      @UserIp() ip: string
+    ): Promise<Doc[]> {
+      return await this.service.list(query, skip, limit);
+    }
+    @UseGuards(list ?? Allow.Public)
+    @Query(() => Int, { name: `${lowerlize(classRef.name)}Count` })
     async count(@Args({ name: "query", type: () => JSON }) query: DbQuery<Doc>): Promise<number> {
       return await this.service.count(query);
+    }
+    @UseGuards(list ?? Allow.Public)
+    @Query(() => Boolean, { name: `${lowerlize(classRef.name)}Exists` })
+    async exists(@Args({ name: "query", type: () => JSON }) query: DbQuery<Doc>): Promise<boolean> {
+      return await this.service.exists(query);
     }
     @UseGuards(cru ?? Allow.Public)
     @Mutation(() => classRef, { name: `create${capitalize(classRef.name)}` })
@@ -73,15 +95,18 @@ export function BaseResolver<
     @UseGuards(cru ?? Allow.Public)
     @Mutation(() => classRef, { name: `update${capitalize(classRef.name)}` })
     async update(
-      @Args({ name: `${classRef.name.toLowerCase()}Id`, type: () => ID }) id: string,
+      @Args({ name: `${Utils.lowerlize(classRef.name)}Id`, type: () => ID }) id: string,
       @Args({ name: "data", type: () => inputRef }) data: Partial<Doc>
     ): Promise<Doc> {
       return await this.service.update(new Id(id), data);
     }
     @UseGuards(cru ?? Allow.Public)
     @Mutation(() => classRef, { name: `remove${capitalize(classRef.name)}` })
-    async remove(@Args({ name: `${classRef.name.toLowerCase()}Id`, type: () => ID }) id: string): Promise<Doc> {
-      return await this.service.remove(new Id(id));
+    async remove(
+      @Args({ name: `${Utils.lowerlize(classRef.name)}Id`, type: () => ID }) id: string,
+      @Auth() account: Account
+    ): Promise<Doc> {
+      return await this.service.remove(new Id(id), { account });
     }
   }
   return BaseResolver as unknown as BaseResolverConstructor<Mdl, Doc, Input>;

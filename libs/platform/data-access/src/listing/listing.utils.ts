@@ -1,6 +1,5 @@
-import { types } from "..";
-
-export const getListingName = (item: types.Listing) => {
+import * as gql from "../gql";
+export const getListingName = (item: gql.Listing) => {
   if (!item) return "";
   if (item.product) return item.product.name;
   if (item.thing) return item.thing.name;
@@ -8,7 +7,7 @@ export const getListingName = (item: types.Listing) => {
   return "";
 };
 
-export const getListingType = (item: types.Listing, self?: types.User) => {
+export const getListingType = (item: gql.Listing, self?: gql.User) => {
   if (self && item.user.id === self.id) return "myTokens";
   if (!item) return "default";
   if (!item.token) return item.product ? "delivery" : "default";
@@ -16,21 +15,21 @@ export const getListingType = (item: types.Listing, self?: types.User) => {
   return "default";
 };
 
-export const getListingImage = (listing: types.Listing) => {
+export const getListingImage = (listing: gql.Listing) => {
   if (listing.token?.image?.url) return listing.token.image.url;
   if (listing.thing?.image?.url) return listing.thing.image.url;
   if (listing.product?.image?.url) return listing.product.image.url;
   return null;
 };
 
-export const getListingDesc = (listing: types.Listing) => {
+export const getListingDesc = (listing: gql.Listing) => {
   if (listing.token && listing.token.meta) return listing.token.meta.description;
   if (listing.thing) return listing.thing.description;
   if (listing.product) return listing.product.description;
   return null;
 };
 
-export const isBuyable = (listing: types.Listing, self: types.User | null) => {
+export const isBuyable = (listing: gql.Listing, self: gql.User | null) => {
   if (!self) return false;
   return self.items.some(
     (item) =>

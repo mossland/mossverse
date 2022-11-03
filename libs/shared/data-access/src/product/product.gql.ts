@@ -1,53 +1,45 @@
-import { query, mutate } from "../apollo";
-import gql from "graphql-tag";
-import * as types from "../types";
+import graphql from "graphql-tag";
+import { cnst } from "@shared/util";
+import {
+  createGraphQL,
+  createFragment,
+  Field,
+  InputType,
+  mutate,
+  query,
+  ObjectType,
+  BaseGql,
+} from "@shared/util-client";
+import { File } from "../file/file.gql";
 
-export type CreateProductMutation = { createProduct: types.Product };
-export const createProductMutation = gql`
-  mutation createProduct($data: String!) {
-    ${types.productFragment}
-    createProduct(data: $data){
-      ...productFragment
-    }
-  }
-`;
+@InputType("ProductInput")
+export class ProductInput {
+  @Field(() => String)
+  name: string;
 
-export const createProduct = async (data: types.ProductInput) =>
-  (await mutate<CreateProductMutation>(createProductMutation, { data })).createProduct;
+  @Field(() => String)
+  description: string;
 
-export type ProductQuery = { product: types.Product };
-export const productQuery = gql`
-  ${types.productFragment}
-  query product($productId: ID!) {
-    product(productId: $productId) {
-      ...productFragment
-    }
-  }
-`;
+  @Field(() => File)
+  image: File;
+}
 
-export type UpdateProductMutation = { updateProduct: types.Product };
-export const updateProductMutation = gql`
-  ${types.productFragment}
-  mutation updateProduct($productId: ID!, $data: ProductInput!) {
-    updateProduct(productId: $productId, data: $data) {
-      ...productFragment
-    }
-  }
-`;
-export const updateProduct = async (productId: string, data: types.ProductInput) =>
-  (await mutate<UpdateProductMutation>(updateProductMutation, { productId, data })).updateProduct;
+@ObjectType("Product", { _id: "id" })
+export class Product extends BaseGql(ProductInput) {
+  @Field(() => String)
+  status: cnst.ProductStatus;
+}
 
-export const product = async (productId: string) => (await query<ProductQuery>(productQuery, { productId })).product;
-
-export type ProductsQuery = { products: types.Product[] };
-export const productsQuery = gql`
-  ${types.productFragment}
-  query products($query: JSON!, $limit: Int, $skip: Int) {
-    products(limit: $limit, query: $query, skip: $skip) {
-      ...productFragment
-    }
-  }
-`;
-
-export const products = async (qry: any, skip = 0, limit = 0) =>
-  (await query<ProductsQuery>(productsQuery, { query: qry, skip, limit })).products;
+export const productGraphQL = createGraphQL<"product", Product, ProductInput>(Product, ProductInput);
+export const {
+  getProduct,
+  listProduct,
+  productCount,
+  productExists,
+  createProduct,
+  updateProduct,
+  removeProduct,
+  productFragment,
+  purifyProduct,
+  defaultProduct,
+} = productGraphQL;

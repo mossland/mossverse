@@ -11,13 +11,13 @@ export class EtherModule {
     return {
       module: EtherModule,
       imports: [
-        BullModule.registerQueue({
-          name: "ether",
-          // redis: {
-          //   host: redisOptions.url?.split(":")[0].replace("redis://", "") ?? "localhost",
-          //   port: parseInt(redisOptions.url?.split(":")[1] ?? "6379"),
-          // },
-        }),
+        // BullModule.registerQueue({
+        //   name: "ether",
+        //   // redis: {
+        //   //   host: redisOptions.url?.split(":")[0].replace("redis://", "") ?? "localhost",
+        //   //   port: parseInt(redisOptions.url?.split(":")[1] ?? "6379"),
+        //   // },
+        // }),
       ],
       providers: [
         {

@@ -1,25 +1,22 @@
 import React from "react";
 import styled from "styled-components";
 import { ExchangeCancelButton, MmocToMocButton } from "@platform/ui-web";
-import { receiptStore, useExchange, userStore } from "@platform/data-access";
-import { mocWalletStore } from "apps/mossland/frontend/store/stores";
+import { MyBalanceInfo } from "@platform/ui-web";
 import { ethers } from "ethers";
 import { toast } from "react-toastify";
-import { transformLMPopArguments } from "@redis/client/dist/lib/commands/generic-transformers";
+import { gql, utils, store } from "../../../stores";
 
 export const MmcoToMocFooter = () => {
-  const self = userStore.use.self();
-  const initSelf = userStore.use.init();
-  const depositAmount = mocWalletStore.use.depositAmount();
-  const depositAddress = mocWalletStore.use.depositAddress();
-  const withdraw = mocWalletStore.use.withdraw();
-  const initReceipt = receiptStore.use.init();
+  const self = store.platform.user.use.self();
+  const depositAmount = store.mocWallet.use.depositAmount();
+  const depositAddress = store.mocWallet.use.depositAddress();
+  const withdraw = store.mocWallet.use.withdraw();
   const disabled = !ethers.utils.isAddress(depositAddress) || !depositAmount;
 
   const onWithdraw = async () => {
     if (!self) return toast.error("please login after withdraw.");
     const receipt = await withdraw(self.id, depositAddress, depositAmount);
-    receiptStore.setState({ receipt });
+    store.platform.receipt.setState({ receipt });
     toast.success(`withdraw suceess!`);
   };
   return (

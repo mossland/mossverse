@@ -1,19 +1,17 @@
 import create from "zustand";
-import * as types from "../types";
 import * as gql from "../gql";
 import { devtools } from "zustand/middleware";
-import { createSelectors, Nullable } from "@shared/util-client";
-import { update } from "libs/shared/util/src/utils";
+import { createState, generateStore, Nullable } from "@shared/util-client";
 import { cnst } from "@shared/util";
+import { receiptGraphQL } from "./receipt.gql";
 
-type State = Nullable<types.Receipt> & {
-  receipt: types.Receipt | null;
-  receipts: types.Receipt[];
-  operation: cnst.StoreOperation;
+type State = Nullable<gql.Receipt> & {
+  receipt: gql.Receipt | null;
+  receipts: gql.Receipt[];
 };
 
 const initialState: State = {
-  ...types.defaultReceipt,
+  ...createState<"receipt", gql.Receipt, gql.ReceiptInput>(receiptGraphQL),
   receipt: null,
   receipts: [],
   operation: "sleep",
@@ -21,15 +19,15 @@ const initialState: State = {
 
 type Action = {
   init: (selfId: string) => Promise<void>; // 초기화
-  // purify: () => types.ReceiptInput | null; // 유효성검사 및 Map => MapInput 변환
+  // purify: () => gql.ReceiptInput | null; // 유효성검사 및 Map => MapInput 변환
   // create: () => Promise<void>; // 생성
   // update: () => Promise<void>; // 수정
   // remove: (id: string) => Promise<void>; // 제거
-  // reset: (receipt?: types.Receipt) => void; // 수정필드 리셋
+  // reset: (receipt?: gql.Receipt) => void; // 수정필드 리셋
   // buyItem: () => void;
 };
 
-export const useReceipt = create<State & Action>()(
+const store = create<State & Action>()(
   devtools((set, get) => ({
     ...initialState,
     init: async (selfId: string) => {
@@ -53,8 +51,8 @@ export const useReceipt = create<State & Action>()(
 // remove: async () => {
 //   //
 // }, // 제거
-// reset: (listing?: types.Listing) => {
+// reset: (listing?: gql.Listing) => {
 //   //
 // },
 
-export const receiptStore = createSelectors(useReceipt);
+export const receipt = generateStore(store);

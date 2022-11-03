@@ -1,89 +1,116 @@
-import { query, mutate } from "../index";
-import * as types from "../types";
-import gql from "graphql-tag";
+import graphql from "graphql-tag";
+import { cnst } from "@shared/util";
+import {
+  createGraphQL,
+  createFragment,
+  Field,
+  InputType,
+  mutate,
+  query,
+  ObjectType,
+  BaseGql,
+  Int,
+  InputOf,
+} from "@shared/util-client";
+import { gql as shared } from "@shared/data-access";
+import { Ownership, SurveyResponse, SurveyResponseInput } from "../_scalar";
 
-// * Survey Query
-export type SurveyQuery = { survey: types.Survey };
-export const surveyQuery = gql`
-  ${types.surveyFragment}
-  query survey($surveyId: ID!) {
-    surveys(surveyId: $surveyId) {
-      ...surveyFragment
-    }
-  }
-`;
+@InputType("SurveyInput")
+export class SurveyInput {
+  @Field(() => String)
+  title: string;
 
-export const survey = async (surveyId: string) => (await query<SurveyQuery>(surveysQuery, { surveyId })).survey;
+  @Field(() => String)
+  description: string;
 
-// * Surveys Query
-export type SurveysQuery = { surveys: types.Survey[] };
-export const surveysQuery = gql`
-  ${types.surveyFragment}
-  query surveys($query: JSON!, $skip: Int, $limit: Int) {
-    surveys(query: $query, skip: $skip, limit: $limit) {
-      ...surveyFragment
-    }
-  }
-`;
-export const surveys = async (qry: any, skip = 0, limit = 0) =>
-  (await query<SurveysQuery>(surveysQuery, { query: qry, skip, limit })).surveys;
+  @Field(() => [String])
+  selections: string[];
 
-// * Create Survey Mutation
-export type CreateSurveyMutation = { createSurvey: types.Survey };
-export const createSurveyMutation = gql`
-  ${types.surveyFragment}
-  mutation createSurvey($data: SurveyInput!) {
-    createSurvey(data: $data) {
-      ...surveyFragment
-    }
-  }
-`;
-export const createSurvey = async (data: types.SurveyInput) =>
-  (await mutate<CreateSurveyMutation>(createSurveyMutation, { data })).createSurvey;
+  @Field(() => shared.Contract)
+  contract: shared.Contract;
+
+  @Field(() => shared.Wallet)
+  creator: shared.Wallet;
+
+  @Field(() => String)
+  type: cnst.SurveyType;
+
+  @Field(() => [String])
+  policy: cnst.SurveyPolicy[];
+
+  @Field(() => Date)
+  closeAt: Date;
+
+  @Field(() => Date)
+  openAt: Date;
+}
+
+@ObjectType("Survey", { _id: "id" })
+export class Survey extends BaseGql(SurveyInput) {
+  @Field(() => [SurveyResponse])
+  responses: SurveyResponse[];
+
+  @Field(() => Int)
+  walletNum: number;
+
+  @Field(() => Int)
+  tokenNum: number;
+
+  @Field(() => [Int])
+  selectTokenNum: number[];
+
+  @Field(() => [Int])
+  selectWalletNum: number[];
+
+  @Field(() => Date)
+  snapshotAt: Date;
+
+  @Field(() => String)
+  status: cnst.SurveyStatus;
+}
+
+export const surveyGraphQL = createGraphQL<"survey", Survey, SurveyInput>(Survey, SurveyInput);
+export const {
+  getSurvey,
+  listSurvey,
+  surveyCount,
+  surveyExists,
+  createSurvey,
+  updateSurvey,
+  removeSurvey,
+  surveyFragment,
+  purifySurvey,
+  defaultSurvey,
+} = surveyGraphQL;
 
 // * Generate Survey Mutation
-export type GenerateSurveyMutation = { generateSurvey: types.Survey };
-export const generateSurveyMutation = gql`
-  ${types.surveyFragment}
+export type GenerateSurveyMutation = { generateSurvey: Survey };
+export const generateSurveyMutation = graphql`
+  ${surveyFragment}
   mutation generateSurvey($data: SurveyInput!) {
     generateSurvey(data: $data) {
       ...surveyFragment
     }
   }
 `;
-export const generateSurvey = async (data: types.SurveyInput) =>
+export const generateSurvey = async (data: SurveyInput) =>
   (await mutate<GenerateSurveyMutation>(generateSurveyMutation, { data })).generateSurvey;
 
 // * Update Survey Mutation
-export type UpdateSurveyMutation = { updateSurvey: types.Survey };
-export const updateSurveyMutation = gql`
-  ${types.surveyFragment}
+export type UpdateSurveyMutation = { updateSurvey: Survey };
+export const updateSurveyMutation = graphql`
+  ${surveyFragment}
   mutation updateSurvey($surveyId: ID!, $data: SurveyInput!) {
     updateSurvey(surveyId: $surveyId, data: $data) {
       ...surveyFragment
     }
   }
 `;
-export const updateSurvey = async (surveyId: string, data: types.SurveyInput) =>
-  (await mutate<UpdateSurveyMutation>(updateSurveyMutation, { surveyId, data })).updateSurvey;
-
-// * Remove Survey Mutation
-export type RemoveSurveyMutation = { removeSurvey: types.Survey };
-export const removeSurveyMutation = gql`
-  ${types.surveyFragment}
-  mutation removeSurvey($surveyId: ID!, $data: SurveyInput!) {
-    removeSurvey(surveyId: $surveyId, data: $data) {
-      ...surveyFragment
-    }
-  }
-`;
-export const removeSurvey = async (surveyId: string) =>
-  (await mutate<RemoveSurveyMutation>(removeSurveyMutation, { surveyId })).removeSurvey;
 
 // * Open Survey Mutation
-export type OpenSurveyMutation = { openSurvey: types.Survey };
-export const openSurveyMutation = gql`
-  ${types.surveyFragment}
+export type OpenSurveyMutation = { openSurvey: Survey };
+export const openSurveyMutation = graphql`
+  ${surveyFragment}
   mutation openSurvey($surveyId: ID!, $data: SurveyInput!) {
     openSurvey(surveyId: $surveyId, data: $data) {
       ...surveyFragment
@@ -94,22 +121,22 @@ export const openSurvey = async (surveyId: string) =>
   (await mutate<OpenSurveyMutation>(openSurveyMutation, { surveyId })).openSurvey;
 
 // * Respond Survey Mutation
-export type RespondSurveyMutation = { respondSurvey: types.Survey };
-export const respondSurveyMutation = gql`
-  ${types.surveyFragment}
+export type RespondSurveyMutation = { respondSurvey: Survey };
+export const respondSurveyMutation = graphql`
+  ${surveyFragment}
   mutation respondSurvey($surveyId: ID!, $response: SurveyResponseInput!) {
     respondSurvey(surveyId: $surveyId, response: $response) {
       ...surveyFragment
     }
   }
 `;
-export const respondSurvey = async (surveyId: string, response: types.SurveyResponseInput) =>
+export const respondSurvey = async (surveyId: string, response: InputOf<SurveyResponseInput>) =>
   (await mutate<RespondSurveyMutation>(respondSurveyMutation, { surveyId, response })).respondSurvey;
 
 // * Close Survey Mutation
-export type CloseSurveyMutation = { closeSurvey: types.Survey };
-export const closeSurveyMutation = gql`
-  ${types.surveyFragment}
+export type CloseSurveyMutation = { closeSurvey: Survey };
+export const closeSurveyMutation = graphql`
+  ${surveyFragment}
   mutation closeSurvey($surveyId: ID!) {
     closeSurvey(surveyId: $surveyId) {
       ...surveyFragment
@@ -119,10 +146,10 @@ export const closeSurveyMutation = gql`
 export const closeSurvey = async (surveyId: string) =>
   (await mutate<CloseSurveyMutation>(closeSurveyMutation, { surveyId })).closeSurvey;
 
-export type GetSurveySnapshotQuery = { getSurveySnapshot: types.Ownership[] };
-export const getSurveySnapshotQuery = gql`
-  ${types.shared.tokenFragment}
-  ${types.shared.walletFragment}
+export type GetSurveySnapshotQuery = { getSurveySnapshot: Ownership[] };
+export const getSurveySnapshotQuery = graphql`
+  ${shared.tokenFragment}
+  ${shared.walletFragment}
   query getSurveySnapshot($surveyId: ID!) {
     getSurveySnapshot(surveyId: $surveyId) {
       id
@@ -143,14 +170,14 @@ export const getSurveySnapshot = async (surveyId: string) =>
   (await mutate<GetSurveySnapshotQuery>(getSurveySnapshotQuery, { surveyId })).getSurveySnapshot;
 
 // * CreateAnd Survey Mutation
-export type CreateAndOpenSurveyMutation = { createAndOpenSurvey: types.Survey };
-export const createAndOpenSurveyMutation = gql`
-  ${types.surveyFragment}
+export type CreateAndOpenSurveyMutation = { createAndOpenSurvey: Survey };
+export const createAndOpenSurveyMutation = graphql`
+  ${surveyFragment}
   mutation createAndOpenSurvey($data: SurveyInput!) {
     createAndOpenSurvey(data: $data) {
       ...surveyFragment
     }
   }
 `;
-export const createAndOpenSurvey = async (data: types.SurveyInput) =>
+export const createAndOpenSurvey = async (data: SurveyInput) =>
   (await mutate<CreateAndOpenSurveyMutation>(createAndOpenSurveyMutation, { data })).createAndOpenSurvey;

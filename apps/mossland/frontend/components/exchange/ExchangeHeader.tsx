@@ -1,12 +1,10 @@
 import { MyBalance, ExchangeButtons } from "../../components";
-import { userStore, useUser } from "@platform/data-access";
+import { gql, utils, store } from "../../stores";
 import styled from "styled-components";
-import { walletStore } from "@shared/data-access";
 import { Connect, MyAddress } from "../";
 
 export const ExchangeHeader = () => {
-  const self = userStore.use.self();
-  const wallet = walletStore.use.wallet();
+  const wallet = store.shared.wallet.use.wallet();
 
   return (
     <StyledExchangeHeader>

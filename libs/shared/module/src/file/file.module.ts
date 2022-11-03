@@ -17,7 +17,13 @@ export class FileModule {
         options.objectStorage && S3Module.register(options.objectStorage),
         options.ipfs && IpfsModule.register(options.ipfs),
       ].filter((module) => !!module) as DynamicModule[],
-      providers: [FileService],
+      providers: [
+        {
+          provide: "STORAGE_OPTIONS",
+          useValue: options,
+        },
+        FileService,
+      ],
       exports: [FileService],
     };
   }

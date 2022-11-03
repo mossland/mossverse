@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { adminStore } from "@shared/data-access";
+import { store, gql } from "@shared/data-access";
 import styled from "styled-components";
 import { AdminSignIn, AdminSignUp, AdminInfo } from "./index";
 
@@ -8,11 +8,11 @@ interface Props {
 }
 
 export const AdminAuth = ({ uri }: Props) => {
-  const initAuth = adminStore.use.initAuth();
-  const viewMode = adminStore.use.viewMode();
-  useEffect(() => {
-    initAuth(uri);
-  }, []);
+  // const initAuth = store.admin.use.initAuth();
+  const viewMode = store.admin.use.viewMode();
+  // useEffect(() => {
+  //   initAuth(uri);
+  // }, []);
 
   return (
     <AdminAuthContainer>

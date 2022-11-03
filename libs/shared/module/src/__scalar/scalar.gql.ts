@@ -66,6 +66,46 @@ export const OpenSeaAttributeSchema = SchemaFactory.createForClass(OpenSeaAttrib
 @InputType({ isAbstract: true })
 @ObjectType()
 @Schema()
+export class ExternalLink {
+  @Field(() => String)
+  @Prop({ type: String, enum: cnst.linkTypes, required: true })
+  type: cnst.LinkType;
+
+  @Field(() => String)
+  @Prop({ type: String, required: true })
+  url: string;
+}
+@InputType()
+export class ExternalLinkInput extends ExternalLink {}
+export const ExternalLinkSchema = SchemaFactory.createForClass(ExternalLink);
+
+@InputType({ isAbstract: true })
+@ObjectType()
+@Schema()
+export class OpenSeaContractMeta {
+  @Field(() => String)
+  @Prop({ type: String, required: true })
+  name: string;
+
+  @Field(() => String)
+  @Prop({ type: String, required: true })
+  description: string;
+
+  @Field(() => String)
+  @Prop({ type: String, required: true })
+  image: string;
+
+  @Field(() => String, { nullable: true })
+  @Prop({ type: String, required: false })
+  external_link?: string;
+}
+@InputType()
+export class OpenSeaContractMetaInput extends OpenSeaContractMeta {}
+export const OpenSeaContractMetaSchema = SchemaFactory.createForClass(OpenSeaContractMeta);
+
+@InputType({ isAbstract: true })
+@ObjectType()
+@Schema()
 export class OpenSeaMeta {
   @Field(() => String)
   @Prop({ type: String, required: true })

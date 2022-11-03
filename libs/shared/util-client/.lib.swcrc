@@ -3,17 +3,17 @@
     "target": "es2016",
     "parser": {
       "syntax": "typescript",
-      "tsx": true
+      "decorators": true,
+      "tsx": false,
+      "dynamicImport": true,
+      "exportDefaultFrom": false,
+      "exportNamespaceFrom": true
     },
     "transform": {
-      "react": {
-        "runtime": "automatic"
-      }
+      "decoratorMetadata": true,
+      "legacyDecorator": true
     },
-    "minify": {
-      "compress": true,
-      "mangle": true
-    }
+    "keepClassNames": true
   },
   "module": {
     "type": "commonjs",

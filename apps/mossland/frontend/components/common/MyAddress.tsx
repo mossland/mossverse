@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "styled-components";
-import { walletStore } from "@shared/data-access";
+import { gql, utils, store } from "../../stores";
 
 export const MyAddress = () => {
-  const wallet = walletStore.use.wallet();
+  const wallet = store.shared.wallet.use.wallet();
   if (!wallet?.address) return null;
   return (
     <StyledMyAddress>

@@ -9,6 +9,7 @@ import type {
   CallOverrides,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -27,42 +28,15 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
-export declare namespace ERC721A {
-  export type TokenOwnershipStruct = {
-    addr: PromiseOrValue<string>;
-    startTimestamp: PromiseOrValue<BigNumberish>;
-    lockUntil: PromiseOrValue<BigNumberish>;
-    tokenIndex: PromiseOrValue<BigNumberish>;
-    burned: PromiseOrValue<boolean>;
-  };
-
-  export type TokenOwnershipStructOutput = [
-    string,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    boolean
-  ] & {
-    addr: string;
-    startTimestamp: BigNumber;
-    lockUntil: BigNumber;
-    tokenIndex: BigNumber;
-    burned: boolean;
-  };
-}
-
 export interface ERC721AGasReporterMockInterface extends utils.Interface {
   functions: {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "lock(uint256,uint256)": FunctionFragment;
-    "lockTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
-    "lockTransferFrom(address,address,uint256,uint256)": FunctionFragment;
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)": FunctionFragment;
-    "lockTransferFromMany(address,address,uint256[],uint256)": FunctionFragment;
-    "locks(uint256[],uint256)": FunctionFragment;
+    "lock(uint256,uint64)": FunctionFragment;
+    "lockTransferFrom(address,address,uint256,uint64,bytes)": FunctionFragment;
+    "lockUntil(uint256)": FunctionFragment;
     "mintOne(address)": FunctionFragment;
     "mintTen(address)": FunctionFragment;
     "name()": FunctionFragment;
@@ -74,12 +48,12 @@ export interface ERC721AGasReporterMockInterface extends utils.Interface {
     "setApprovalForAll(address,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
-    "tokenByIndex(uint256)": FunctionFragment;
-    "tokenOfOwnerByIndex(address,uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
-    "tokensOfOwner(address)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
+    "transferTenAsc(address)": FunctionFragment;
+    "transferTenAvg(address)": FunctionFragment;
+    "transferTenDesc(address)": FunctionFragment;
   };
 
   getFunction(
@@ -89,11 +63,8 @@ export interface ERC721AGasReporterMockInterface extends utils.Interface {
       | "getApproved"
       | "isApprovedForAll"
       | "lock"
-      | "lockTransferFrom(address,address,uint256,uint256,bytes)"
-      | "lockTransferFrom(address,address,uint256,uint256)"
-      | "lockTransferFromMany(address,address,uint256[],uint256,bytes)"
-      | "lockTransferFromMany(address,address,uint256[],uint256)"
-      | "locks"
+      | "lockTransferFrom"
+      | "lockUntil"
       | "mintOne"
       | "mintTen"
       | "name"
@@ -105,12 +76,12 @@ export interface ERC721AGasReporterMockInterface extends utils.Interface {
       | "setApprovalForAll"
       | "supportsInterface"
       | "symbol"
-      | "tokenByIndex"
-      | "tokenOfOwnerByIndex"
       | "tokenURI"
-      | "tokensOfOwner"
       | "totalSupply"
       | "transferFrom"
+      | "transferTenAsc"
+      | "transferTenAvg"
+      | "transferTenDesc"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -134,7 +105,7 @@ export interface ERC721AGasReporterMockInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "lockTransferFrom(address,address,uint256,uint256,bytes)",
+    functionFragment: "lockTransferFrom",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
@@ -144,36 +115,8 @@ export interface ERC721AGasReporterMockInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "lockTransferFrom(address,address,uint256,uint256)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "lockTransferFromMany(address,address,uint256[],uint256,bytes)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>[],
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "lockTransferFromMany(address,address,uint256[],uint256)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>[],
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "locks",
-    values: [PromiseOrValue<BigNumberish>[], PromiseOrValue<BigNumberish>]
+    functionFragment: "lockUntil",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "mintOne",
@@ -223,20 +166,8 @@ export interface ERC721AGasReporterMockInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "tokenByIndex",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tokenOfOwnerByIndex",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "tokenURI",
     values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tokensOfOwner",
-    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
@@ -249,6 +180,18 @@ export interface ERC721AGasReporterMockInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferTenAsc",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferTenAvg",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferTenDesc",
+    values: [PromiseOrValue<string>]
   ): string;
 
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
@@ -263,22 +206,10 @@ export interface ERC721AGasReporterMockInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "lock", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "lockTransferFrom(address,address,uint256,uint256,bytes)",
+    functionFragment: "lockTransferFrom",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "lockTransferFrom(address,address,uint256,uint256)",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "lockTransferFromMany(address,address,uint256[],uint256,bytes)",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "lockTransferFromMany(address,address,uint256[],uint256)",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "locks", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "lockUntil", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mintOne", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mintTen", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
@@ -308,19 +239,7 @@ export interface ERC721AGasReporterMockInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenByIndex",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenOfOwnerByIndex",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "tokensOfOwner",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
     data: BytesLike
@@ -329,15 +248,29 @@ export interface ERC721AGasReporterMockInterface extends utils.Interface {
     functionFragment: "transferFrom",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferTenAsc",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferTenAvg",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferTenDesc",
+    data: BytesLike
+  ): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "ConsecutiveTransfer(uint256,uint256,address,address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ConsecutiveTransfer"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
 
@@ -364,6 +297,20 @@ export type ApprovalForAllEvent = TypedEvent<
 >;
 
 export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
+
+export interface ConsecutiveTransferEventObject {
+  fromTokenId: BigNumber;
+  toTokenId: BigNumber;
+  from: string;
+  to: string;
+}
+export type ConsecutiveTransferEvent = TypedEvent<
+  [BigNumber, BigNumber, string, string],
+  ConsecutiveTransferEventObject
+>;
+
+export type ConsecutiveTransferEventFilter =
+  TypedEventFilter<ConsecutiveTransferEvent>;
 
 export interface TransferEventObject {
   from: string;
@@ -407,7 +354,7 @@ export interface ERC721AGasReporterMock extends BaseContract {
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     balanceOf(
@@ -428,49 +375,23 @@ export interface ERC721AGasReporterMock extends BaseContract {
 
     lock(
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+    lockTransferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    "lockTransferFrom(address,address,uint256,uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    locks(
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+    lockUntil(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     mintOne(
       to: PromiseOrValue<string>,
@@ -503,7 +424,7 @@ export interface ERC721AGasReporterMock extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
@@ -511,7 +432,7 @@ export interface ERC721AGasReporterMock extends BaseContract {
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     setApprovalForAll(
@@ -527,26 +448,10 @@ export interface ERC721AGasReporterMock extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
-    tokenByIndex(
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    tokenOfOwnerByIndex(
-      owner: PromiseOrValue<string>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
-
-    tokensOfOwner(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[ERC721A.TokenOwnershipStructOutput[]]>;
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -554,6 +459,21 @@ export interface ERC721AGasReporterMock extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    transferTenAsc(
+      to: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    transferTenAvg(
+      to: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    transferTenDesc(
+      to: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
@@ -561,7 +481,7 @@ export interface ERC721AGasReporterMock extends BaseContract {
   approve(
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   balanceOf(
@@ -582,49 +502,23 @@ export interface ERC721AGasReporterMock extends BaseContract {
 
   lock(
     tokenId: PromiseOrValue<BigNumberish>,
-    lockUntil: PromiseOrValue<BigNumberish>,
+    _lockUntil: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+  lockTransferFrom(
     from: PromiseOrValue<string>,
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
-    lockUntil: PromiseOrValue<BigNumberish>,
+    _lockUntil: PromiseOrValue<BigNumberish>,
     _data: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  "lockTransferFrom(address,address,uint256,uint256)"(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    lockUntil: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
-    tokenIds: PromiseOrValue<BigNumberish>[],
-    lockUntil: PromiseOrValue<BigNumberish>,
-    _data: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "lockTransferFromMany(address,address,uint256[],uint256)"(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
-    tokenIds: PromiseOrValue<BigNumberish>[],
-    lockUntil: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  locks(
-    tokenIds: PromiseOrValue<BigNumberish>[],
-    lockUntil: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  lockUntil(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   mintOne(
     to: PromiseOrValue<string>,
@@ -657,7 +551,7 @@ export interface ERC721AGasReporterMock extends BaseContract {
     from: PromiseOrValue<string>,
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   "safeTransferFrom(address,address,uint256,bytes)"(
@@ -665,7 +559,7 @@ export interface ERC721AGasReporterMock extends BaseContract {
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
     _data: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   setApprovalForAll(
@@ -681,26 +575,10 @@ export interface ERC721AGasReporterMock extends BaseContract {
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
-  tokenByIndex(
-    index: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  tokenOfOwnerByIndex(
-    owner: PromiseOrValue<string>,
-    index: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   tokenURI(
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
-
-  tokensOfOwner(
-    owner: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<ERC721A.TokenOwnershipStructOutput[]>;
 
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -708,6 +586,21 @@ export interface ERC721AGasReporterMock extends BaseContract {
     from: PromiseOrValue<string>,
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  transferTenAsc(
+    to: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  transferTenAvg(
+    to: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  transferTenDesc(
+    to: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -736,49 +629,23 @@ export interface ERC721AGasReporterMock extends BaseContract {
 
     lock(
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+    lockTransferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "lockTransferFrom(address,address,uint256,uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+    lockUntil(
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<void>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    locks(
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
 
     mintOne(
       to: PromiseOrValue<string>,
@@ -835,26 +702,10 @@ export interface ERC721AGasReporterMock extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
-    tokenByIndex(
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenOfOwnerByIndex(
-      owner: PromiseOrValue<string>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
-
-    tokensOfOwner(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<ERC721A.TokenOwnershipStructOutput[]>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -862,6 +713,21 @@ export interface ERC721AGasReporterMock extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    transferTenAsc(
+      to: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    transferTenAvg(
+      to: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    transferTenDesc(
+      to: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -889,6 +755,19 @@ export interface ERC721AGasReporterMock extends BaseContract {
       approved?: null
     ): ApprovalForAllEventFilter;
 
+    "ConsecutiveTransfer(uint256,uint256,address,address)"(
+      fromTokenId?: PromiseOrValue<BigNumberish> | null,
+      toTokenId?: null,
+      from?: PromiseOrValue<string> | null,
+      to?: PromiseOrValue<string> | null
+    ): ConsecutiveTransferEventFilter;
+    ConsecutiveTransfer(
+      fromTokenId?: PromiseOrValue<BigNumberish> | null,
+      toTokenId?: null,
+      from?: PromiseOrValue<string> | null,
+      to?: PromiseOrValue<string> | null
+    ): ConsecutiveTransferEventFilter;
+
     "Transfer(address,address,uint256)"(
       from?: PromiseOrValue<string> | null,
       to?: PromiseOrValue<string> | null,
@@ -905,7 +784,7 @@ export interface ERC721AGasReporterMock extends BaseContract {
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     balanceOf(
@@ -926,48 +805,22 @@ export interface ERC721AGasReporterMock extends BaseContract {
 
     lock(
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+    lockTransferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    "lockTransferFrom(address,address,uint256,uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    locks(
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    lockUntil(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     mintOne(
@@ -1001,7 +854,7 @@ export interface ERC721AGasReporterMock extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
@@ -1009,7 +862,7 @@ export interface ERC721AGasReporterMock extends BaseContract {
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     setApprovalForAll(
@@ -1025,24 +878,8 @@ export interface ERC721AGasReporterMock extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
-    tokenByIndex(
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenOfOwnerByIndex(
-      owner: PromiseOrValue<string>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokensOfOwner(
-      owner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1052,6 +889,21 @@ export interface ERC721AGasReporterMock extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    transferTenAsc(
+      to: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    transferTenAvg(
+      to: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    transferTenDesc(
+      to: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -1060,7 +912,7 @@ export interface ERC721AGasReporterMock extends BaseContract {
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     balanceOf(
@@ -1081,48 +933,22 @@ export interface ERC721AGasReporterMock extends BaseContract {
 
     lock(
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+    lockTransferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    "lockTransferFrom(address,address,uint256,uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    locks(
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    lockUntil(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     mintOne(
@@ -1156,7 +982,7 @@ export interface ERC721AGasReporterMock extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
@@ -1164,7 +990,7 @@ export interface ERC721AGasReporterMock extends BaseContract {
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     setApprovalForAll(
@@ -1180,24 +1006,8 @@ export interface ERC721AGasReporterMock extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    tokenByIndex(
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    tokenOfOwnerByIndex(
-      owner: PromiseOrValue<string>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    tokensOfOwner(
-      owner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1207,6 +1017,21 @@ export interface ERC721AGasReporterMock extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    transferTenAsc(
+      to: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    transferTenAvg(
+      to: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    transferTenDesc(
+      to: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

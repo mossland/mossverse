@@ -3,12 +3,11 @@ import styled from "styled-components";
 import { BiRightArrowAlt } from "react-icons/bi";
 import Link from "next/link";
 import { DefaultButton } from "@platform/ui-web";
-import { mocWalletStore } from "../../store/stores";
-import { userStore } from "@platform/data-access";
+import { gql, utils, store } from "../../stores";
 
 export const ExchangeButtons = () => {
-  const self = userStore.use.self();
-  const deposit = mocWalletStore.use.deposit();
+  const self = store.platform.user.use.self();
+  const deposit = store.mocWallet.use.deposit();
 
   const onDeposit = async () => {
     if (!self) return;

@@ -2,30 +2,28 @@ import React, { MutableRefObject, Suspense, useEffect, useRef, useState } from "
 import styled from "styled-components";
 import { ToolOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Modal, Button, Table, Space, Input, Radio, Col, Row, Select, List, Card, Popconfirm } from "antd";
-import { adminStore, types } from "@shared/data-access";
+import { store, gql } from "@shared/data-access";
 import { Field, Img } from "../index";
-import { ThreeEvent, useFrame } from "@react-three/fiber";
-import { Mesh, PlaneGeometry, Sprite, TextureLoader, Vector3 } from "three";
-import { Utils } from "@shared/util";
 
 export const Admins = () => {
-  const init = adminStore.use.init();
-  const admins = adminStore.use.admins();
+  const initAdmin = store.admin.use.initAdmin();
+  const adminList = store.admin.use.adminList();
+  const newAdmin = store.admin.use.newAdmin();
   useEffect(() => {
-    init();
+    initAdmin();
   }, []);
 
   return (
     <div>
       <Header>
         <h2>Admins</h2>
-        <Button onClick={() => adminStore.setState({ ...types.defaultAdmin, modalOpen: true })} icon={<PlusOutlined />}>
+        <Button onClick={newAdmin} icon={<PlusOutlined />}>
           Add
         </Button>
       </Header>
       <List
         grid={{ gutter: 16, column: 5 }}
-        dataSource={admins}
+        dataSource={adminList}
         renderItem={(admin) => <Admin key={admin.id} admin={admin} />}
       ></List>
       <AdminEdit />
@@ -34,16 +32,17 @@ export const Admins = () => {
 };
 
 interface AdminProps {
-  admin: types.Admin;
+  admin: gql.Admin;
 }
 export const Admin = React.memo(({ admin }: AdminProps) => {
-  const remove = adminStore.use.remove();
+  const removeAdmin = store.admin.use.removeAdmin();
+  const editAdmin = store.admin.use.editAdmin();
   return (
     <Card
       hoverable
       actions={[
-        <EditOutlined key="edit" onClick={() => adminStore.setState({ ...admin, modalOpen: true })} />,
-        <Popconfirm title="Are you sure to remove?" onConfirm={() => remove(admin.id)}>
+        <EditOutlined key="edit" onClick={() => editAdmin(admin)} />,
+        <Popconfirm title="Are you sure to remove?" onConfirm={() => removeAdmin(admin.id)}>
           <DeleteOutlined key="remove" />
         </Popconfirm>,
       ]}
@@ -53,26 +52,31 @@ export const Admin = React.memo(({ admin }: AdminProps) => {
   );
 });
 export const AdminEdit = () => {
-  const modalOpen = adminStore.use.modalOpen();
-  const id = adminStore.use.id();
-  const accountId = adminStore.use.accountId();
-  const password = adminStore.use.password();
-  const email = adminStore.use.email();
-  const purify = adminStore.use.purify();
-  const create = adminStore.use.create();
-  const update = adminStore.use.update();
+  const adminModal = store.admin.use.adminModal();
+  const id = store.admin.use.id();
+  const accountId = store.admin.use.accountId();
+  const password = store.admin.use.password();
+  const email = store.admin.use.email();
+  const purifyAdmin = store.admin.use.purifyAdmin();
+  const createAdmin = store.admin.use.createAdmin();
+  const updateAdmin = store.admin.use.updateAdmin();
+  const resetAdmin = store.admin.use.resetAdmin();
   return (
     <Modal
       title={id ? "New Admin" : `Admin - ${accountId}`}
-      open={modalOpen}
-      onOk={() => (id ? update() : create())}
-      onCancel={() => adminStore.setState({ modalOpen: !modalOpen })}
-      okButtonProps={{ disabled: !purify() }}
+      open={!!adminModal}
+      onOk={() => (id ? updateAdmin() : createAdmin())}
+      onCancel={() => resetAdmin()}
+      okButtonProps={{ disabled: !purifyAdmin() }}
     >
       <Field.Container>
-        <Field.Text label="Account ID" value={accountId} onChange={(accountId) => adminStore.setState({ accountId })} />
-        <Field.Text label="Email" value={email} onChange={(email) => adminStore.setState({ email })} />
-        <Field.Password value={password} onChange={(password) => adminStore.setState({ password })} />
+        <Field.Text
+          label="Account ID"
+          value={accountId}
+          onChange={(accountId) => store.admin.setState({ accountId })}
+        />
+        <Field.Text label="Email" value={email} onChange={(email) => store.admin.setState({ email })} />
+        <Field.Password value={password} onChange={(password) => store.admin.setState({ password })} />
       </Field.Container>
     </Modal>
   );

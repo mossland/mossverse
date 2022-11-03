@@ -1,19 +1,19 @@
 import React, { useEffect } from "react";
-import { types, userStore, listingStore } from "@platform/data-access";
-import { keyringStore, networkStore, setLink, walletStore } from "@shared/data-access";
+import { gql, utils, store } from "../stores";
 import { cnst } from "@shared/util";
 import { env } from "../env";
+import { setLink } from "@shared/util-client";
 
 export const usePageInit = () => {
-  const self = userStore.use.self();
-  const initUser = userStore.use.initWithOtp();
-  const initnetwork = networkStore.use.init();
-  const initKeyring = keyringStore.use.init();
+  const self = store.platform.user.use.self();
+  const initUser = store.platform.user.use.initWithOtp();
+  const initNetwork = store.shared.network.use.initNetwork();
+  const initKeyring = store.shared.keyring.use.init();
 
   useEffect(() => {
     setLink(env.endpoint);
     initUser();
-    initnetwork(env.networkType);
-    initKeyring(env.networkType);
+    initNetwork({ type: env.networkType });
+    initKeyring();
   }, [self]);
 };

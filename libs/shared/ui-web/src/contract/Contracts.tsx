@@ -2,33 +2,29 @@ import React, { MutableRefObject, Suspense, useEffect, useRef, useState } from "
 import styled from "styled-components";
 import { ToolOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Modal, Button, Table, Space, Input, Radio, Col, Row, Select, List, Card, Popconfirm } from "antd";
-import { contractStore, networkStore, types } from "@shared/data-access";
+import { gql, store } from "@shared/data-access";
 import { Field, Img } from "../index";
-import { ThreeEvent, useFrame } from "@react-three/fiber";
-import { Mesh, PlaneGeometry, Sprite, TextureLoader, Vector3 } from "three";
 import { Utils } from "@shared/util";
 
 export const Contracts = () => {
-  const init = contractStore.use.init();
-  const contracts = contractStore.use.contracts();
+  const initContract = store.contract.use.initContract();
+  const contractList = store.contract.use.contractList();
+  const newContract = store.contract.use.newContract();
   useEffect(() => {
-    init();
+    initContract();
   }, []);
 
   return (
     <div>
       <Header>
         <h2>Contracts</h2>
-        <Button
-          onClick={() => contractStore.setState({ ...types.defaultContract, modalOpen: true })}
-          icon={<PlusOutlined />}
-        >
+        <Button onClick={newContract} icon={<PlusOutlined />}>
           Add
         </Button>
       </Header>
       <List
         grid={{ gutter: 16, column: 5 }}
-        dataSource={contracts}
+        dataSource={contractList}
         renderItem={(contract) => <Contract key={contract.id} contract={contract} />}
       ></List>
       <ContractEdit />
@@ -37,16 +33,17 @@ export const Contracts = () => {
 };
 
 interface ContractProps {
-  contract: types.Contract;
+  contract: gql.Contract;
 }
 export const Contract = React.memo(({ contract }: ContractProps) => {
-  const remove = contractStore.use.remove();
+  const removeContract = store.contract.use.removeContract();
+  const editContract = store.contract.use.editContract();
   return (
     <Card
       hoverable
       actions={[
-        <EditOutlined key="edit" onClick={() => contractStore.setState({ ...contract, modalOpen: true })} />,
-        <Popconfirm title="Are you sure to remove?" onConfirm={() => remove(contract.id)}>
+        <EditOutlined key="edit" onClick={() => editContract(contract)} />,
+        <Popconfirm title="Are you sure to remove?" onConfirm={() => removeContract(contract.id)}>
           <DeleteOutlined key="remove" />
         </Popconfirm>,
       ]}
@@ -56,32 +53,35 @@ export const Contract = React.memo(({ contract }: ContractProps) => {
   );
 });
 export const ContractEdit = () => {
-  const modalOpen = contractStore.use.modalOpen();
-  const id = contractStore.use.id();
-  const networks = networkStore.use.networks();
-  const address = contractStore.use.address();
-  const displayName = contractStore.use.displayName();
-  const network = contractStore.use.network();
-  const purify = contractStore.use.purify();
-  const create = contractStore.use.create();
-  const update = contractStore.use.update();
+  const contractModal = store.contract.use.contractModal();
+  const id = store.contract.use.id();
+  const networks = store.network.use.networkList();
+  const address = store.contract.use.address();
+  const displayName = store.contract.use.displayName();
+  const network = store.contract.use.network();
+  const purifyContract = store.contract.use.purifyContract();
+  const createContract = store.contract.use.createContract();
+  const updateContract = store.contract.use.updateContract();
+  const resetContract = store.contract.use.resetContract();
   return (
     <Modal
       title={id ? "New Contract" : `Contract - ${displayName ?? address}`}
-      open={modalOpen}
-      onOk={() => (id ? update() : create())}
-      onCancel={() => contractStore.setState({ modalOpen: !modalOpen })}
-      okButtonProps={{ disabled: !purify() }}
+      open={!!contractModal}
+      onOk={() => (id ? updateContract() : createContract())}
+      onCancel={() => resetContract()}
+      okButtonProps={{ disabled: !purifyContract() }}
     >
       <Field.Container>
         <Select
-          value={network}
+          value={network?.name}
           style={{ width: "100%" }}
-          onChange={(network) => contractStore.setState({ network })}
+          onChange={(networkId) =>
+            store.contract.setState({ network: networks.find((network) => network.id === networkId) })
+          }
           disabled={!!id}
         >
           {networks.map((network) => (
-            <Select.Option value={network}>
+            <Select.Option key={network.id} value={network.id}>
               {network.name}/{network.provider}/{network.type}
             </Select.Option>
           ))}
@@ -89,13 +89,13 @@ export const ContractEdit = () => {
         <Field.Text
           label="Address"
           value={address}
-          onChange={(address) => contractStore.setState({ address })}
+          onChange={(address) => store.contract.setState({ address })}
           disabled={!!id}
         />
         <Field.Text
           label="Name"
           value={displayName}
-          onChange={(displayName) => contractStore.setState({ displayName })}
+          onChange={(displayName) => store.contract.setState({ displayName })}
         />
       </Field.Container>
     </Modal>

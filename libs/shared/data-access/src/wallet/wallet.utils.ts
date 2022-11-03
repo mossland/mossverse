@@ -1,6 +1,6 @@
-import { types } from "..";
+import * as gql from "../gql";
 
-export const checkWalletIncluded = (wallets: types.Wallet[], newAddress: string) => {
+export const checkWalletIncluded = (wallets: gql.Wallet[], newAddress: string) => {
   return !!wallets.find((cur) => cur.address === newAddress);
 };
 

@@ -4,23 +4,14 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nrwl/web:rollup",
+      "executor": "@nrwl/js:swc",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/libs/shared/data-access",
         "tsConfig": "libs/shared/data-access/tsconfig.lib.json",
-        "project": "libs/shared/data-access/package.json",
-        "entryFile": "libs/shared/data-access/src/index.ts",
-        "external": ["react/jsx-runtime"],
-        "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
-        "compiler": "swc",
-        "assets": [
-          {
-            "glob": "libs/shared/data-access/README.md",
-            "input": ".",
-            "output": "."
-          }
-        ]
+        "packageJson": "libs/shared/data-access/package.json",
+        "main": "libs/shared/data-access/src/index.ts",
+        "assets": ["libs/shared/data-access/*.md", "libs/shared/data-access/**/*.jpg"]
       }
     },
     "lint": {

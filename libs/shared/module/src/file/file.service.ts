@@ -13,11 +13,14 @@ import * as gql from "../gql";
 import { S3Service } from "./s3/s3.service";
 import { IpfsService } from "./ipfs/ipfs.service";
 import axios from "axios";
+import { StorageOptions } from "../options";
+import { Utils } from "@shared/util";
 
 @Injectable()
 export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
   localDir = `./data`;
   constructor(
+    @Inject("STORAGE_OPTIONS") private options: StorageOptions,
     @InjectModel(File.name) private readonly File: File.Mdl,
     private readonly s3Service: S3Service,
     private readonly ipfsService: IpfsService
@@ -46,8 +49,8 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
     try {
       const file = forceUpdate && (await this.File.findOne({ origin: uri }));
       if (file) return file;
-      const localFile = await this.#saveImageFromUri(uri);
-      return await this.#addFileFromLocal(localFile, purpose, group, uri);
+      const localFile = await this.saveImageFromUri(uri);
+      return await this.addFileFromLocal(localFile, purpose, group, uri);
     } catch (err) {
       this.logger.warn(`Failed to add file from URI - ${uri}`);
       return null;
@@ -69,7 +72,7 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
     const [xNum, yNum] = [Math.floor(file.imageSize[0] / tileSize), Math.floor(file.imageSize[1] / tileSize)];
     if (!file.imageSize[0] || !file.imageSize[1] || !xNum || !yNum) throw new Error("Image Size is Not Detected");
     else if (xNum * yNum > 100) throw new Error("Too many tiles");
-    const localFile = await this.#saveImageFromUri(file.url);
+    const localFile = await this.saveImageFromUri(file.url);
     const extension = `.${localFile.localPath.split(".").at(-1)}`;
     const files: File.Doc[][] = await Promise.all(
       Array.from(Array(yNum).keys()).map(async (y) => {
@@ -80,7 +83,7 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
             await sharp(localFile.localPath)
               .extract({ left: x * tileSize, top: y * tileSize, width: tileSize, height: tileSize })
               .toFile(localPath);
-            const file: File.Doc = await this.#addFileFromLocal({ ...localFile, filename, localPath }, purpose, group);
+            const file: File.Doc = await this.addFileFromLocal({ ...localFile, filename, localPath }, purpose, group);
             return file;
           })
         );
@@ -90,9 +93,9 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
   }
   async #addFile(fileStream: FileStream, purpose: string, group: string) {
     const localFile = await this.#saveLocalStorage(fileStream);
-    return await this.#addFileFromLocal(localFile, purpose, group);
+    return await this.addFileFromLocal(localFile, purpose, group);
   }
-  async #addFileFromLocal(localFile: LocalFile, purpose: string, group: string, origin?: string) {
+  async addFileFromLocal(localFile: LocalFile, purpose: string, group = "default", origin?: string) {
     const url = await this.s3Service.uploadFile({
       path: `${purpose}/${group}/${localFile.filename}`,
       localPath: localFile.localPath,
@@ -102,13 +105,17 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
       : { width: 0, height: 0 };
     return await this.File.create({ ...localFile, imageSize: [width, height], url, origin });
   }
-  async #saveImageFromUri(uri: string): Promise<LocalFile> {
+  async saveImageFromUri(
+    uri: string,
+    { cache, rename }: { cache?: boolean; rename?: string } = {}
+  ): Promise<LocalFile> {
     if (uri.indexOf("data:") === 0) return this.#saveEncodedData(uri);
     const response = await axios.get(this.ipfsService.getHttpsUri(uri), { responseType: "stream" });
-    const filename = this.#convertFileName(`${uri.split("/").at(-1)}`);
+    const filename = rename ?? this.#convertFileName(`${uri.split("/").at(-1)?.split("?")[0]}`);
     const dirname = `${this.localDir}/uriDownload`;
     const localPath = `${dirname}/${filename}`;
-    !fs.existsSync(dirname) && fs.mkdirSync(dirname);
+    if (cache && fs.existsSync(localPath)) return { filename, localPath, mimetype: "image/png", encoding: "7bit" };
+    !fs.existsSync(dirname) && fs.mkdirSync(dirname, { recursive: true });
     const w: fs.ReadStream = response.data.pipe(fs.createWriteStream(localPath));
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => reject("File Download Timeout"), 60000);
@@ -139,7 +146,7 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
     stream.pipe(fs.createWriteStream(localPath));
     return new Promise((resolve, reject) => {
       stream.on("end", () => {
-        fs.renameSync(localPath, renamePath);
+        fs.existsSync(localPath) && fs.renameSync(localPath, renamePath);
         resolve({ filename: rename, mimetype, encoding, localPath: renamePath });
         stream.destroy();
       });
@@ -147,7 +154,7 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
     });
   }
   #convertFileName(filename: string) {
-    return `file-${new Date().getTime()}-${filename}`;
+    return `file-${new Date().getTime()}-${filename.slice(filename.length - 15)}`;
   }
   #getMimetype(filename: string) {
     return filename.includes(".png")
@@ -159,5 +166,14 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
       : filename.includes(".gif")
       ? "image/gif"
       : "unknown";
+  }
+  async migrate(file: File.Doc) {
+    const root = this.options.objectStorage?.root;
+    const localFile = await this.saveImageFromUri(file.url);
+    await Utils.sleep(100);
+    const cloudPath = file.url.split("/").slice(3).join("/").split("?")[0];
+    const path = root ? cloudPath.replace(`${root}/`, "") : cloudPath;
+    const url = await this.s3Service.uploadFile({ path, localPath: localFile.localPath });
+    return await file.merge({ url }).save();
   }
 }

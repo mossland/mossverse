@@ -11,13 +11,13 @@ export class CaverModule {
     return {
       module: CaverModule,
       imports: [
-        BullModule.registerQueue({
-          name: "caver",
-          // redis: {
-          //   host: redisOptions.url?.split(":")[0].replace("redis://", "") ?? "localhost",
-          //   port: parseInt(redisOptions.url?.split(":")[1] ?? "6379"),
-          // },
-        }),
+        // BullModule.registerQueue({
+        //   name: "caver",
+        //   // redis: {
+        //   //   host: redisOptions.url?.split(":")[0].replace("redis://", "") ?? "localhost",
+        //   //   port: parseInt(redisOptions.url?.split(":")[1] ?? "6379"),
+        //   // },
+        // }),
       ],
       providers: [
         {

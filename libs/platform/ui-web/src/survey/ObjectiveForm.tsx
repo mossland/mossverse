@@ -1,6 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-import { surveyStore } from "@platform/data-access";
 import { Radio, RadioChangeEvent, Space } from "antd";
 
 type ObjectiveFormProps = {

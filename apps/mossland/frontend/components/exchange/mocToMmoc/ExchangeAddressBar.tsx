@@ -1,9 +1,8 @@
 import React from "react";
-import { useUser } from "@platform/data-access";
 import styled from "styled-components";
 
 import { CopyAddressButton } from "@platform/ui-web";
-import { useExchangeUi } from "@platform/data-access";
+import { gql, utils, store } from "../../../stores";
 import { QRCodeSVG } from "qrcode.react";
 
 type ExchangeAddressBarType = {
@@ -11,9 +10,7 @@ type ExchangeAddressBarType = {
 };
 
 export const ExchangeAddressBar = ({ address }: ExchangeAddressBarType) => {
-  // const address = useUser((state) => state.address);
-  const copyAddressCallback = useExchangeUi((state) => state.copyAddressCallback);
-
+  const copyAddressCallback = store.platform.exchange.use.copyAddressCallback();
   return (
     <ExchangeAddressBarContainer>
       <h4>Deposit Address</h4>

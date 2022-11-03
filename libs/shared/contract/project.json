@@ -21,6 +21,13 @@
         "cwd": "libs/shared/contract"
       }
     },
+    "test": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "commands": ["cross-env ENVIRONEMNT=debug npx hardhat test"],
+        "cwd": "libs/shared/contract"
+      }
+    },
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],

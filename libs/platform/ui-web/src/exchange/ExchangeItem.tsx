@@ -1,6 +1,6 @@
 import React from "react";
 import { InputNumber, Input, Button } from "antd";
-import { types, utils } from "@platform/data-access";
+import { gql, utils } from "@platform/data-access";
 import { ExchangeFlow } from "@platform/ui-web";
 import styled from "styled-components";
 import { BiRightArrowAlt } from "react-icons/bi";
@@ -8,7 +8,7 @@ import { Utils } from "@shared/util";
 
 type ExchangeItemProps = {
   //
-  receipt: types.Receipt;
+  receipt: gql.Receipt;
 };
 
 export const ExchangeItem = ({ receipt }: ExchangeItemProps) => {

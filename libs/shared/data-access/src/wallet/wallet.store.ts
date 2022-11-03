@@ -1,53 +1,44 @@
 import create from "zustand";
-import * as types from "../types";
 import * as gql from "../gql";
+import { createActions, createState, DefaultActions, DefaultState, generateStore } from "@shared/util-client";
+import { Wallet, walletGraphQL, WalletInput } from "./wallet.gql";
 import * as utils from "./wallet.utils";
-import { createSelectors, Nullable } from "@shared/util-client";
 
-type State = Nullable<types.Wallet> & {
-  modalOpen: boolean;
-  wallet: types.Wallet | null;
-  wallets: types.Wallet[];
-  activeWallets: types.Wallet[];
-  operation: "sleep" | "idle" | "loading";
+type State = DefaultState<"wallet", gql.Wallet> & {
+  activeWallets: gql.Wallet[];
   newAddress: string;
-  newActiveProvider: types.LoginMethod;
+  newActiveProvider: gql.LoginMethod;
   newNetworkId: string;
   deleteKeyringId: string;
   deleteWalletId: string;
-  errorMeg: string;
+  errorMsg: string;
   newWalletOperation: "sleep" | "idle" | "registered" | "needDelete";
 };
 const initialState: State = {
-  ...types.defaultWallet, // 기본 수정 필드
-  modalOpen: false, // 기본 수정 모달
-  wallet: null, // 1개 조회/작업 시 사용되는 필드
-  wallets: [], // 여러개 조회 시 사용
+  ...createState<"wallet", gql.Wallet, gql.WalletInput>(walletGraphQL),
   activeWallets: [],
-  operation: "sleep", // init여부 확인
   newAddress: "", // wallet 추가시, 새 address
   newActiveProvider: "klaytn",
   newNetworkId: "",
   deleteKeyringId: "",
   deleteWalletId: "",
-  errorMeg: "",
+  errorMsg: "",
   newWalletOperation: "sleep", // wallet 추가 상태
 };
-type Actions = {
-  init: (wallets: types.Wallet[]) => Promise<void>; // 초기화
+type Actions = Omit<DefaultActions<"wallet", gql.Wallet, gql.WalletInput>, "removeWallet"> & {
+  init: (wallets: gql.Wallet[]) => Promise<void>; // 초기화
   checkWalletChange: () => Promise<void>; // wallet 변경 체크
-  updateCurrentWallet: (newAddress: string, provider: types.LoginMethod) => void;
-  addWallet: (keyringId: string) => Promise<types.Keyring>;
+  updateCurrentWallet: (newAddress: string, provider: gql.LoginMethod) => void;
+  addWallet: (keyringId: string) => Promise<gql.Keyring>;
   removeWallet: (keyringId: string, walletId: string, address: string) => Promise<void>;
   checkNewWallet: () => Promise<void>; // TODO : delte
   keyringHasWallet: () => Promise<boolean>;
-  getCurrentAddress: () => string;
-  reset: (wallet?: types.Wallet) => void; // 수정필드 리셋
 };
-export const useWallet = create<State & Actions>((set, get) => ({
+const store = create<State & Actions>((set, get) => ({
   ...initialState,
+  ...createActions<"wallet", gql.Wallet, gql.WalletInput>(walletGraphQL, { get, set }),
   init: async (wallets) => {
-    const activeWallets: types.Wallet[] = [];
+    const activeWallets: gql.Wallet[] = [];
 
     if (window.ethereum.selectedAddress) {
       const currentWallet = wallets.find(
@@ -105,7 +96,7 @@ export const useWallet = create<State & Actions>((set, get) => ({
     } catch (err) {
       err instanceof Error &&
         err.message.includes("Cannot Empty All Wallets") &&
-        set({ errorMeg: "Cannot Empty All Wallets" });
+        set({ errorMsg: "Cannot Empty All Wallets" });
     }
   },
   keyringHasWallet: async () => {
@@ -134,23 +125,17 @@ export const useWallet = create<State & Actions>((set, get) => ({
       walletId = keyring.wallets.find((wallet) => wallet.address === newAddress)?.id || walletId;
     });
     if (utils.checkWalletIncluded(wallets, newAddress)) {
-      set({ newWalletOperation: "registered", errorMeg: "" });
+      set({ newWalletOperation: "registered", errorMsg: "" });
     } else if (keyrings.length) {
       set({
         newWalletOperation: "needDelete",
         deleteKeyringId: keyrings[0].id,
         deleteWalletId: walletId,
-        errorMeg: "",
+        errorMsg: "",
       });
     } else {
-      set({ newWalletOperation: "idle", errorMeg: "" });
+      set({ newWalletOperation: "idle", errorMsg: "" });
     }
   },
-  getCurrentAddress: () => {
-    // window.ethereum.selectedAddress
-    // window.klaytn.selectedAddress
-    return "";
-  },
-  reset: (wallet) => set({ ...types.defaultWallet, wallet }),
 }));
-export const walletStore = createSelectors(useWallet);
+export const wallet = generateStore(store);

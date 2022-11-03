@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args, ID } from "@nestjs/graphql";
 import { AdminService } from "./admin.service";
-import { Allow, Account, BaseResolver, Auth, Id } from "@shared/util-server";
+import { Allow, Account, BaseResolver, Auth, Id, UserIp } from "@shared/util-server";
 import * as db from "../db";
 import * as gql from "../gql";
 import * as srv from "../srv";

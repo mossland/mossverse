@@ -1,5 +1,5 @@
 import { UploadOutlined } from "@ant-design/icons";
-import { types } from "@shared/data-access";
+import { gql, utils, store } from "../../../stores";
 import { Form, Card, Modal, InputNumber, Button, Input } from "antd";
 import styled from "styled-components";
 
@@ -90,7 +90,7 @@ export const DoubleNumber = ({ label, value, onChange, required, disabled }: Dou
 
 type ImageProps = {
   label: string;
-  value: types.File | null;
+  value: gql.shared.File | null;
   onChange: (value: FileList) => void;
   onRemove: () => void;
   required?: boolean;

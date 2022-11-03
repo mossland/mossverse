@@ -1,12 +1,12 @@
-import { listingStore } from "@platform/data-access";
 import React, { useEffect } from "react";
 import styled from "styled-components";
 import { Market } from "@platform/ui-web";
+import { gql, utils, store } from "../../stores";
 
 export const MarketNav = () => {
-  const filter = listingStore.use.filter();
+  const filter = store.platform.listing.use.filter();
   const onClickButton = (filter) => {
-    listingStore.setState({ filter });
+    store.platform.listing.setState({ filter });
   };
 
   const checkIsActive = (id) => id === filter;
