@@ -6,6 +6,7 @@ import { Account } from "../middlewares";
 export interface LoadConfig {
   account?: Account;
   address?: string;
+  ip?: string;
 }
 
 export class LogService {
@@ -61,7 +62,7 @@ export class LoadService<Mdl extends Model<any>, Doc extends Document<any>, Inpu
     Object.assign(doc, data);
     return await doc.save();
   }
-  async remove(id: Id, config?: LoadConfig): Promise<Doc> {
+  async remove(id: Id, config: LoadConfig = {}): Promise<Doc> {
     const doc = await this.get(id);
     if (!doc) throw new Error(`No Document (${this.name}): ${id}`);
     Object.assign(doc, { status: "inactive" });

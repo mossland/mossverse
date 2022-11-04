@@ -19,6 +19,12 @@ export class ContractResolver extends BaseResolver(
     super(contractService);
   }
   @UseGuards(Allow.Every)
+  @Query(() => [gql.TokenItem])
+  async myInventory(@Args({ type: () => ID, name: "walletId" }) walletId: string) {
+    return await this.contractService.myInventory(new Id(walletId));
+  }
+
+  @UseGuards(Allow.Every)
   @Mutation(() => gql.Contract)
   async generateContract(
     @Args({ type: () => gql.ContractInput, name: "data" }) data: gql.ContractInput,

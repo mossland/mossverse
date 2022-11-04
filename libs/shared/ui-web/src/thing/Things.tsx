@@ -2,31 +2,30 @@ import React, { MutableRefObject, Suspense, useEffect, useRef, useState } from "
 import styled from "styled-components";
 import { ToolOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Modal, Button, Table, Space, Input, Radio, Col, Row, Select, List, Card, Popconfirm } from "antd";
-import { thingStore, types } from "@shared/data-access";
+import { store, gql } from "@shared/data-access";
 import { Field, Img } from "../index";
-import { ThreeEvent, useFrame } from "@react-three/fiber";
-import { Mesh, PlaneGeometry, Sprite, TextureLoader, Vector3 } from "three";
-import { cnst, Utils } from "@shared/util";
 
 export const Things = () => {
-  const init = thingStore.use.init();
-  const things = thingStore.use.things();
-  const modalOpen = thingStore.use.modalOpen();
+  const initThing = store.thing.use.initThing();
+  const thingList = store.thing.use.thingList();
+  const modalOpen = store.thing.use.thingModal();
+  const newThing = store.thing.use.newThing();
+
   useEffect(() => {
-    init();
+    initThing();
   }, []);
 
   return (
     <div>
       <Header>
         <h2>Things</h2>
-        <Button onClick={() => thingStore.setState({ ...types.defaultThing, modalOpen: true })} icon={<PlusOutlined />}>
+        <Button onClick={newThing} icon={<PlusOutlined />}>
           Add
         </Button>
       </Header>
       <List
         grid={{ gutter: 16, column: 5 }}
-        dataSource={things}
+        dataSource={thingList}
         renderItem={(thing) => <Thing key={thing.id} thing={thing} />}
       ></List>
       <ThingEdit />
@@ -35,17 +34,18 @@ export const Things = () => {
 };
 
 interface ThingProps {
-  thing: types.Thing;
+  thing: gql.Thing;
 }
 export const Thing = React.memo(({ thing }: ThingProps) => {
-  const remove = thingStore.use.remove();
+  const editThing = store.thing.use.editThing();
+  const removeThing = store.thing.use.removeThing();
   return (
     <Card
       hoverable
       cover={<img alt="file" src={thing.image.url} />}
       actions={[
-        <EditOutlined key="edit" onClick={() => thingStore.setState({ ...thing, modalOpen: true })} />,
-        <Popconfirm title="Are you sure to remove?" onConfirm={() => remove(thing.id)}>
+        <EditOutlined key="edit" onClick={() => editThing(thing)} />,
+        <Popconfirm title="Are you sure to remove?" onConfirm={() => removeThing(thing.id)}>
           <DeleteOutlined key="remove" />
         </Popconfirm>,
       ]}
@@ -55,41 +55,42 @@ export const Thing = React.memo(({ thing }: ThingProps) => {
   );
 });
 export const ThingEdit = () => {
-  const modalOpen = thingStore.use.modalOpen();
-  const id = thingStore.use.id();
-  const name = thingStore.use.name();
-  const description = thingStore.use.description();
-  const type = thingStore.use.type();
-  const image = thingStore.use.image();
-  const purify = thingStore.use.purify();
-  const create = thingStore.use.create();
-  const update = thingStore.use.update();
-  const addThingFiles = thingStore.use.addThingFiles();
+  const modalOpen = store.thing.use.thingModal();
+  const id = store.thing.use.id();
+  const name = store.thing.use.name();
+  const description = store.thing.use.description();
+  const type = store.thing.use.type();
+  const image = store.thing.use.image();
+  const purifyThing = store.thing.use.purifyThing();
+  const createThing = store.thing.use.createThing();
+  const updateThing = store.thing.use.updateThing();
+  const resetThing = store.thing.use.resetThing();
+  const addThingFiles = store.thing.use.addThingFiles();
   return (
     <Modal
       title={id ? "New Thing" : `Thing - ${name}`}
-      open={modalOpen}
-      onOk={() => (id ? update() : create())}
-      onCancel={() => thingStore.setState({ modalOpen: !modalOpen })}
-      okButtonProps={{ disabled: !purify() }}
+      open={!!modalOpen}
+      onOk={() => (id ? updateThing() : createThing())}
+      onCancel={() => resetThing()}
+      okButtonProps={{ disabled: !purifyThing() }}
     >
       <Field.Container>
-        <Field.Text label="Name" value={name} onChange={(name) => thingStore.setState({ name })} />
+        <Field.Text label="Name" value={name} onChange={(name) => store.thing.setState({ name })} />
         <Field.Text
           label="Description"
           value={description}
-          onChange={(description) => thingStore.setState({ description })}
+          onChange={(description) => store.thing.setState({ description })}
         />
-        {/* <Select value={type} style={{ width: "100%" }} onChange={(type) => thingStore.setState({ type })}>
+        {/* <Select value={type} style={{ width: "100%" }} onChange={(type) => store.thing.setState({ type })}>
           {cnst.thingTypes.map((type) => (
             <Select.Option value={type}>{type}</Select.Option>
           ))}
         </Select> */}
         <Field.Img
           label="Image"
-          onChange={(fileList) => addThingFiles(fileList, "bottom")}
-          value={image}
-          onRemove={() => thingStore.setState({ image: null })}
+          addFiles={addThingFiles}
+          file={image}
+          onRemove={() => store.thing.setState({ image: null })}
         />
       </Field.Container>
     </Modal>

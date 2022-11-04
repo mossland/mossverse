@@ -1,8 +1,5 @@
 import React, { ReactNode, useEffect } from "react";
 import styled from "styled-components";
-import { types, surveyStore, userStore } from "@platform/data-access";
-import { Survey, DefaultButton } from "@platform/ui-web";
-import { walletStore, networkStore, keyringStore } from "@shared/data-access";
 
 type DetailContainerProps = {
   children: ReactNode;

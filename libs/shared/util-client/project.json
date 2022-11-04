@@ -4,23 +4,14 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nrwl/web:rollup",
+      "executor": "@nrwl/js:swc",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/libs/shared/util-client",
         "tsConfig": "libs/shared/util-client/tsconfig.lib.json",
-        "project": "libs/shared/util-client/package.json",
-        "entryFile": "libs/shared/util-client/src/index.ts",
-        "external": ["react/jsx-runtime"],
-        "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
-        "compiler": "swc",
-        "assets": [
-          {
-            "glob": "libs/shared/util-client/README.md",
-            "input": ".",
-            "output": "."
-          }
-        ]
+        "packageJson": "libs/shared/util-client/package.json",
+        "main": "libs/shared/util-client/src/index.ts",
+        "assets": ["libs/shared/util-client/*.md", "libs/shared/util-client/**/*.jpg"]
       }
     },
     "lint": {

@@ -2,25 +2,27 @@ import React, { MutableRefObject, Suspense, useEffect, useRef, useState } from "
 import styled from "styled-components";
 import { ToolOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Modal, Button, Table, Space, Input, Radio, Col, Row, Select, List, Card, Popconfirm } from "antd";
-import { contractStore, tokenStore, types } from "@shared/data-access";
+import { gql, store } from "@shared/data-access";
 import { Field, Img } from "../index";
 import { ThreeEvent, useFrame } from "@react-three/fiber";
 import { Mesh, PlaneGeometry, Sprite, TextureLoader, Vector3 } from "three";
 import { Utils } from "@shared/util";
 
 export const Tokens = () => {
-  const init = tokenStore.use.init();
-  const tokens = tokenStore.use.tokens();
-  const modalOpen = tokenStore.use.modalOpen();
+  const initToken = store.token.use.initToken();
+  const tokens = store.token.use.tokenList();
+  const tokenModal = store.token.use.tokenModal();
+  const newToken = store.token.use.newToken();
+
   useEffect(() => {
-    init();
+    initToken();
   }, []);
 
   return (
     <div>
       <Header>
         <h2>Tokens</h2>
-        <Button onClick={() => tokenStore.setState({ ...types.defaultToken, modalOpen: true })} icon={<PlusOutlined />}>
+        <Button onClick={newToken} icon={<PlusOutlined />}>
           Add
         </Button>
       </Header>
@@ -35,16 +37,17 @@ export const Tokens = () => {
 };
 
 interface TokenProps {
-  token: types.Token;
+  token: gql.Token;
 }
 export const Token = React.memo(({ token }: TokenProps) => {
-  const remove = tokenStore.use.remove();
+  const editToken = store.token.use.editToken();
+  const removeToken = store.token.use.removeToken();
   return (
     <Card
       hoverable
       actions={[
-        <EditOutlined key="edit" onClick={() => tokenStore.setState({ ...token, modalOpen: true })} />,
-        <Popconfirm title="Are you sure to remove?" onConfirm={() => remove(token.id)}>
+        <EditOutlined key="edit" onClick={() => editToken(token)} />,
+        <Popconfirm title="Are you sure to remove?" onConfirm={() => removeToken(token.id)}>
           <DeleteOutlined key="remove" />
         </Popconfirm>,
       ]}
@@ -54,39 +57,41 @@ export const Token = React.memo(({ token }: TokenProps) => {
   );
 });
 export const TokenEdit = () => {
-  const modalOpen = tokenStore.use.modalOpen();
-  const id = tokenStore.use.id();
-  const contracts = contractStore.use.contracts();
-  const tokenId = tokenStore.use.tokenId();
-  const uri = tokenStore.use.uri();
-  const meta = tokenStore.use.meta();
-  const image = tokenStore.use.image();
-  const contract = tokenStore.use.contract();
-  const purify = tokenStore.use.purify();
-  const create = tokenStore.use.create();
-  const update = tokenStore.use.update();
+  const tokenModal = store.token.use.tokenModal();
+  const id = store.token.use.id();
+  const contractList = store.contract.use.contractList();
+  const setContract = store.contract.use.setContract();
+  const tokenId = store.token.use.tokenId();
+  const uri = store.token.use.uri();
+  const meta = store.token.use.meta();
+  const image = store.token.use.image();
+  const contract = store.token.use.contract();
+  const purifyToken = store.token.use.purifyToken();
+  const createToken = store.token.use.createToken();
+  const updateToken = store.token.use.updateToken();
+  const resetToken = store.token.use.resetToken();
   return (
     <Modal
       title={id ? "New Token" : `Token - ${contract?.displayName ?? contract?.address}/${tokenId ?? "Token"}`}
-      open={modalOpen}
-      onOk={() => (id ? update() : create())}
-      onCancel={() => tokenStore.setState({ modalOpen: !modalOpen })}
+      open={!!tokenModal}
+      onOk={() => (id ? updateToken() : createToken())}
+      onCancel={() => resetToken()}
       // okButtonProps={{ disabled: !purify() }}
     >
       <Field.Container>
         <Select
           value={contract}
           style={{ width: "100%" }}
-          onChange={(contract) => contractStore.setState({ contract })}
+          onChange={(contract) => setContract(contract)}
           disabled={!!id}
         >
-          {contracts.map((contract) => (
+          {contractList.map((contract) => (
             <Select.Option value={contract}>{contract?.displayName ?? contract?.address}</Select.Option>
           ))}
         </Select>
-        <Field.Number label="Token ID" value={tokenId} onChange={(tokenId) => tokenStore.setState({ tokenId })} />
+        <Field.Number label="Token ID" value={tokenId} onChange={(tokenId) => store.token.setState({ tokenId })} />
 
-        <Field.Text label="tokenURI" value={uri} onChange={(uri) => tokenStore.setState({ uri })} disabled={true} />
+        <Field.Text label="tokenURI" value={uri} onChange={(uri) => store.token.setState({ uri })} disabled={true} />
         <Field.Text
           label="meta"
           value={JSON.stringify(meta)}
@@ -97,11 +102,11 @@ export const TokenEdit = () => {
         />
         <Field.Img
           label="Image"
-          onChange={(fileList) => {
+          addFiles={(fileList) => {
             //
           }}
-          value={image}
-          onRemove={() => tokenStore.setState({ image: null })}
+          file={image}
+          onRemove={() => store.token.setState({ image: null })}
         />
       </Field.Container>
     </Modal>

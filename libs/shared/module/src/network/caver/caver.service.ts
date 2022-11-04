@@ -22,6 +22,7 @@ import {
   Multicall as MulticallContract,
   AkaMarket,
   market,
+  ERC721AToken,
 } from "@shared/contract";
 import { async } from "rxjs";
 
@@ -51,7 +52,7 @@ export class CaverService extends LogService implements NetworkFunctionality, On
     this.wallet = new ethers.Wallet(this.options.root.privateKey, this.provider);
     this.operators = this.options.operators.map((operator) => new ethers.Wallet(operator.privateKey), this.provider);
     this.multicall = new Multicall(
-      (new ethers.Contract(this.options.multicall, multicall.abi, this.wallet) as unknown) as MulticallContract
+      new ethers.Contract(this.options.multicall, multicall.abi, this.wallet) as unknown as MulticallContract
     );
     this.market = new ethers.Contract(this.options.market, market.abi, this.wallet) as AkaMarket;
   }
@@ -60,10 +61,12 @@ export class CaverService extends LogService implements NetworkFunctionality, On
     // await this.queue.close(true);
   }
   async getInterface(address: string) {
-    const contract = (new ethers.Contract(address, supportInterface.abi, this.provider) as unknown) as ERC721A & ERC20;
+    const contract = new ethers.Contract(address, supportInterface.abi, this.provider) as unknown as ERC721A & ERC20;
+    console.log(address);
     try {
       if (await contract.supportsInterface(this.#erc721InterfaceId)) return "erc721";
     } catch (err) {
+      console.log(err);
       this.logger.warn(`Failed Support Interface ERC721`);
     }
     try {
@@ -79,7 +82,7 @@ export class CaverService extends LogService implements NetworkFunctionality, On
     throw new Error("This contract is not Supported.");
   }
   loadErc20Contract(address: string) {
-    const contract = (new ethers.Contract(address, erc20.abi, this.wallet) as unknown) as ERC20;
+    const contract = new ethers.Contract(address, erc20.abi, this.wallet) as unknown as ERC20;
     const instance = new Erc20(address, contract, {
       abi: erc20.abi,
       multicall: this.multicall,
@@ -89,7 +92,7 @@ export class CaverService extends LogService implements NetworkFunctionality, On
     return instance;
   }
   loadErc721Contract(address: string) {
-    const contract = (new ethers.Contract(address, erc721.abi, this.wallet) as unknown) as ERC721A;
+    const contract = new ethers.Contract(address, erc721.abi, this.wallet) as unknown as ERC721AToken;
     const instance = new Erc721(address, contract, {
       abi: erc721.abi,
       multicall: this.multicall,
@@ -99,7 +102,7 @@ export class CaverService extends LogService implements NetworkFunctionality, On
     return instance;
   }
   loadErc1155Contract(address: string) {
-    const contract = (new ethers.Contract(address, erc1155.abi, this.wallet) as unknown) as ERC1155;
+    const contract = new ethers.Contract(address, erc1155.abi, this.wallet) as unknown as ERC1155;
     const instance = new Erc1155(address, contract, {
       abi: erc1155.abi,
       multicall: this.multicall,

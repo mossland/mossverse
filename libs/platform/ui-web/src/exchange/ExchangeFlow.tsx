@@ -1,9 +1,9 @@
-import { types } from "@platform/data-access";
+import { gql } from "@platform/data-access";
 import { BiRightArrowAlt } from "react-icons/bi";
 
 type ExchangeFlowType = {
-  input: types.Exchange;
-  output: types.Exchange;
+  input: gql.Exchange;
+  output: gql.Exchange;
 };
 
 export const ExchangeFlow = ({ input, output }: ExchangeFlowType) => {

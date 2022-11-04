@@ -10,10 +10,7 @@
         "runtime": "automatic"
       }
     },
-    "minify": {
-      "compress": true,
-      "mangle": true
-    }
+    "keepClassNames": true
   },
   "module": {
     "type": "commonjs",

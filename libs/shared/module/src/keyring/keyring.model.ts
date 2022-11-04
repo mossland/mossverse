@@ -2,6 +2,9 @@ import { Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Model, Types, Query, Schema as Sch } from "mongoose";
 import { dbConfig, Id } from "@shared/util-server";
 import { KeyringSchema, KeyringInput } from "./keyring.gql";
+import * as bcrypt from "bcrypt";
+import { SecurityOptions } from "../options";
+
 @Schema(dbConfig.defaultSchemaOptions)
 class Keyring extends KeyringSchema {}
 export const name = Keyring.name;
@@ -27,6 +30,7 @@ interface DocMtds extends dbConfig.DefaultDocMtds<Doc> {
   addWallet: (walletId: Id) => Doc;
   removeWallet: (walletId: Id) => Doc;
   isOtpExpired: () => boolean;
+  reset: () => Doc;
 }
 schema.methods.has = function (this: Doc, walletId: Id) {
   return this.wallets.some((_id) => _id.equals(walletId));
@@ -42,6 +46,10 @@ schema.methods.addWallet = function (this: Doc, walletId: Id) {
 schema.methods.removeWallet = function (this: Doc, walletId: Id) {
   this.wallets = this.wallets.filter((_id) => !_id.equals(walletId));
   if (!this.wallets.length) throw new Error(`Cannot Empty All Wallets keyring(${this._id}), wallet(${walletId})}`);
+  return this;
+};
+schema.methods.reset = function (this: Doc) {
+  this.merge({ wallets: [], holds: [], discord: {}, isOnline: false });
   return this;
 };
 // * 5. 2. Model Statics
@@ -66,12 +74,16 @@ interface QryHelps extends dbConfig.DefaultQryHelps<Doc, QryHelps> {
 schema.query.dumb = function (this: Mdl) {
   return this.find({});
 };
-export const middleware = () => () => {
+export const middleware = (options: SecurityOptions) => () => {
   /**
    * * 미들웨어 설계: 스키마 데이터 관리 시 사용할 미들웨어를 작성하세요.
    * ? save 시 자동으로 적용할 알고리즘을 적용하세요.
    */
+  const saltRounds = parseInt(options.saltRounds ?? "") || 10;
   schema.pre<Doc>("save", async function (next) {
+    if (!this.isModified("password") || !this.password) return next();
+    const encryptedPassword = await bcrypt.hash(this.password, saltRounds);
+    this.password = encryptedPassword;
     next();
   });
   return schema;

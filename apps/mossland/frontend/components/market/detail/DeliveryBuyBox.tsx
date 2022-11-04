@@ -1,46 +1,22 @@
 import React from "react";
 import styled from "styled-components";
-import { listingStore, receiptStore, shipInfoStore, userStore } from "@platform/data-access";
-import { keyringStore, walletStore } from "@shared/data-access";
 import { DeliveryForm } from "./";
-
-// import { Field } from "@shared/ui-web";
+import { Market } from "@platform/ui-web";
 
 export const DeliveryBuyBox = () => {
-  const listing = listingStore.use.listing();
-  const price = listing?.priceTags?.[0].price ?? 0;
-  const limit = listing?.limit ?? 0;
-  const num = listingStore.use.num();
-  const name = shipInfoStore.use.name();
-  const phone = shipInfoStore.use.phone();
-  const address = shipInfoStore.use.address();
-  const sign = keyringStore.use.sign();
-  const buyItem = listingStore.use.buyItem();
-  const purifyShipInfo = shipInfoStore.use.purify();
-  const wallet = walletStore.use.wallet();
-  const shipInfo = shipInfoStore.use.shipInfo();
-  const initUser = userStore.use.init();
-  const initListing = listingStore.use.init();
-  if (!listing) return <></>;
-  const onBuy = async () => {
-    if (!wallet) return alert("로그인 후  다시 시도해주세요.");
-    listingStore.setState({ priceTag: listing.priceTags[0], num: 1 });
-    await sign(wallet.network.provider);
-    const shipInfoInput = purifyShipInfo();
-    if (!shipInfoInput) return;
-    const receipt = await buyItem(shipInfoInput);
-    await initUser();
-    await initListing();
-    listingStore.setState({ listing: null });
-    receiptStore.setState({ receipt });
-  };
+  const service = Market.useMarket();
+  const price = service?.listing?.priceTags?.[0].price ?? 0;
+  const limit = service?.listing?.limit ?? 0;
+
+  if (!service.listing) return null;
+
   return (
     <DeliveryBuyBoxContainer>
       <div className="stage-2-box">
         <div className="price-group">
           <div className="label">Price</div>
           <div className="price">
-            {listing.priceTags
+            {service.listing.priceTags
               .filter((tag) => tag.thing && tag.thing.type === "root")
               .map((tag, index) => {
                 if (!tag.thing) return;
@@ -53,52 +29,44 @@ export const DeliveryBuyBox = () => {
               })}
           </div>
         </div>
-        <DeliveryForm.Number
-          label="Amount"
-          min={1}
-          max={limit}
-          value={num ?? 0}
-          onChange={(num: number) => {
-            listingStore.setState({ num });
-          }}
-        />
+        <DeliveryForm.Number label="Amount" min={1} max={limit} value={service.num ?? 0} onChange={service.updateNum} />
       </div>
       <DeliveryForm.Text
         label="Name"
-        value={name ?? ""}
+        value={service.name ?? ""}
         placeholder={"받으실 분의 성함을 적어주세요."}
-        onChange={(name) => shipInfoStore.setState({ name })}
+        onChange={service.updateName}
       />
       <DeliveryForm.Text
         label="Address"
-        value={address ?? ""}
+        value={service.address ?? ""}
         placeholder={"살고있는 거주지를 적어주세요"}
-        onChange={(address) => shipInfoStore.setState({ address })}
+        onChange={service.updateAddress}
       />
       <DeliveryForm.Text
         label="Phone"
-        value={phone ?? ""}
+        value={service.phone ?? ""}
         placeholder={"010-xxxx-xxxx"}
-        onChange={(phone) => shipInfoStore.setState({ phone })}
+        onChange={service.updatePhone}
       />
       <div className="stage-2-box">
         <div className="price-group">
           <div className="label">Total Price</div>
           <div className="price">
-            {listing.priceTags
+            {service.listing.priceTags
               .filter((tag) => tag.thing && tag.thing.type === "root")
               .map((tag, index) => {
                 if (!tag.thing) return;
                 return (
                   <div key={tag.thing.id}>
                     <img src={tag.thing.image.url} />
-                    {price * (isNaN(num) ? 1 : num)}
+                    {price * (isNaN(service.num) ? 1 : service.num)}
                   </div>
                 );
               })}
           </div>
         </div>
-        <div className="button" onClick={async () => await onBuy()}>
+        <div className="button" onClick={async () => await service.onDeliveryBuy()}>
           Buy
         </div>
       </div>

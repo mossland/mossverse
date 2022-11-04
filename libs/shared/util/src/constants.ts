@@ -101,7 +101,7 @@ export const receiptTypes = ["trade", "purchase", "use", "admin", "unknown"] as 
 export type ReceiptType = typeof receiptTypes[number];
 
 export const surveyFilterTypes = ["all", "active"] as const;
-export type SurveyFilterTypes = typeof surveyFilterTypes[number];
+export type SurveyFilterType = typeof surveyFilterTypes[number];
 
 export const mocWalletStatuses = ["active", "inactive", "inProgress", "reserved", "success", "failed"] as const;
 export type MocWalletStatus = typeof mocWalletStatuses[number];
@@ -117,6 +117,9 @@ export type VideoStatus = typeof videoStatuses[number];
 
 export const boardStatuses = ["active", "inactive"] as const;
 export type BoardStatus = typeof boardStatuses[number];
+
+export const categoryStatuses = ["active", "inactive"] as const;
+export type CategoryStatus = typeof categoryStatuses[number];
 
 export const boardViewStyles = ["gallery", "list", "board"] as const;
 export type BoardViewStyle = typeof boardViewStyles[number];
@@ -135,3 +138,117 @@ export type RoomType = typeof roomTypes[number];
 
 export const defaultSexyRate = { face: 0, body: 0, voice: 0, sexy: 0, acting: 0 } as const;
 export const defaultVideoStat = { viewNum: 0, clickNum: 0, payNum: 0, commentNum: 0 } as const;
+export const defaultStoryStat = { views: 0, likes: 0, unlikes: 0 } as const;
+export const clusterStatuses = ["active", "inactive"] as const;
+export type ClusterStatus = typeof clusterStatuses[number];
+
+export const assetStatuses = ["active", "inactive"] as const;
+export type AssetStatus = typeof assetStatuses[number];
+
+export const deployStatuses = ["active", "inactive"] as const;
+export type DeployStatus = typeof deployStatuses[number];
+
+export const characterStatuses = ["active", "inactive"] as const;
+export type CharacterStatus = typeof characterStatuses[number];
+
+export const dialogStatuses = ["active", "inactive"] as const;
+export type DialogStatus = typeof dialogStatuses[number];
+
+export const emojiStatuses = ["active", "inactive"] as const;
+export type EmojiStatus = typeof emojiStatuses[number];
+
+export const mapStatuses = ["active", "inactive"] as const;
+export type MapStatus = typeof mapStatuses[number];
+
+export const roleStatuses = ["active", "inactive"] as const;
+export type RoleStatus = typeof roleStatuses[number];
+
+export const partStatuses = ["active", "inactive"] as const;
+export type PartStatus = typeof partStatuses[number];
+
+export const collectStatuses = ["active", "inactive"] as const;
+export type CollectStatus = typeof collectStatuses[number];
+
+export const generativeStatuses = ["active", "inactive"] as const;
+export type GenerativeStatus = typeof generativeStatuses[number];
+
+export const mintEventStatuses = ["active", "inactive"] as const;
+export type MintEventStatus = typeof mintEventStatuses[number];
+
+export const mintEventPolicies = ["whitelist", "public"] as const;
+export type MintEventPolicy = typeof mintEventPolicies[number];
+
+export const featureStatuses = ["active", "inactive"] as const;
+export type FeatureStatus = typeof featureStatuses[number];
+
+export const mintLogStatuses = ["active", "inactive"] as const;
+export type MintLogStatus = typeof mintLogStatuses[number];
+
+export const traitDisplayTypes = ["default", "hidden"] as const;
+export type TraitDisplayType = typeof traitDisplayTypes[number];
+
+export const traitTypes = ["num", "text", "date"] as const;
+export type TraitType = typeof traitTypes[number];
+
+export const publicMerkleRoot = "0x0000000000000000000000000000000000000000000000000000000000000000";
+export const linkTypes = [
+  "website",
+  "twitter",
+  "discord",
+  "telegram",
+  "instagram",
+  "facebook",
+  "youtube",
+  "github",
+  "medium",
+  "linkedin",
+  "reddit",
+  "twitch",
+  "vimeo",
+  "weibo",
+  "wikipedia",
+  "app",
+  "email",
+  "other",
+];
+export type LinkType = typeof linkTypes[number];
+
+export const quillEditorFormats = [
+  "header",
+  "size",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "blockquote",
+  "list",
+  "bullet",
+  "indent",
+  "link",
+  "image",
+];
+
+export type PageMap = {
+  [key in "user" | "admin" | "public"]: {
+    paths: string[];
+    home: string;
+    unauthorized: string;
+  };
+};
+export const defaultPageMap: PageMap = {
+  public: {
+    paths: ["/"],
+    home: "/",
+    unauthorized: "/",
+  },
+  user: {
+    paths: ["/"],
+    home: "/",
+    unauthorized: "/",
+  },
+  admin: {
+    paths: ["/"],
+    home: "/",
+    unauthorized: "/",
+  },
+};

@@ -1,36 +1,26 @@
 import { LoginButton, LoginSelector, LoginSelectorMobile } from "@shared/ui-web";
-import { types, userStore } from "@platform/data-access";
-import { keyringStore, networkStore, walletStore } from "@shared/data-access";
+import { gql, utils, store } from "../../stores";
 import { toast } from "react-toastify";
 
 import styled from "styled-components";
 
 export const Connect = () => {
-  const initUser = userStore.use.init();
-  const networks = networkStore.use.networks();
-  const login = keyringStore.use.login();
-  const signWalletConnect = keyringStore.use.signWalletConnect();
-  // const changeLoginMethod = keyringStore.setState({ loginMethod });
-
-  const onClickLoginSelect = async (loginMethod: types.shared.LoginMethod) => {
-    // try {
-    const network = networks.find((network) => network.provider === loginMethod);
+  const whoAmI = store.platform.user.use.whoAmI();
+  const networkList = store.shared.network.use.networkList();
+  const login = store.shared.keyring.use.login();
+  const signWalletConnect = store.shared.keyring.use.signWalletConnect();
+  const onClickLoginSelect = async (loginMethod: gql.shared.LoginMethod) => {
+    const network = networkList.find((network) => network.provider === loginMethod);
     if (!network) return;
     await login(loginMethod);
-    await initUser();
-    keyringStore.setState({ isOpenModal: false });
-    // } catch (err) {
-    //   console.log(err);
-    //   // err instanceof Error &&
-    //   //   err.message.includes("User denied message signature.") &&
-    //   toast.error("User denied message signature.");
-    // }
+    await whoAmI();
+    store.shared.keyring.setState({ isOpenModal: false }); // ! 추상화 필요
   };
-  const onClickButtonToMobile = async (loginMethod: types.shared.LoginMethod) => {
+  const onClickButtonToMobile = async (loginMethod: gql.shared.LoginMethod) => {
     try {
       await signWalletConnect(loginMethod);
-      await initUser();
-      keyringStore.setState({ signStatus: "none", isOpenModal: false });
+      await whoAmI();
+      store.shared.keyring.setState({ signStatus: "none", isOpenModal: false });
     } catch (err) {
       err instanceof Error &&
         err.message.includes("User denied message signature.") &&

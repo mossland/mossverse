@@ -16,7 +16,7 @@ export class PointService extends LogService implements OnModuleInit {
     super(PointService.name);
   }
   async onModuleInit() {
-    this.point = await this.thingService.generate("point");
+    this.point = await this.thingService.generate("Point");
   }
   async resetPointsAll() {
     this.logger.verbose("Reset Point Start");

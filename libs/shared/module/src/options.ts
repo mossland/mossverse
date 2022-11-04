@@ -43,7 +43,7 @@ export type EtherOptions = {
   operators: Wallet[];
   testWallets: Wallet[];
   apiKey: string;
-  network: "mainnet" | "ropsten" | "rinkeby" | "ganache";
+  network: "mainnet" | "ropsten" | "rinkeby" | "goerli" | "ganache";
   infuraId: string;
   chainId: string;
   endpoint: string;

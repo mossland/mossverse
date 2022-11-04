@@ -1,0 +1,34 @@
+{
+  "name": "decentverse/data-access",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/decentverse/data-access/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:swc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/decentverse/data-access",
+        "main": "libs/decentverse/data-access/src/index.ts",
+        "tsConfig": "libs/decentverse/data-access/tsconfig.lib.json",
+        "assets": ["libs/decentverse/data-access/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/decentverse/data-access/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/decentverse/data-access"],
+      "options": {
+        "jestConfig": "libs/decentverse/data-access/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

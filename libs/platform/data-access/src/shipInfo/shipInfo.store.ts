@@ -1,30 +1,31 @@
 import create from "zustand";
-import * as types from "../types";
 import * as gql from "../gql";
 import { devtools } from "zustand/middleware";
-import { createSelectors, Nullable } from "@shared/util-client";
-import { update } from "libs/shared/util/src/utils";
+import { makeDefault, generateStore, Nullable } from "@shared/util-client";
 import { cnst } from "@shared/util";
+import { ShipInfo } from "../gql";
 
-type State = Nullable<types.ShipInfo> & {
-  shipInfo: types.ShipInfo | null;
+//! Need to be refactored
+
+type State = Nullable<gql.ShipInfo> & {
+  shipInfo: gql.ShipInfo | null;
 };
 
 const initialState: State = {
-  ...types.defaultShipInfo,
+  ...gql.defaultShipInfo,
   shipInfo: null,
 };
 
 type Action = {
   init: () => Promise<void>; // 초기화
-  purify: () => types.ShipInfoInput | null; // 유효성검사 및 Map => MapInput 변환
+  purify: () => gql.ShipInfoInput | null; // 유효성검사 및 Map => MapInput 변환
   create: () => Promise<void>; // 생성
   update: () => Promise<void>; // 수정
   remove: (id: string) => Promise<void>; // 제거
-  reset: (shipInfo?: types.ShipInfo) => void; // 수정필드 리셋
+  reset: (shipInfo?: gql.ShipInfo) => void; // 수정필드 리셋
 };
 
-export const useShipInfo = create<State & Action>()(
+const store = create<State & Action>()(
   devtools((set, get) => ({
     ...initialState,
     init: async () => {
@@ -35,7 +36,7 @@ export const useShipInfo = create<State & Action>()(
     purify: () => {
       const state = get();
       try {
-        const shipInfo = types.purifyShipInfo(state as types.ShipInfo);
+        const shipInfo = gql.purifyShipInfo(state as gql.ShipInfo);
         return shipInfo;
       } catch (err) {
         return null;
@@ -51,8 +52,8 @@ export const useShipInfo = create<State & Action>()(
     remove: async () => {
       //* not used
     }, // 제거
-    reset: (shipInfo?: types.ShipInfo) => set({ ...types.defaultShipInfo, shipInfo }),
+    reset: (shipInfo?: gql.ShipInfo) => set({ ...gql.defaultShipInfo, shipInfo }),
   }))
 );
 
-export const shipInfoStore = createSelectors(useShipInfo);
+export const shipInfo = generateStore(store);

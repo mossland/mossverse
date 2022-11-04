@@ -7,6 +7,8 @@ import { Contract } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { market } from "../abis";
 import { AkaMarket } from "../typechain-types";
+import { makeSaleInfo, saleInfosToArrays } from "../utils";
+import { Utils } from "@shared/util";
 
 const CONTRACT_NAME = "AkaToken";
 const ARGS = ["AkaCoin", "AKA"];
@@ -18,7 +20,7 @@ const main = async () => {
   console.log("Account balance:", (await deployer.getBalance()).toString());
   await Promise.all([
     // await deployErc20(deployer),
-    // await deployErc721(deployer),
+    await deployErc721(deployer),
     // await deployErc1155(deployer),
     // await deployMulticall(),
     // await deployMarket(),
@@ -37,11 +39,22 @@ const deployErc20 = async (deployer: SignerWithAddress) => {
   return contract;
 };
 const deployErc721 = async (deployer: SignerWithAddress) => {
-  const name = "Akamir";
+  const name = "ERC721AToken";
   const factory = await ethers.getContractFactory(name);
-  const contract = await factory.deploy(100, 1000, 800, 500);
+  const contract = await factory.deploy(
+    "belif Herb Club",
+    "BHC",
+    1200,
+    "https://belif.backend.akamir.com/generative/opensea/634c86c7adc2f22a103057f9/",
+    // "https://testnet.belif.backend.akamir.com/generative/opensea/634c86c7adc2f22a103057f9/",
+    true
+  );
   await contract.deployed();
-  await contract.connect(deployer).devMint(100, Math.floor(Date.now() / 1000), { gasLimit: 200000 });
+  await contract
+    .connect(deployer)
+    .setSaleInfoList(...saleInfosToArrays([makeSaleInfo([deployer.address], 200)]), 0, { gasLimit: 200000 });
+  await Utils.sleep(1000);
+  await contract.connect(deployer).mint(0, 200, [], { gasLimit: 1000000 });
   console.log(`${name} Deployed Contract Address: ${contract.address}`);
   return contract;
 };

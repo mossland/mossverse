@@ -20,7 +20,7 @@ export function Exchange() {
   usePageInit();
 
   return (
-    <GqlProvider uri={env.endpoint}>
+    <GqlProvider uri={env.endpoint} ws={env.ws} networkType={env.networkType}>
       <PlatformLayout>
         <ExchangeHeader />
         <ExchangeBody>

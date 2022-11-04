@@ -1,28 +1,26 @@
 import React, { useEffect } from "react";
 import styled from "styled-components";
-import { useRouter } from "next/router";
-import { types, listingStore, userStore, utils } from "@platform/data-access";
-import { MarketLabel } from "./";
+import { gql, utils, store } from "../../stores";
 
 type MarketItemProps = {
-  item: types.Listing;
+  item: gql.platform.Listing;
   onClick?: React.MouseEventHandler<HTMLDivElement>;
 };
 export const MarketItem = ({ item, onClick }: MarketItemProps) => {
-  const filter = listingStore.use.filter();
+  const filter = store.platform.listing.use.filter();
 
   return (
     <MarketItemContainer onClick={onClick} style={{ opacity: item.status === "soldout" ? 0.5 : 1 }}>
       <div className="image-wrapper">
-        {utils.getListingImage(item) ? (
-          <img src={utils.getListingImage(item) ?? ""} />
+        {utils.platform.getListingImage(item) ? (
+          <img src={utils.platform.getListingImage(item) ?? ""} />
         ) : (
           <div className="empty-image">no image</div>
         )}
       </div>
       <div className={`info ${filter === "myTokens" && "selling"}`}>
         {/* <MarketLabel item={item} /> */}
-        <div className="title">{utils.getListingName(item)}</div>
+        <div className="title">{utils.platform.getListingName(item)}</div>
         <div className="price-box">
           <div className="price">
             <img src={item.priceTags[0].thing?.image.url as string} />

@@ -2,16 +2,12 @@ import React, { MutableRefObject, Suspense, useEffect, useRef, useState } from "
 import styled from "styled-components";
 import { ToolOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Modal, Button, Table, Space, Input, Radio, Col, Row, Select, List, Card } from "antd";
-import { walletStore, types } from "@shared/data-access";
-import { Field, Img } from "../index";
-import { ThreeEvent, useFrame } from "@react-three/fiber";
-import { Mesh, PlaneGeometry, Sprite, TextureLoader, Vector3 } from "three";
-import { Utils } from "@shared/util";
+import { gql, store } from "@shared/data-access";
 
 export const Wallets = () => {
-  const init = walletStore.use.init();
-  const wallets = walletStore.use.wallets();
-  const modalOpen = walletStore.use.modalOpen();
+  const init = store.wallet.use.init();
+  const walletList = store.wallet.use.walletList();
+  const newWallet = store.wallet.use.newWallet();
   useEffect(() => {
     // init();
   }, []);
@@ -20,16 +16,13 @@ export const Wallets = () => {
     <div>
       <Header>
         <h2>Wallets</h2>
-        <Button
-          onClick={() => walletStore.setState({ ...types.defaultWallet, modalOpen: true })}
-          icon={<PlusOutlined />}
-        >
+        <Button onClick={newWallet} icon={<PlusOutlined />}>
           Add
         </Button>
       </Header>
       <List
         grid={{ gutter: 16, column: 5 }}
-        dataSource={wallets}
+        dataSource={walletList}
         renderItem={(wallet) => <Wallet key={wallet.id} wallet={wallet} />}
       ></List>
     </div>
@@ -37,14 +30,12 @@ export const Wallets = () => {
 };
 
 interface WalletProps {
-  wallet: types.Wallet;
+  wallet: gql.Wallet;
 }
 export const Wallet = React.memo(({ wallet }: WalletProps) => {
+  const editWallet = store.wallet.use.editWallet();
   return (
-    <Card
-      hoverable
-      actions={[<EditOutlined key="edit" onClick={() => walletStore.setState({ ...wallet, modalOpen: true })} />]}
-    >
+    <Card hoverable actions={[<EditOutlined key="edit" onClick={() => editWallet(wallet)} />]}>
       <Card.Meta title={wallet.address} />
     </Card>
   );

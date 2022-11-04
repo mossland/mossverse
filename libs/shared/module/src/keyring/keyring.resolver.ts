@@ -16,6 +16,10 @@ export class KeyringResolver extends BaseResolver(gql.Keyring, gql.KeyringInput,
   ) {
     super(keyringService);
   }
+  @Query(() => gql.Keyring)
+  async myKeyring(@Auth() account: Account) {
+    return await this.keyringService.get(new Id(account.keyring));
+  }
 
   @Mutation(() => gql.AccessToken)
   async signinWithOtp(@Args({ name: "otp", type: () => String }) otp: string) {
@@ -29,10 +33,35 @@ export class KeyringResolver extends BaseResolver(gql.Keyring, gql.KeyringInput,
   ) {
     return await this.keyringService.signinWithAddress(new Id(networkId), address);
   }
-
+  @Mutation(() => gql.AccessToken)
+  async signinWithPassword(
+    @Args({ name: "accountId", type: () => String }) accountId: string,
+    @Args({ name: "password", type: () => String }) password: string
+  ) {
+    return await this.keyringService.signinWithPassword(accountId, password);
+  }
+  @Mutation(() => gql.AccessToken)
+  async signupWithPassword(
+    @Args({ name: "accountId", type: () => String }) accountId: string,
+    @Args({ name: "password", type: () => String }) password: string
+  ) {
+    return await this.keyringService.signupWithPassword(accountId, password);
+  }
+  @Mutation(() => gql.AccessToken)
+  async changePassword(
+    @Args({ name: "keyringId", type: () => ID }) keyringId: string,
+    @Args({ name: "password", type: () => String }) password: string,
+    @Args({ name: "prevPassword", type: () => String }) prevPassword: string
+  ) {
+    return await this.keyringService.changePassword(new Id(keyringId), password, prevPassword);
+  }
   @Query(() => [gql.Keyring])
   async keyringHasWallet(@Args({ name: "networkId", type: () => ID }) networkId: string, @Signature() address: string) {
     return await this.keyringService.keyringsHasWallet(new Id(networkId), address);
+  }
+  @Query(() => Boolean)
+  async keyringHasAccountId(@Args({ name: "accountId", type: () => ID }) accountId: string) {
+    return await this.keyringService.exists({ accountId, status: "active" });
   }
 
   @Mutation(() => gql.Keyring)

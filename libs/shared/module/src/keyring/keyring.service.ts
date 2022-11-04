@@ -1,6 +1,8 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Id, LoadService } from "@shared/util-server";
+import * as bcrypt from "bcrypt";
+import * as jwt from "jsonwebtoken";
 import * as Keyring from "./keyring.model";
 import * as gql from "../gql";
 import * as srv from "../srv";
@@ -8,9 +10,11 @@ import * as db from "../db";
 import { WalletService } from "../wallet/wallet.service";
 import { ContractService } from "../contract/contract.service";
 import { Utils } from "@shared/util";
+import { SecurityOptions } from "../options";
 @Injectable()
 export class KeyringService extends LoadService<Keyring.Mdl, Keyring.Doc, Keyring.Input> {
   constructor(
+    @Inject("SECURITY_OPTIONS") private readonly options: SecurityOptions,
     @InjectModel(Keyring.name)
     private readonly Keyring: db.Keyring.Mdl,
     private readonly walletService: WalletService,
@@ -38,6 +42,44 @@ export class KeyringService extends LoadService<Keyring.Mdl, Keyring.Doc, Keyrin
     const keyring =
       (await this.Keyring.findOne({ wallets: wallet._id })) ?? (await this.Keyring.create({ wallets: [wallet._id] }));
     return this.securityService.generateToken(keyring);
+  }
+  async signinWithPassword(accountId: string, password: string): Promise<gql.AccessToken> {
+    const account = await this.Keyring.findOne({ accountId }).select({
+      _id: true,
+      status: true,
+      role: true,
+      password: true,
+    });
+    if (!account) throw new Error("No Account");
+    if (account.status !== "active" || !(await bcrypt.compare(password, account.password || "")))
+      throw new Error(`not match`);
+    const keyring = await this.Keyring.pickById(account._id);
+    return this.securityService.generateToken(keyring);
+  }
+  async signupWithPassword(accountId: string, password: string): Promise<gql.AccessToken> {
+    const account = await this.Keyring.findOne({ accountId, status: "active" }).select({
+      status: true,
+      role: true,
+      password: true,
+    });
+    if (account) throw new Error(`The Account Already Exists`);
+    const keyring = await new this.Keyring({ accountId, password }).save();
+    return this.securityService.generateToken(keyring);
+  }
+  async changePassword(keyringId: Id, password: string, prevPassword: string): Promise<gql.AccessToken> {
+    const account = await this.Keyring.findOne({ _id: keyringId, status: "active" }).select({
+      status: true,
+      role: true,
+      password: true,
+    });
+    if (!account) throw new Error(`The Account does not exists`);
+    if (account && !(await bcrypt.compare(prevPassword, account.password || ""))) throw new Error(`not match`);
+    const keyring = await this.Keyring.pickAndWrite(keyringId, { password });
+    return this.securityService.generateToken(keyring);
+  }
+  async remove(keyringId: Id): Promise<Keyring.Doc> {
+    const keyring = await this.Keyring.pickById(keyringId);
+    return await keyring.reset().merge({ status: "inactive" }).save();
   }
   async keyringsHasWallet(networkId: Id, address: string) {
     const wallet = await this.walletService.myWallet(networkId, address);

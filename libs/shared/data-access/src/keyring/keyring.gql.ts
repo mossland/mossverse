@@ -1,9 +1,56 @@
-import { query, mutate } from "../apollo";
-import gql from "graphql-tag";
-import { types } from "..";
+import graphql from "graphql-tag";
+import { cnst } from "@shared/util";
+import {
+  createGraphQL,
+  createFragment,
+  Field,
+  InputType,
+  mutate,
+  query,
+  ObjectType,
+  JSON,
+  BaseGql,
+} from "@shared/util-client";
+import { Wallet } from "../wallet/wallet.gql";
+import { Contract } from "../contract/contract.gql";
+
+@InputType("KeyringInput")
+export class KeyringInput {}
+
+@ObjectType("Keyring", { _id: "id" })
+export class Keyring extends BaseGql(KeyringInput) {
+  @Field(() => String, { nullable: true })
+  prevUser: string | null;
+
+  @Field(() => [Wallet])
+  wallets: Wallet[];
+
+  @Field(() => [Contract])
+  holds: Contract[];
+
+  @Field(() => JSON)
+  discord: Record<string, any> | null;
+
+  @Field(() => String)
+  status: cnst.KeyringStatus;
+}
+
+export const keyringGraphQL = createGraphQL<"keyring", Keyring, KeyringInput>(Keyring, KeyringInput);
+export const {
+  getKeyring,
+  listKeyring,
+  keyringCount,
+  keyringExists,
+  createKeyring,
+  updateKeyring,
+  removeKeyring,
+  keyringFragment,
+  purifyKeyring,
+  defaultKeyring,
+} = keyringGraphQL;
 
 export type EncryptMutation = { encrypt: string };
-export const encryptMutation = gql`
+export const encryptMutation = graphql`
   mutation encrypt($data: String!) {
     encrypt(data: $data)
   }
@@ -16,9 +63,20 @@ export const encrypt = async (data: string) =>
     })
   ).encrypt;
 
+export type MyKeyringQuery = { myKeyring: Keyring };
+export const myKeyringQuery = graphql`
+  ${keyringFragment}
+  query myKeyring {
+    myKeyring {
+      ...keyringFragment
+    }
+  }
+`;
+export const myKeyring = async () => (await mutate<MyKeyringQuery>(myKeyringQuery)).myKeyring;
+
 export type SigninWithAddressMutation = { signinWithAddress: { accessToken: string } };
 
-export const signinWithAddressMutation = gql`
+export const signinWithAddressMutation = graphql`
   mutation signinWithAddress($networkId: ID!) {
     signinWithAddress(networkId: $networkId) {
       accessToken
@@ -33,9 +91,58 @@ export const signinWithAddress = async (networkId: string) =>
     })
   ).signinWithAddress.accessToken;
 
+export type SigninWithPasswordMutation = { signinWithPassword: { accessToken: string } };
+export const signinWithPasswordMutation = graphql`
+  mutation signinWithPassword($accountId: String!, $password: String!) {
+    signinWithPassword(accountId: $accountId, password: $password) {
+      accessToken
+    }
+  }
+`;
+export const signinWithPassword = async (accountId: string, password: string) =>
+  (
+    await mutate<SigninWithPasswordMutation>(signinWithPasswordMutation, {
+      accountId,
+      password,
+    })
+  ).signinWithPassword.accessToken;
+
+export type SignupWithPasswordMutation = { signupWithPassword: { accessToken: string } };
+export const signupWithPasswordMutation = graphql`
+  mutation signupWithPassword($accountId: String!, $password: String!) {
+    signupWithPassword(accountId: $accountId, password: $password) {
+      accessToken
+    }
+  }
+`;
+export const signupWithPassword = async (accountId: string, password: string) =>
+  (
+    await mutate<SignupWithPasswordMutation>(signupWithPasswordMutation, {
+      accountId,
+      password,
+    })
+  ).signupWithPassword.accessToken;
+
+export type ChangePasswordMutation = { changePassword: { accessToken: string } };
+export const changePasswordMutation = graphql`
+  mutation changePassword($keyringId: ID!, $password: String!, $prevPassword: String!) {
+    changePassword(keyringId: $keyringId, password: $password, prevPassword: $prevPassword) {
+      accessToken
+    }
+  }
+`;
+export const changePassword = async (accountId: string, password: string, prevPassword: string) =>
+  (
+    await mutate<ChangePasswordMutation>(changePasswordMutation, {
+      accountId,
+      password,
+      prevPassword,
+    })
+  ).changePassword.accessToken;
+
 export type SigninUserMutation = { signinUser: { accessToken: string } };
 
-export const signinUserMutation = gql`
+export const signinUserMutation = graphql`
   mutation signinUser($userId: ID!) {
     signinUser(userId: $userId) {
       accessToken
@@ -44,9 +151,9 @@ export const signinUserMutation = gql`
 `;
 
 // * keyringHasWallet Query
-export type KeyringHasWalletQuery = { keyringHasWallet: types.Keyring[] };
-export const keyringHasWalletQuery = gql`
-  ${types.keyringFragment}
+export type KeyringHasWalletQuery = { keyringHasWallet: Keyring[] };
+export const keyringHasWalletQuery = graphql`
+  ${keyringFragment}
   query keyringHasWallet($networkId: ID!) {
     keyringHasWallet(networkId: $networkId) {
       ...keyringFragment
@@ -58,7 +165,7 @@ export const keyringHasWallet = async (networkId: string) =>
 
 // * generateOtp mutation
 export type GenerateOtpMutation = { generateOtp: { otp: string } };
-export const generateOtpMutation = gql`
+export const generateOtpMutation = graphql`
   mutation generateOtp {
     generateOtp {
       otp
@@ -68,9 +175,9 @@ export const generateOtpMutation = gql`
 export const generateOtp = async () => (await mutate<GenerateOtpMutation>(generateOtpMutation)).generateOtp;
 
 // * AddWallet Mutation
-export type AddWalletMutation = { addWallet: types.Keyring };
-export const addWalletMutation = gql`
-  ${types.keyringFragment}
+export type AddWalletMutation = { addWallet: Keyring };
+export const addWalletMutation = graphql`
+  ${keyringFragment}
   mutation addWallet($keyringId: ID!, $networkId: ID!) {
     addWallet(keyringId: $keyringId, networkId: $networkId) {
       ...keyringFragment
@@ -83,7 +190,7 @@ export const addWallet = async (keyringId: string, networkId: string) =>
 
 export type SigninWithOtpMutation = { signinWithOtp: { accessToken: string } };
 
-export const signinWithOtpMutation = gql`
+export const signinWithOtpMutation = graphql`
   mutation signinWithOtp($otp: String!) {
     signinWithOtp(otp: $otp) {
       accessToken
@@ -99,9 +206,9 @@ export const signinWithOtp = async (otp: string) =>
   ).signinWithOtp.accessToken;
 
 // * RemoveWallet Mutation
-export type RemoveWalletMutation = { removeWallet: types.Keyring };
-export const removeWalletMutation = gql`
-  ${types.keyringFragment}
+export type RemoveWalletMutation = { removeWallet: Keyring };
+export const removeWalletMutation = graphql`
+  ${keyringFragment}
   mutation removeWallet($keyringId: ID!, $walletId: ID!, $address: ID!) {
     removeWallet(keyringId: $keyringId, walletId: $walletId, address: $address) {
       ...keyringFragment

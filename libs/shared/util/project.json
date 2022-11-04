@@ -8,6 +8,7 @@
       "options": {
         "outputPath": "dist/libs/shared/util",
         "main": "libs/shared/util/src/index.ts",
+        "packageJson": "libs/shared/util/package.json",
         "tsConfig": "libs/shared/util/tsconfig.lib.json",
         "assets": ["libs/shared/util/*.md"]
       }

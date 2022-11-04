@@ -55,12 +55,12 @@ contract Akamir is Ownable, ERC721A, ReentrancyGuard {
         require(quantity % maxPerAddressDuringMint == 0, "can only mint a multiple of the maxBatchSize");
         uint256 numChunks = quantity / maxPerAddressDuringMint;
         for (uint256 i = 0; i < numChunks; i++) {
-            _safeMint(msg.sender, maxPerAddressDuringMint, lockUntil);
+            _safeMint(msg.sender, maxPerAddressDuringMint);
         }
     }
 
     function unlockToken(uint256 tokenId) external onlyOwner {
-        unlock(tokenId);
+        _unlock(tokenId);
     }
 
     // // metadata URI

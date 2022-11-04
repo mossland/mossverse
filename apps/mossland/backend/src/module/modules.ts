@@ -1,6 +1,6 @@
 import { modules as shared } from "@shared/module";
 import { modules as platform } from "@platform/module";
-import { modules as decentverse } from "@decentverse/server";
+import { modules as decentverse } from "@decentverse/module";
 import { ModulesOptions } from "./options";
 import { DynamicModule } from "@nestjs/common";
 

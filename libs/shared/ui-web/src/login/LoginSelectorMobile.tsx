@@ -1,10 +1,10 @@
+// ! This File Needs to be Refactor
 import styled, { keyframes } from "styled-components";
-import { keyringStore, networkStore } from "@shared/data-access";
+import { store } from "@shared/data-access";
 import { ConnectEthereum, ConnectKlaytn, ConnectLuniverse, ConnectButton } from "./index";
 import { MetamaskIcon, KlaytnIcon, LuniverseIcon, EthereumIcon, ModalContainer } from "../common";
 import { cnst, Utils } from "@shared/util";
 import { walletConnect } from "@shared/util-client";
-import { whoAmI } from "@platform/data-access";
 
 export type LoginSelectorMobileProps = {
   klaytn?: () => Promise<void>;
@@ -12,28 +12,28 @@ export type LoginSelectorMobileProps = {
 };
 
 export const LoginSelectorMobile = ({ klaytn, ethereum }: LoginSelectorMobileProps) => {
-  const isOpenModal = keyringStore.use.isOpenModal();
-  const network = networkStore.use.network();
-  const networks = networkStore.use.networks();
-  const signMessage = keyringStore.use.signMessage();
-  const signStatus = keyringStore.use.signStatus();
-  const connector = keyringStore.use.connector();
-  const generateSignMessage = keyringStore.use.generateSignMessage();
+  const isOpenModal = store.keyring.use.isOpenModal();
+  const network = store.network.use.network();
+  const networkList = store.network.use.networkList();
+  const signMessage = store.keyring.use.signMessage();
+  const signStatus = store.keyring.use.signStatus();
+  const connector = store.keyring.use.connector();
+  const generateSignMessage = store.keyring.use.generateSignMessage();
 
   const connect = async (provider: cnst.NetworkProvider) => {
-    const network = networks.find((n) => n.provider === provider);
+    const network = networkList.find((n) => n.provider === provider);
     if (!network) return;
-    networkStore.setState({ network });
+    store.network.setState({ network });
     const { accounts, chainId, networkId, rpcUrl } = await walletConnect.connect(connector);
     if (network.networkId !== chainId) {
-      keyringStore.setState({
+      store.keyring.setState({
         signStatus: "network-diff",
       });
       return;
     }
 
     const signMessage = await generateSignMessage(connector.accounts[0]);
-    keyringStore.setState({ signStatus: "connect", signMessage });
+    store.keyring.setState({ signStatus: "connect", signMessage });
   };
   const sign = async () => {
     if (!network || !signMessage) return;
@@ -45,7 +45,7 @@ export const LoginSelectorMobile = ({ klaytn, ethereum }: LoginSelectorMobilePro
     if (!network) return;
     await walletConnect.switchNetwork(connector, network.networkId);
     const signMessage = await generateSignMessage(connector.accounts[0]);
-    keyringStore.setState({ signStatus: "connect", signMessage });
+    store.keyring.setState({ signStatus: "connect", signMessage });
   };
 
   if (!isOpenModal) return null;
@@ -56,7 +56,7 @@ export const LoginSelectorMobile = ({ klaytn, ethereum }: LoginSelectorMobilePro
       closeShowModal={() => {
         // localStorage.removeItem("walletconnect");
         // localStorage.removeItem("ally-supports-cache");
-        keyringStore.setState({ isOpenModal: false, signStatus: "none" });
+        store.keyring.setState({ isOpenModal: false, signStatus: "none" });
       }}
       title="Select Network"
     >

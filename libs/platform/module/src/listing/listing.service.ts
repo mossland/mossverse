@@ -75,7 +75,8 @@ export class ListingService extends LoadService<Listing.Mdl, Listing.Doc, Listin
     if (listing.isPurchaseWith("thing", priceTag)) {
       const keyring = await this.keyringService.get(user.keyring);
       const fromWallet = await this.walletService.pick({ address });
-      if (!keyring.has(fromWallet._id)) throw new Error("Not Owner of Wallet");
+      if (!keyring.has(fromWallet._id))
+        throw new Error(`Not Owner of Wallet fromwallet : ${fromWallet}  keyring: ${keyring}`);
       const inputs: gql.ExchangeInput[] = [{ type: "thing", thing: priceTag.thing, num: priceTag.price * num }];
       const outputs: gql.ExchangeInput[] = [{ type: "token", token: listing.token, num }];
       await this.contractService.checkApproval(listing.token as Id, listing.wallet as Id, listing.limit ?? 0);

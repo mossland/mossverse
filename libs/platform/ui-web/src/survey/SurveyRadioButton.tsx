@@ -1,6 +1,5 @@
 import React from "react";
 import { BiCalendarEdit } from "react-icons/bi";
-import { useSurvey } from "@platform/data-access";
 
 type SurveyRadioButtonProps = {
   label: string;
@@ -9,8 +8,6 @@ type SurveyRadioButtonProps = {
 };
 
 export const SurveyRadioButton = ({ label, id, handleChange }: SurveyRadioButtonProps) => {
-  // const openSurveyForm = useSurvey((state) => state.openSurveyForm);
-
   return (
     <div className="form-check">
       <input

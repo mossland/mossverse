@@ -36,6 +36,13 @@ class Tail extends Base {
   @Prop({ type: MongoSchema.Types.Mixed, default: {} })
   discord: Record<string, any>;
 
+  @Field(() => String)
+  @Prop({ type: String, required: false, validate: validate.email, default: "", index: true })
+  accountId: string;
+
+  @Prop({ type: String, required: false, select: false, default: "", index: true })
+  password?: string;
+
   @Field(() => Boolean)
   @Prop({ type: Boolean, default: true, required: true, index: true })
   isOnline: boolean;

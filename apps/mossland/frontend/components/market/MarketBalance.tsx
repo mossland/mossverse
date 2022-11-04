@@ -1,20 +1,15 @@
 import React, { useEffect } from "react";
-import { types, userStore, listingStore } from "@platform/data-access";
-import { keyringStore, networkStore, walletStore } from "@shared/data-access";
-import { Market, DefaultButton } from "@platform/ui-web";
+import { gql, utils, store } from "../../stores";
 import styled from "styled-components";
-import { Connect, MyProfile } from "../common/";
 import { darken } from "polished";
-import { BiChevronRight } from "react-icons/bi";
 import { Utils } from "@shared/util";
 
 export const MarketBalance = () => {
-  const self = userStore.use.self();
-  const wallet = walletStore.use.wallet();
-  const onClickMyTokensButton = () => listingStore.setState({ filter: "myTokens" });
+  const self = store.platform.user.use.self();
+  const onClickMyTokensButton = () => store.platform.listing.setState({ filter: "myTokens" });
   const MMOC = self && self.items.find((item) => item.thing.name === "MMOC");
   useEffect(() => {
-    self && self.keyring && walletStore.setState({ wallet: self.keyring.wallets[0] });
+    self && self.keyring && store.shared.wallet.setState({ wallet: self.keyring.wallets[0] });
   }, [self]);
   return (
     <MarketBalanceContainer>

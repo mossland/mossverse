@@ -2,23 +2,20 @@ import React, { useEffect } from "react";
 import styled from "styled-components";
 import { DatePicker } from "antd";
 import moment from "moment";
-import { listingStore, types, userStore } from "@platform/data-access";
+import { gql, utils, store } from "../../../stores";
+import { Market } from "@platform/ui-web";
 
-type OnSaleBoxProps = {
-  listing: types.Listing;
-  onCancel: React.MouseEventHandler<HTMLDivElement>;
-};
+export const OnSaleBox = () => {
+  const service = Market.useMarket();
 
-export const OnSaleBox = ({ listing, onCancel }: OnSaleBoxProps) => {
-  // const listing = listingStore.use.listing();
-  if (!listing) return <></>;
+  if (!service.listing) return <></>;
   return (
     <OnSaleBoxContainer>
       <div className="form-box">
         <div className="label">Price</div>
         <div className="price-input">
           {/* <img src="/images/mm_coin.png" /> */}
-          {listing.priceTags
+          {service.listing.priceTags
             .filter((tag) => tag.thing && tag.thing.type === "root")
             .map((tag, index) => {
               if (!tag.thing) return;
@@ -33,9 +30,9 @@ export const OnSaleBox = ({ listing, onCancel }: OnSaleBoxProps) => {
       </div>
       <div className="form-box">
         <div className="label">Until</div>
-        <DatePicker disabled value={moment(listing.closeAt)} />
+        <DatePicker disabled value={moment(service.listing.closeAt)} />
       </div>
-      <div onClick={onCancel} className="button button--cancel">
+      <div onClick={service.onCancel} className="button button--cancel">
         Cancel
       </div>
     </OnSaleBoxContainer>

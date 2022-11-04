@@ -1,21 +1,18 @@
 import React, { useEffect } from "react";
 import styled from "styled-components";
-import { useRouter } from "next/router";
-import { types, listingStore, userStore, utils, listing } from "@platform/data-access";
-import { MarketLabel } from "./";
+import { gql, utils, store } from "../../stores";
 import { MyAddress } from "../";
-import Image from "next/image";
 import { BiChevronLeft } from "react-icons/bi";
 import { CheckIcon } from "@shared/ui-web";
 
 export const MyTokensHeader = () => {
-  const self = userStore.use.self();
-  const myItems = userStore.use.myItems();
-  const listings = listingStore.use.listings();
-  const myTokensFilter = listingStore.use.myTokensFilter();
-  const onClickBackButton = () => listingStore.setState({ filter: "all" });
+  const self = store.platform.user.use.self();
+  const myItems = store.platform.user.use.myItems();
+  const listings = store.platform.listing.use.listingList();
+  const myTokensFilter = store.platform.listing.use.myTokensFilter();
+  const onClickBackButton = () => store.platform.listing.setState({ filter: "all" });
 
-  const getFilter = (listing: types.Listing) => {
+  const getFilter = (listing: gql.platform.Listing) => {
     return self ? listing.user && listing.user.id === self.id : false;
   };
 
@@ -38,14 +35,14 @@ export const MyTokensHeader = () => {
       <div className="buttons">
         <div
           className={`button ${myTokensFilter === "all" && "active"}`}
-          onClick={() => listingStore.setState({ myTokensFilter: "all" })}
+          onClick={() => store.platform.listing.setState({ myTokensFilter: "all" })}
         >
           {myTokensFilter === "all" && <CheckIcon />}
           All({allCount})
         </div>
         <div
           className={`button selling-button ${myTokensFilter === "onSale" && "active"}`}
-          onClick={() => listingStore.setState({ myTokensFilter: "onSale" })}
+          onClick={() => store.platform.listing.setState({ myTokensFilter: "onSale" })}
         >
           {myTokensFilter === "onSale" && <CheckIcon />}
           On Sale({onSaleCount})

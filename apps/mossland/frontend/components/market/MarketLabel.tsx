@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
-import { types } from "@platform/data-access";
+import { gql, utils, store } from "../../stores";
 
 type MarketLabelProps = {
-  item: types.Listing;
+  item: gql.platform.Listing;
 };
 export const MarketLabel = ({ item }: MarketLabelProps) => {
   return (

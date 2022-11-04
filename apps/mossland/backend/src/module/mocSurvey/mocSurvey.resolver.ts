@@ -22,13 +22,6 @@ export class MocSurveyResolver extends BaseResolver(
     super(mocSurveyService);
   }
 
-  @Query(() => [gql.MocSurvey])
-  async mocSurveysAA() {
-    const a = await this.mocSurveyService.list({});
-    console.log(a);
-    return a;
-  }
-
   @Mutation(() => gql.MocSurvey)
   @UseGuards(Allow.User)
   async generateMocSurvey(

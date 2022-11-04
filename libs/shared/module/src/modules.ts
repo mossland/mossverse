@@ -74,7 +74,7 @@ export const registerModules = (options: ModulesOptions, isChild?: boolean) => {
     options.network && options.redis && NetworkModule.register(options.network, options.redis),
     ContractModule,
     WalletModule,
-    KeyringModule,
+    KeyringModule.register(options.security),
     options.discord && DiscordModule.register(options.discord),
     AdminModule.register(options.security),
     ScalarModule,

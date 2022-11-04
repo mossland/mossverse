@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { types, adminStore } from "@shared/data-access";
+import { store, gql } from "@shared/data-access";
 import { Menu, Button, Drawer } from "antd";
 import type { MenuProps } from "antd";
 import {
@@ -34,6 +34,12 @@ export const adminMenuKeys = [
   "board",
   "story",
   "comment",
+  "collect",
+  "feature",
+  "generative",
+  "part",
+  "mintEvent",
+  "mintLog",
 ] as const;
 export type AdminMenuKey = typeof adminMenuKeys[number];
 export const menuIconMap: { [key in AdminMenuKey]: React.ReactNode | null } = {
@@ -54,6 +60,12 @@ export const menuIconMap: { [key in AdminMenuKey]: React.ReactNode | null } = {
   board: <FileOutlined />,
   story: <FileOutlined />,
   comment: <FileOutlined />,
+  collect: <FileOutlined />,
+  feature: <FileOutlined />,
+  generative: <FileOutlined />,
+  part: <FileOutlined />,
+  mintEvent: <FileOutlined />,
+  mintLog: <FileOutlined />,
 };
 
 interface AdminMenuProps {
@@ -63,28 +75,28 @@ interface AdminMenuProps {
 
 export const AdminMenu = ({ menus, defaultMenu }: AdminMenuProps) => {
   useEffect(() => {
-    defaultMenu && adminStore.setState({ adminMenu: defaultMenu ?? menus[0] });
+    defaultMenu && store.admin.setState({ adminMenu: defaultMenu ?? menus[0] });
   }, []);
-  const menuOpen = adminStore.use.menuOpen();
-  const signout = adminStore.use.signout();
-  const adminMenu = adminStore.use.adminMenu();
+  const menuOpen = store.admin.use.menuOpen();
+  const signout = store.admin.use.signout();
+  const adminMenu = store.admin.use.adminMenu();
   return (
     <div>
       <StyledButton
         icon={<BarsOutlined />}
         type="primary"
         onClick={(e: any) => {
-          adminStore.setState({ menuOpen: true });
+          store.admin.setState({ menuOpen: true });
         }}
       >
         Menu
       </StyledButton>
-      <Drawer title="Menu" placement="left" onClose={() => adminStore.setState({ menuOpen: false })} open={menuOpen}>
+      <Drawer title="Menu" placement="left" onClose={() => store.admin.setState({ menuOpen: false })} open={menuOpen}>
         <Menu
           selectedKeys={[adminMenu]}
           mode="inline"
           items={menus.map((menu) => ({ label: Utils.capitalize(menu), key: menu, icon: menuIconMap[menu] }))}
-          onClick={(val) => adminStore.setState({ menuOpen: false, adminMenu: val.key })}
+          onClick={(val) => store.admin.setState({ menuOpen: false, adminMenu: val.key })}
         />
         <hr />
         <Button type="link" block onClick={signout}>
@@ -101,7 +113,4 @@ const StyledButton = styled(Button)`
   left: 0;
   z-index: 10;
   margin-bottom: 10px;
-  svg {
-    vertical-align: baseline;
-  }
 `;

@@ -1,15 +1,16 @@
 import React, { ReactNode } from "react";
-import styled from "styled-components";
+import styled, { CSSProp } from "styled-components";
 
 type TitleProps = {
   children: ReactNode;
+  customStyle?: CSSProp;
 };
 
-export const Title = ({ children }: TitleProps) => {
-  return <H1>{children}</H1>;
+export const Title = ({ children, customStyle }: TitleProps) => {
+  return <H1 customStyle={customStyle ?? undefined}>{children}</H1>;
 };
 
-const H1 = styled.h1`
+const H1 = styled.h1<TitleProps>`
   width: 50%;
   font-family: Ubuntu Mono;
   font-weight: 700;
@@ -19,4 +20,5 @@ const H1 = styled.h1`
   border-width: 10px;
 
   margin-bottom: 20px;
+  ${({ customStyle }) => customStyle && customStyle};
 `;

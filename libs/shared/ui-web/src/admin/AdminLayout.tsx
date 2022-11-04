@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 interface Props {
   children?: JSX.Element[] | JSX.Element;
-  isWide: boolean;
+  isWide?: boolean;
 }
 
 export const AdminLayout = ({ children, isWide }: Props) => {

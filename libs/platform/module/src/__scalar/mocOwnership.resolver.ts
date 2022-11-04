@@ -2,13 +2,12 @@ import { Query, Resolver, ResolveField, Parent } from "@nestjs/graphql";
 import { UserService } from "../user/user.service";
 import * as gql from "../gql";
 import * as srv from "../srv";
-import { query } from "@shared/data-access";
 // import { WalletService } from "@platform";
 @Resolver(() => gql.MocOwnership)
 export class MocOwnershipResolver {
   constructor(private readonly thingService: srv.shared.TokenService, private readonly userService: srv.UserService) {}
-  @Query(()=> gql.MocOwnership)
-  async tempMocOwnershipQuery(){
+  @Query(() => gql.MocOwnership)
+  async tempMocOwnershipQuery() {
     return null;
   }
   @ResolveField(() => gql.shared.Thing)
@@ -17,7 +16,6 @@ export class MocOwnershipResolver {
   }
   @ResolveField(() => gql.shared.User)
   async user(@Parent() ownership: gql.MocOwnership) {
-    console.log("asdasdasd", ownership.user);
     return await this.userService.load(ownership.user);
   }
 }

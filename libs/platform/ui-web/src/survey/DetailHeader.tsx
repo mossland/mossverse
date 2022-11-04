@@ -1,29 +1,25 @@
 import React from "react";
 import styled from "styled-components";
-import { types, checkIsActiveSurvey } from "@platform/data-access";
+import { gql, store, utils } from "@platform/data-access";
 import { SurveyIcon } from "@shared/ui-web";
-import { ActiveTag, Period } from "./";
+import { Wrapper, Period, ActiveTag, Text } from "./";
 import { cnst } from "@shared/util";
+import { useSurvey } from "./services/useSurvey";
 
-type SurveyDetailProps = {
-  title: string;
-  openAt: Date;
-  closeAt: Date;
-  voted: boolean;
-  status: cnst.SurveyStatus;
-};
-
-export const DetailHeader = ({ title, openAt, closeAt, status, voted }: SurveyDetailProps) => {
+export const DetailHeader = () => {
+  const surveyService = useSurvey();
+  if (!surveyService.survey) return <></>;
   return (
     <StyledDetailHeader>
-      <div className="title-container">
+      <Wrapper className="title-container">
         <SurveyIcon />
-        <Title text={title} />
-      </div>
-      <div className="sub-title-container">
-        {checkIsActiveSurvey(status, closeAt) && <ActiveTag />}
-        <Period openAt={openAt} closeAt={closeAt} />
-      </div>
+
+        <Text className="title">{surveyService.survey.title}</Text>
+      </Wrapper>
+      <Wrapper className="sub-title-container">
+        {utils.checkIsActiveSurvey(surveyService.survey.status, surveyService.survey.closeAt) && <ActiveTag />}
+        <Period openAt={surveyService.survey.openAt} closeAt={surveyService.survey.closeAt} />
+      </Wrapper>
     </StyledDetailHeader>
   );
 };

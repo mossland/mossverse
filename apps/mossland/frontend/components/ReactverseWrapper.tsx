@@ -1,7 +1,9 @@
-import Reactverse, { types, ReactverseProps } from "@decentverse/client";
+import { Reactverse } from "@decentverse/ui-web";
+import { gql } from "../stores";
 import { env } from "../env";
+//
 const ReactVerseWrapper = () => {
-  const config: types.Configuration = {
+  const config: gql.decentverse.Configuration = {
     network: "mainnet",
     login: {
       logoImage: "./logo/platform_logo.png",

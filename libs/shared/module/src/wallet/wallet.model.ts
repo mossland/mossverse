@@ -54,20 +54,22 @@ interface MdlStats extends dbConfig.DefaultMdlStats<Doc, Raw> {
 }
 schema.statics.generate = async function (networkId: Id, address: string) {
   const doc =
-    (await this.findOne({ network: networkId, address, status: "active" })) ??
-    (await this.create({ network: networkId, address }));
+    (await this.findOne({ network: networkId, address: address.toLowerCase(), status: "active" })) ??
+    (await new this({ network: networkId, address }).save());
   return doc;
 };
 schema.statics.generateMany = async function (networkId: Id, addresses: string[]) {
-  const operations = addresses.map((address) => ({
-    updateOne: {
-      filter: { network: networkId, address },
-      update: {
-        $set: { network: networkId, address },
+  const operations = addresses
+    .map((address) => address.toLowerCase())
+    .map((address) => ({
+      updateOne: {
+        filter: { network: networkId, address },
+        update: {
+          $set: { network: networkId, address },
+        },
+        upsert: true,
       },
-      upsert: true,
-    },
-  }));
+    }));
   await this.bulkWrite(operations);
   return await this.find({ network: networkId, address: { $in: addresses } });
 };
@@ -126,6 +128,7 @@ export const middleware = () => () => {
    * ? save 시 자동으로 적용할 알고리즘을 적용하세요.
    */
   schema.pre<Doc>("save", async function (next) {
+    this.address = this.address.toLowerCase();
     next();
   });
   return schema;

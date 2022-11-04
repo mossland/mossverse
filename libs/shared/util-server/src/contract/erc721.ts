@@ -1,4 +1,4 @@
-import { ERC721A } from "@shared/contract";
+import { ERC721A, ERC721AToken, SaleInfo } from "@shared/contract";
 import * as serverUtils from "../utils";
 import { BigNumber, Contract, ethers, Event } from "ethers";
 import { ContractSettings } from "./multicall";
@@ -24,7 +24,7 @@ export type Erc721Info = {
   bn: number;
 };
 export class Erc721 {
-  constructor(readonly address: string, readonly contract: ERC721A, readonly settings: ContractSettings) {}
+  constructor(readonly address: string, readonly contract: ERC721AToken, readonly settings: ContractSettings) {}
   async info(): Promise<Erc721Info> {
     const [[name, bn], [symbol], [totalSupply]] = (
       await this.settings.multicall.view({
@@ -69,6 +69,21 @@ export class Erc721 {
     }));
     const uris = await this.tokenURIs(inventory.map((inv) => inv.tokenId));
     return inventory.map((inv, idx) => ({ ...inv, uri: uris[idx].uri }));
+  }
+  async getSaleInfo(key: number) {
+    const ret = await this.contract.saleInfos(key);
+    console.log(ret[1]);
+    return {
+      amount: parseInt(ret[0].toString()),
+      price: Utils.weiToEther(ret[1].toString()),
+      startTime: new Date(parseInt(ret[2].toString()) * 1000),
+      endTime: new Date(parseInt(ret[3].toString()) * 1000),
+      merkleRoot: ret[4],
+      perTx: parseInt(ret[5].toString()),
+      perWallet: parseInt(ret[6].toString()),
+      maxLimit: parseInt(ret[7].toString()),
+      minted: parseInt(ret[8].toString()),
+    };
   }
   async balances(owners: string[]) {
     const balances = (

@@ -6,7 +6,6 @@ import * as gql from "../gql";
 import * as MocSurvey from "./mocSurvey.model";
 import * as srv from "../srv";
 import * as db from "../db";
-import { types } from "@platform/data-access";
 
 @Injectable()
 export class MocSurveyService extends LoadService<MocSurvey.Mdl, MocSurvey.Doc, MocSurvey.Input> {

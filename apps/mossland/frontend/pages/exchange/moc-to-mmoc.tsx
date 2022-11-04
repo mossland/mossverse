@@ -1,22 +1,21 @@
 import { PlatformLayout } from "@platform/ui-web";
-import { MyBalance, MmocToMocForm, MmocToMocHeader, MmcoToMocFooter } from "../../components";
 import styled from "styled-components";
 import { GqlProvider } from "@shared/ui-web";
 import { env } from "../../env";
 import { usePageInit } from "../../hooks";
-import { McoToMmocHeader, ExchangeAddressBar, McoToMmocFooter } from "../../components";
-import { mocWalletStore } from "apps/mossland/frontend/stores";
+import { McoToMmocHeader, ExchangeAddressBar, MocToMmocFooter } from "../../components";
+import { gql, utils, store } from "../../stores";
 
 export function MocToMmoc() {
   usePageInit();
-  const mocWallet = mocWalletStore.use.mocWallet();
+  const mocWallet = store.mocWallet.use.mocWallet();
 
   return (
-    <GqlProvider uri={env.endpoint}>
+    <GqlProvider uri={env.endpoint} ws={env.ws} networkType={env.networkType}>
       <PlatformLayout>
         <McoToMmocHeader />
         <ExchangeAddressBar address={mocWallet?.address ?? ""} />
-        <McoToMmocFooter />
+        <MocToMmocFooter />
       </PlatformLayout>
     </GqlProvider>
   );

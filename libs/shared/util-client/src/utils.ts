@@ -3,10 +3,12 @@ import { cnst } from "@shared/util";
 import { State, StoreApi, UseBoundStore } from "zustand";
 import { isMobile } from "react-device-detect";
 import { MetaMaskInpageProvider } from "@metamask/providers";
-
-const Caver = require("caver-js");
+import * as pluralize from "pluralize";
+import "reflect-metadata";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
+const Caver = require("caver-js");
+
 declare global {
   interface Window {
     ethereum: MetaMaskInpageProvider;
@@ -89,17 +91,6 @@ export const getAccount = async (network?: cnst.NetworkProvider, networkId?: num
     const account = (await window.klaytn.enable())[0] as string;
     return account.toLowerCase();
   }
-};
-
-type WithSelectors<S> = S extends { getState: () => infer T } ? S & { use: { [K in keyof T]: () => T[K] } } : never;
-
-export const createSelectors = <S extends UseBoundStore<StoreApi<State>>>(_store: S) => {
-  const store = _store as WithSelectors<typeof _store>;
-  store.use = {};
-  for (const k of Object.keys(store.getState())) {
-    (store.use as any)[k] = () => store((s) => s[k as keyof typeof s]);
-  }
-  return store;
 };
 
 export type Nullable<T> = { [K in keyof T]: T[K] | null };

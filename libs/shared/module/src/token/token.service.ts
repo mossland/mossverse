@@ -59,29 +59,3 @@ export class TokenService extends AddrLoadService<Token.Mdl, Token.Doc, Token.In
     return await token.merge({ meta, image: image?._id }).save();
   }
 }
-// async akamirsByAttributes(attributes: gql.AkamirAttributeInput[], offset: number, limit: number) {
-//   if (!attributes.length) {
-//     return await this.Akamir.find({ status: { $ne: "inactive" }, isRevealed: true })
-//       .skip(offset)
-//       .limit(limit);
-//   }
-//   return await this.Akamir.find({
-//     status: { $ne: "inactive" },
-//     isRevealed: true,
-//     $and: attributes.map((cur: gql.AkamirAttributeInput) => ({
-//       "revealed.meta.attributes": { $elemMatch: { trait_type: cur.trait_type, value: { $in: cur.values } } },
-//     })),
-//   })
-//     .skip(offset)
-//     .limit(limit);
-// }
-// async akamirCountByAttributes(attributes: gql.AkamirAttributeInput[]) {
-//   if (!attributes.length) return await this.count({});
-//   return await this.Akamir.find({
-//     status: { $ne: "inactive" },
-//     isRevealed: true,
-//     $and: attributes.map((cur: gql.AkamirAttributeInput) => ({
-//       "revealed.meta.attributes": { $elemMatch: { trait_type: cur.trait_type, value: { $in: cur.values } } },
-//     })),
-//   }).count();
-// }

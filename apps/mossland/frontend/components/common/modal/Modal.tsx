@@ -1,18 +1,7 @@
-import {
-  listingStore,
-  userStore,
-  receiptStore,
-  shipInfoStore,
-  types,
-  utils,
-  createListing,
-} from "@platform/data-access";
-import { keyringStore, walletStore } from "@shared/data-access";
 import { WindowHeader } from "@shared/ui-web";
 import { kaikas, metamask } from "@shared/util-client";
 import React, { ReactNode } from "react";
 import styled from "styled-components";
-import { DeliveryBuyBox, MarketDesc, SellBox, BuyBox, OnSaleBox, MarketReceipt } from "../..";
 
 export type ModalType = {
   title: string;

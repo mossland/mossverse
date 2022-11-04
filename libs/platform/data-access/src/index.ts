@@ -1,11 +1,3 @@
-export * from "./user";
-export * from "./exchange";
-export * from "./survey";
-export * from "./shipInfo";
-export * from "./receipt";
-export * from "./listing";
-export { client, setLink, query, mutate } from "@shared/data-access";
-export * as types from "./types";
-export * as stores from "./stores";
-export * as utils from "./utils";
 export * as gql from "./gql";
+export * as store from "./store";
+export * as utils from "./utils";

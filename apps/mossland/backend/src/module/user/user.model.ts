@@ -6,7 +6,7 @@ import { UserSchema, UserInput } from "./user.gql";
 import * as gql from "../gql";
 import { db as shared } from "@shared/module";
 import { db as platform } from "@platform/module";
-import { db as decentverse } from "@decentverse/server";
+import { db as decentverse } from "@decentverse/module";
 import { Utils } from "@shared/util";
 
 @Schema(dbConfig.defaultSchemaOptions)

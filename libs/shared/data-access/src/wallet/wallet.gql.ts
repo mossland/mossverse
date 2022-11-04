@@ -1,29 +1,49 @@
-import { query, mutate } from "../apollo";
-import gql from "graphql-tag";
-import * as types from "../types";
+import graphql from "graphql-tag";
+import { cnst } from "@shared/util";
+import {
+  createGraphQL,
+  createFragment,
+  Field,
+  InputType,
+  mutate,
+  query,
+  ObjectType,
+  BaseGql,
+} from "@shared/util-client";
+import { Network } from "../network/network.gql";
+import { TokenItem } from "../token/token.gql";
 
-// * Wallet Query
-export type WalletQuery = { wallet: types.Wallet };
-export const walletQuery = gql`
-  ${types.walletFragment}
-  query wallet($walletId: ID!) {
-    wallet(walletId: $walletId) {
-      ...walletFragment
-    }
-  }
-`;
-export const wallet = async (walletId: string) => (await query<WalletQuery>(walletQuery, { walletId })).wallet;
+@InputType("WalletInput")
+export class WalletInput {
+  @Field(() => Network)
+  network: Network;
 
-// * Wallets Query
-export type WalletsQuery = { wallets: types.Wallet[]; walletCount: number };
-export const walletsQuery = gql`
-  ${types.walletFragment}
-  query wallets($query: JSON!, $skip: Int, $limit: Int) {
-    wallets(query: $query, skip: $skip, limit: $limit) {
-      ...walletFragment
-    }
-    walletCount(query: $query)
-  }
-`;
-export const wallets = async (qry: any, skip = 0, limit = 0) =>
-  (await query<WalletsQuery>(walletsQuery, { query: qry, skip, limit })).wallets;
+  @Field(() => String)
+  address: string;
+}
+
+@ObjectType("Wallet", { _id: "id" })
+export class Wallet extends BaseGql(WalletInput) {
+  @Field(() => String)
+  type: cnst.WalletType;
+
+  @Field(() => [TokenItem])
+  items: TokenItem[];
+
+  @Field(() => String)
+  status: cnst.WalletStatus;
+}
+
+export const walletGraphQL = createGraphQL<"wallet", Wallet, WalletInput>(Wallet, WalletInput);
+export const {
+  getWallet,
+  listWallet,
+  walletCount,
+  walletExists,
+  createWallet,
+  updateWallet,
+  // removeWallet,
+  walletFragment,
+  purifyWallet,
+  defaultWallet,
+} = walletGraphQL;

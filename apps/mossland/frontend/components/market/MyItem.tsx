@@ -1,20 +1,17 @@
 import React, { useEffect } from "react";
 import styled from "styled-components";
-import { useRouter } from "next/router";
-import { types, listingStore, userStore, utils } from "@platform/data-access";
-import { MarketLabel } from "./";
-import Image from "next/image";
+import { gql, utils, store } from "../../stores";
 
 type MyItemProps = {
-  item: types.MyItem;
+  item: gql.platform.MyItem;
   onClick?: React.MouseEventHandler<HTMLDivElement>;
 };
 export const MyItem = ({ item, onClick }: MyItemProps) => {
-  const self = userStore.use.self();
-  const filter = listingStore.use.filter();
+  const self = store.platform.user.use.self();
+  const filter = store.platform.listing.use.filter();
 
-  const listings = listingStore.use.listings();
-  const isListed = !!listings.find((listing) => {
+  const listingList = store.platform.listing.use.listingList();
+  const isListed = !!listingList.find((listing) => {
     return item?.token?.id && listing?.token?.id === item?.token?.id;
   });
 
@@ -23,14 +20,14 @@ export const MyItem = ({ item, onClick }: MyItemProps) => {
   return (
     <MyItemContainer onClick={onClick}>
       <div className="image-wrapper">
-        {utils.getMyItemImage(item) ? (
-          <img src={utils.getMyItemImage(item) ?? ""} />
+        {utils.platform.getMyItemImage(item) ? (
+          <img src={utils.platform.getMyItemImage(item) ?? ""} />
         ) : (
           <div className="empty-image">no image</div>
         )}
       </div>
       <div className="info">
-        <div className="title">{utils.getMyItemName(item)}</div>
+        <div className="title">{utils.platform.getMyItemName(item)}</div>
         {/* mytokens */}
         {filter === "myTokens" && (
           <div className="price-box">

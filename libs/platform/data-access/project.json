@@ -3,23 +3,14 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/web:rollup",
+      "executor": "@nrwl/js:swc",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/libs/platform/data-access",
         "tsConfig": "libs/platform/data-access/tsconfig.lib.json",
-        "project": "libs/platform/data-access/package.json",
-        "entryFile": "libs/platform/data-access/src/index.ts",
-        "external": ["react/jsx-runtime"],
-        "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
-        "compiler": "swc",
-        "assets": [
-          {
-            "glob": "libs/platform/data-access/README.md",
-            "input": ".",
-            "output": "."
-          }
-        ]
+        "packageJson": "libs/platform/data-access/package.json",
+        "main": "libs/platform/data-access/src/index.ts",
+        "assets": ["libs/platform/data-access/*.md", "libs/platform/data-access/**/*.jpg"]
       }
     },
     "lint": {

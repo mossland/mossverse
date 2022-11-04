@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import styled from "styled-components";
 import { ExchangeItem } from "@platform/ui-web";
-import { receiptStore, userStore } from "@platform/data-access";
+import { gql, utils, store } from "../../stores";
 
 export const ExchangeList = () => {
-  const self = userStore.use.self();
-  const initReceipt = receiptStore.use.init();
-  const receipts = receiptStore.use.receipts();
+  const self = store.platform.user.use.self();
+  const initReceipt = store.platform.receipt.use.init();
+  const receipts = store.platform.receipt.use.receipts();
 
   useEffect(() => {
     if (!self) return;

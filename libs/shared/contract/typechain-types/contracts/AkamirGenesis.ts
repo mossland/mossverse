@@ -28,27 +28,24 @@ import type {
   PromiseOrValue,
 } from "../common";
 
-export declare namespace ERC721A {
+export declare namespace IERC721A {
   export type TokenOwnershipStruct = {
     addr: PromiseOrValue<string>;
     startTimestamp: PromiseOrValue<BigNumberish>;
-    lockUntil: PromiseOrValue<BigNumberish>;
-    tokenIndex: PromiseOrValue<BigNumberish>;
     burned: PromiseOrValue<boolean>;
+    extraData: PromiseOrValue<BigNumberish>;
   };
 
   export type TokenOwnershipStructOutput = [
     string,
     BigNumber,
-    BigNumber,
-    BigNumber,
-    boolean
+    boolean,
+    number
   ] & {
     addr: string;
     startTimestamp: BigNumber;
-    lockUntil: BigNumber;
-    tokenIndex: BigNumber;
     burned: boolean;
+    extraData: number;
   };
 }
 
@@ -77,12 +74,9 @@ export interface AkamirGenesisInterface extends utils.Interface {
     "getRevealLimit()": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "isPublicSaleOn(uint256,uint256,uint256,uint256)": FunctionFragment;
-    "lock(uint256,uint256)": FunctionFragment;
-    "lockTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
-    "lockTransferFrom(address,address,uint256,uint256)": FunctionFragment;
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)": FunctionFragment;
-    "lockTransferFromMany(address,address,uint256[],uint256)": FunctionFragment;
-    "locks(uint256[],uint256)": FunctionFragment;
+    "lock(uint256,uint64)": FunctionFragment;
+    "lockTransferFrom(address,address,uint256,uint64,bytes)": FunctionFragment;
+    "lockUntil(uint256)": FunctionFragment;
     "maxPerAddressDuringMint()": FunctionFragment;
     "name()": FunctionFragment;
     "notRevealedURI()": FunctionFragment;
@@ -107,10 +101,7 @@ export interface AkamirGenesisInterface extends utils.Interface {
     "setSaleLimit(uint32)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
-    "tokenByIndex(uint256)": FunctionFragment;
-    "tokenOfOwnerByIndex(address,uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
-    "tokensOfOwner(address)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
@@ -144,11 +135,8 @@ export interface AkamirGenesisInterface extends utils.Interface {
       | "isApprovedForAll"
       | "isPublicSaleOn"
       | "lock"
-      | "lockTransferFrom(address,address,uint256,uint256,bytes)"
-      | "lockTransferFrom(address,address,uint256,uint256)"
-      | "lockTransferFromMany(address,address,uint256[],uint256,bytes)"
-      | "lockTransferFromMany(address,address,uint256[],uint256)"
-      | "locks"
+      | "lockTransferFrom"
+      | "lockUntil"
       | "maxPerAddressDuringMint"
       | "name"
       | "notRevealedURI"
@@ -173,10 +161,7 @@ export interface AkamirGenesisInterface extends utils.Interface {
       | "setSaleLimit"
       | "supportsInterface"
       | "symbol"
-      | "tokenByIndex"
-      | "tokenOfOwnerByIndex"
       | "tokenURI"
-      | "tokensOfOwner"
       | "totalSupply"
       | "transferFrom"
       | "transferOwnership"
@@ -288,7 +273,7 @@ export interface AkamirGenesisInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "lockTransferFrom(address,address,uint256,uint256,bytes)",
+    functionFragment: "lockTransferFrom",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
@@ -298,36 +283,8 @@ export interface AkamirGenesisInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "lockTransferFrom(address,address,uint256,uint256)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "lockTransferFromMany(address,address,uint256[],uint256,bytes)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>[],
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "lockTransferFromMany(address,address,uint256[],uint256)",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>[],
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "locks",
-    values: [PromiseOrValue<BigNumberish>[], PromiseOrValue<BigNumberish>]
+    functionFragment: "lockUntil",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "maxPerAddressDuringMint",
@@ -437,20 +394,8 @@ export interface AkamirGenesisInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "tokenByIndex",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tokenOfOwnerByIndex",
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "tokenURI",
     values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tokensOfOwner",
-    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
@@ -556,22 +501,10 @@ export interface AkamirGenesisInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "lock", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "lockTransferFrom(address,address,uint256,uint256,bytes)",
+    functionFragment: "lockTransferFrom",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "lockTransferFrom(address,address,uint256,uint256)",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "lockTransferFromMany(address,address,uint256[],uint256,bytes)",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "lockTransferFromMany(address,address,uint256[],uint256)",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "locks", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "lockUntil", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "maxPerAddressDuringMint",
     data: BytesLike
@@ -650,19 +583,7 @@ export interface AkamirGenesisInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenByIndex",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenOfOwnerByIndex",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "tokensOfOwner",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
     data: BytesLike
@@ -687,12 +608,14 @@ export interface AkamirGenesisInterface extends utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "ConsecutiveTransfer(uint256,uint256,address,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ConsecutiveTransfer"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
@@ -720,6 +643,20 @@ export type ApprovalForAllEvent = TypedEvent<
 >;
 
 export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
+
+export interface ConsecutiveTransferEventObject {
+  fromTokenId: BigNumber;
+  toTokenId: BigNumber;
+  from: string;
+  to: string;
+}
+export type ConsecutiveTransferEvent = TypedEvent<
+  [BigNumber, BigNumber, string, string],
+  ConsecutiveTransferEventObject
+>;
+
+export type ConsecutiveTransferEventFilter =
+  TypedEventFilter<ConsecutiveTransferEvent>;
 
 export interface OwnershipTransferredEventObject {
   previousOwner: string;
@@ -790,7 +727,7 @@ export interface AkamirGenesis extends BaseContract {
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     auctionMint(
@@ -861,12 +798,12 @@ export interface AkamirGenesis extends BaseContract {
     getOwnershipData(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<[ERC721A.TokenOwnershipStructOutput]>;
+    ): Promise<[IERC721A.TokenOwnershipStructOutput]>;
 
     getOwnershipDatas(
       tokenIds: PromiseOrValue<BigNumberish>[],
       overrides?: CallOverrides
-    ): Promise<[ERC721A.TokenOwnershipStructOutput[]]>;
+    ): Promise<[IERC721A.TokenOwnershipStructOutput[]]>;
 
     getRevealLimit(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -886,49 +823,23 @@ export interface AkamirGenesis extends BaseContract {
 
     lock(
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+    lockTransferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    "lockTransferFrom(address,address,uint256,uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    locks(
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+    lockUntil(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     maxPerAddressDuringMint(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -963,7 +874,7 @@ export interface AkamirGenesis extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
@@ -971,7 +882,7 @@ export interface AkamirGenesis extends BaseContract {
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     saleConfig(
@@ -1075,26 +986,10 @@ export interface AkamirGenesis extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
-    tokenByIndex(
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    tokenOfOwnerByIndex(
-      owner: PromiseOrValue<string>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
-
-    tokensOfOwner(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[ERC721A.TokenOwnershipStructOutput[]]>;
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -1102,7 +997,7 @@ export interface AkamirGenesis extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     transferOwnership(
@@ -1138,7 +1033,7 @@ export interface AkamirGenesis extends BaseContract {
   approve(
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   auctionMint(
@@ -1209,12 +1104,12 @@ export interface AkamirGenesis extends BaseContract {
   getOwnershipData(
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
-  ): Promise<ERC721A.TokenOwnershipStructOutput>;
+  ): Promise<IERC721A.TokenOwnershipStructOutput>;
 
   getOwnershipDatas(
     tokenIds: PromiseOrValue<BigNumberish>[],
     overrides?: CallOverrides
-  ): Promise<ERC721A.TokenOwnershipStructOutput[]>;
+  ): Promise<IERC721A.TokenOwnershipStructOutput[]>;
 
   getRevealLimit(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1234,49 +1129,23 @@ export interface AkamirGenesis extends BaseContract {
 
   lock(
     tokenId: PromiseOrValue<BigNumberish>,
-    lockUntil: PromiseOrValue<BigNumberish>,
+    _lockUntil: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+  lockTransferFrom(
     from: PromiseOrValue<string>,
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
-    lockUntil: PromiseOrValue<BigNumberish>,
+    _lockUntil: PromiseOrValue<BigNumberish>,
     _data: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  "lockTransferFrom(address,address,uint256,uint256)"(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
-    tokenId: PromiseOrValue<BigNumberish>,
-    lockUntil: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
-    tokenIds: PromiseOrValue<BigNumberish>[],
-    lockUntil: PromiseOrValue<BigNumberish>,
-    _data: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  "lockTransferFromMany(address,address,uint256[],uint256)"(
-    from: PromiseOrValue<string>,
-    to: PromiseOrValue<string>,
-    tokenIds: PromiseOrValue<BigNumberish>[],
-    lockUntil: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  locks(
-    tokenIds: PromiseOrValue<BigNumberish>[],
-    lockUntil: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+  lockUntil(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   maxPerAddressDuringMint(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1311,7 +1180,7 @@ export interface AkamirGenesis extends BaseContract {
     from: PromiseOrValue<string>,
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   "safeTransferFrom(address,address,uint256,bytes)"(
@@ -1319,7 +1188,7 @@ export interface AkamirGenesis extends BaseContract {
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
     _data: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   saleConfig(
@@ -1423,26 +1292,10 @@ export interface AkamirGenesis extends BaseContract {
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
-  tokenByIndex(
-    index: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  tokenOfOwnerByIndex(
-    owner: PromiseOrValue<string>,
-    index: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   tokenURI(
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
-
-  tokensOfOwner(
-    owner: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<ERC721A.TokenOwnershipStructOutput[]>;
 
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1450,7 +1303,7 @@ export interface AkamirGenesis extends BaseContract {
     from: PromiseOrValue<string>,
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   transferOwnership(
@@ -1553,12 +1406,12 @@ export interface AkamirGenesis extends BaseContract {
     getOwnershipData(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<ERC721A.TokenOwnershipStructOutput>;
+    ): Promise<IERC721A.TokenOwnershipStructOutput>;
 
     getOwnershipDatas(
       tokenIds: PromiseOrValue<BigNumberish>[],
       overrides?: CallOverrides
-    ): Promise<ERC721A.TokenOwnershipStructOutput[]>;
+    ): Promise<IERC721A.TokenOwnershipStructOutput[]>;
 
     getRevealLimit(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1578,49 +1431,23 @@ export interface AkamirGenesis extends BaseContract {
 
     lock(
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+    lockTransferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "lockTransferFrom(address,address,uint256,uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+    lockUntil(
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<void>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    locks(
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
 
     maxPerAddressDuringMint(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1765,26 +1592,10 @@ export interface AkamirGenesis extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
-    tokenByIndex(
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenOfOwnerByIndex(
-      owner: PromiseOrValue<string>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
-
-    tokensOfOwner(
-      owner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<ERC721A.TokenOwnershipStructOutput[]>;
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1831,6 +1642,19 @@ export interface AkamirGenesis extends BaseContract {
       approved?: null
     ): ApprovalForAllEventFilter;
 
+    "ConsecutiveTransfer(uint256,uint256,address,address)"(
+      fromTokenId?: PromiseOrValue<BigNumberish> | null,
+      toTokenId?: null,
+      from?: PromiseOrValue<string> | null,
+      to?: PromiseOrValue<string> | null
+    ): ConsecutiveTransferEventFilter;
+    ConsecutiveTransfer(
+      fromTokenId?: PromiseOrValue<BigNumberish> | null,
+      toTokenId?: null,
+      from?: PromiseOrValue<string> | null,
+      to?: PromiseOrValue<string> | null
+    ): ConsecutiveTransferEventFilter;
+
     "OwnershipTransferred(address,address)"(
       previousOwner?: PromiseOrValue<string> | null,
       newOwner?: PromiseOrValue<string> | null
@@ -1871,7 +1695,7 @@ export interface AkamirGenesis extends BaseContract {
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     auctionMint(
@@ -1967,48 +1791,22 @@ export interface AkamirGenesis extends BaseContract {
 
     lock(
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+    lockTransferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    "lockTransferFrom(address,address,uint256,uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    locks(
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    lockUntil(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     maxPerAddressDuringMint(overrides?: CallOverrides): Promise<BigNumber>;
@@ -2044,7 +1842,7 @@ export interface AkamirGenesis extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
@@ -2052,7 +1850,7 @@ export interface AkamirGenesis extends BaseContract {
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     saleConfig(overrides?: CallOverrides): Promise<BigNumber>;
@@ -2126,24 +1924,8 @@ export interface AkamirGenesis extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
-    tokenByIndex(
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenOfOwnerByIndex(
-      owner: PromiseOrValue<string>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokensOfOwner(
-      owner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -2153,7 +1935,7 @@ export interface AkamirGenesis extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     transferOwnership(
@@ -2192,7 +1974,7 @@ export interface AkamirGenesis extends BaseContract {
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     auctionMint(
@@ -2288,48 +2070,22 @@ export interface AkamirGenesis extends BaseContract {
 
     lock(
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    "lockTransferFrom(address,address,uint256,uint256,bytes)"(
+    lockTransferFrom(
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
+      _lockUntil: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    "lockTransferFrom(address,address,uint256,uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenId: PromiseOrValue<BigNumberish>,
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256,bytes)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "lockTransferFromMany(address,address,uint256[],uint256)"(
-      from: PromiseOrValue<string>,
-      to: PromiseOrValue<string>,
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    locks(
-      tokenIds: PromiseOrValue<BigNumberish>[],
-      lockUntil: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    lockUntil(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     maxPerAddressDuringMint(
@@ -2367,7 +2123,7 @@ export interface AkamirGenesis extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     "safeTransferFrom(address,address,uint256,bytes)"(
@@ -2375,7 +2131,7 @@ export interface AkamirGenesis extends BaseContract {
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
       _data: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     saleConfig(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -2449,24 +2205,8 @@ export interface AkamirGenesis extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    tokenByIndex(
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    tokenOfOwnerByIndex(
-      owner: PromiseOrValue<string>,
-      index: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    tokensOfOwner(
-      owner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2476,7 +2216,7 @@ export interface AkamirGenesis extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     transferOwnership(

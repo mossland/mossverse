@@ -1,5 +1,6 @@
+// ! This File Needs to be Refactor
 import styled from "styled-components";
-import { keyringStore } from "@shared/data-access";
+import { store } from "@shared/data-access";
 import { darken } from "polished";
 
 type LoginButtonProps = {
@@ -7,7 +8,7 @@ type LoginButtonProps = {
   color?: string;
 };
 export const LoginButton = ({ title }: LoginButtonProps) => {
-  const openModal = () => keyringStore.setState({ isOpenModal: true });
+  const openModal = () => store.keyring.setState({ isOpenModal: true });
   return <Button onClick={openModal}>{title}</Button>;
 };
 const Button = styled.button`

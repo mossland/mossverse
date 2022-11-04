@@ -1,1 +1,1 @@
-// export * from "priceTag.types";
+export * from "./scalar.gql";
