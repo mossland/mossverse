@@ -32,6 +32,7 @@ export class PointService extends LogService implements OnModuleInit {
     const outputs = [{ ...exchange, thing: this.point._id }];
     await user.incItems(outputs).save();
     return await this.receiptService.create({
+      name: "Update Point",
       type: "admin",
       from: user._id,
       inputs: [],

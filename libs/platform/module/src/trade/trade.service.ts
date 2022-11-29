@@ -16,6 +16,7 @@ export class TradeService extends LoadService<Trade.Mdl, Trade.Doc, Trade.Input>
     private readonly contractService: srv.shared.ContractService,
     private readonly keyringService: srv.shared.KeyringService,
     private readonly receiptService: ReceiptService,
+    private readonly currencyService: srv.shared.CurrencyService,
     private readonly userService: UserService
   ) {
     super(TradeService.name, Trade);
@@ -34,6 +35,7 @@ export class TradeService extends LoadService<Trade.Mdl, Trade.Doc, Trade.Input>
     const user = await this.userService.pick({ keyring: keyringId });
     const root = this.userService.root;
     const receipt = await this.receiptService.create({
+      name: `${trade.name}`,
       type: "trade",
       trade: trade._id,
       inputs,
@@ -51,13 +53,17 @@ export class TradeService extends LoadService<Trade.Mdl, Trade.Doc, Trade.Input>
     const user = await this.userService.get(receipt.from);
     const keyring = await this.keyringService.get(user.keyring);
     const isValid =
-      (await this.#validateInputs(user, keyring, receipt.inputs)) ||
+      (await this.#validateInputs(user, keyring, receipt.inputs)) &&
       (await this.#validateOutputs(user, keyring, receipt.outputs));
     if (!isValid) throw new Error("The Input and Output is not Valid");
     await receipt.merge({ status: "inProgress" }).save();
-    await this.#transferInputs(user, receipt.inputs);
-    await this.#transferOutputs(user, receipt.outputs);
-    return await receipt.merge({ status: "success" }).save();
+    try {
+      await this.#transferInputs(user, receipt.inputs);
+      await this.#transferOutputs(user, receipt.outputs);
+      return await receipt.merge({ status: "success" }).save();
+    } catch (err) {
+      return await receipt.merge({ status: "failed", err }).save();
+    }
   }
   async #validateInputs(user: db.User.Doc, keyring: db.shared.Keyring.Doc, exchanges: gql.ExchangeInput[]) {
     let isValid = true;
@@ -69,6 +75,11 @@ export class TradeService extends LoadService<Trade.Mdl, Trade.Doc, Trade.Input>
           (!exchange.wallet ||
             !exchange.hash ||
             !(await this.contractService.validateTx(exchange.token, exchange.wallet, exchange.hash, exchange.num)))
+        )
+          isValid = false;
+        else if (
+          exchange.currency &&
+          (!exchange.hash || !(await this.currencyService.checkDeposit(exchange.currency, exchange.num, exchange.hash)))
         )
           isValid = false;
       })
@@ -89,16 +100,18 @@ export class TradeService extends LoadService<Trade.Mdl, Trade.Doc, Trade.Input>
     return isValid;
   }
   async #transferInputs(user: db.User.Doc, exchanges: gql.ExchangeInput[]) {
-    const [thingInputs, tokenInputs] = [
+    const [thingInputs, tokenInputs, currencyInputs] = [
       exchanges.filter((exchange) => exchange.thing),
       exchanges.filter((exchange) => exchange.token),
+      exchanges.filter((exchange) => exchange.currency),
     ];
     thingInputs.length && (await this.userService.changeItems(user._id, thingInputs));
   }
   async #transferOutputs(user: db.User.Doc, exchanges: gql.ExchangeInput[]) {
-    const [thingOutputs, tokenOutputs] = [
+    const [thingOutputs, tokenOutputs, currencyOutputs] = [
       exchanges.filter((exchange) => exchange.thing),
       exchanges.filter((exchange) => exchange.token),
+      exchanges.filter((exchange) => exchange.currency),
     ];
     // process thing outputs
     thingOutputs.length && (await this.userService.changeItems(user._id, thingOutputs));

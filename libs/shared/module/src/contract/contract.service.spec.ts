@@ -4,7 +4,7 @@ import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { Utils } from "@shared/util";
 import { ethers } from "ethers";
 import { EtherService } from "../network/ether/ether.service";

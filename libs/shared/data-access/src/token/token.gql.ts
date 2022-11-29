@@ -11,15 +11,17 @@ import {
   Int,
   BaseGql,
   BaseArrayFieldGql,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
-import { Contract, contractFragment } from "../contract/contract.gql";
+import { Contract, contractFragment, LightContract } from "../contract/contract.gql";
 import { File, fileFragment } from "../file/file.gql";
 import { OpenSeaMeta } from "../_scalar";
 
 @InputType("TokenInput")
 export class TokenInput {
   @Field(() => Contract)
-  contract: Contract;
+  contract: Contract | LightContract;
 
   @Field(() => Int)
   tokenId: number | null;
@@ -43,7 +45,13 @@ export class Token extends BaseGql(TokenInput) {
   status: cnst.TokenStatus;
 }
 
-export const tokenGraphQL = createGraphQL<"token", Token, TokenInput>(Token, TokenInput);
+@ObjectType("LightToken", { _id: "id", gqlRef: "Token" })
+export class LightToken extends PickType(Token, ["contract", "tokenId", "type", "meta", "image", "status"] as const) {
+  @Field(() => LightContract)
+  override contract: LightContract;
+}
+
+export const tokenGraphQL = createGraphQL("token" as const, Token, TokenInput, LightToken);
 export const {
   getToken,
   listToken,
@@ -56,6 +64,7 @@ export const {
   purifyToken,
   defaultToken,
 } = tokenGraphQL;
+export type TokenSlice = SliceModel<"token", Token, LightToken>;
 
 @InputType("TokenItemInput")
 export class TokenItemInput {
@@ -101,3 +110,23 @@ export const generateTokenMutation = graphql`
 `;
 export const generateToken = async (contractId: string, tokenId: number) =>
   (await mutate<GenerateTokenMutation>(generateTokenMutation, { contractId, tokenId })).generateToken;
+
+//! MyInventory Query Temporary
+export type MyInventoryQuery = { myInventory: TokenItem[] };
+
+export const myInventoryQuery = graphql`
+  ${tokenFragment}
+  query myInventory($walletId: ID!) {
+    myInventory(walletId: $walletId) {
+      id
+      bn
+      num
+      token {
+        ...tokenFragment
+      }
+    }
+  }
+`;
+
+export const myInventory = async (walletId: string) =>
+  (await query<MyInventoryQuery>(myInventoryQuery, { walletId })).myInventory;

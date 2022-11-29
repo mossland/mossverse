@@ -10,7 +10,7 @@ export const ExchangeFlow = ({ input, output }: ExchangeFlowType) => {
   return (
     <>
       {input &&
-        (input.type === "etc" ? (
+        (input.type === "currency" ? (
           <>
             <img src="/images/m_coin.png" />
             MOC
@@ -30,7 +30,7 @@ export const ExchangeFlow = ({ input, output }: ExchangeFlowType) => {
         ))}
       <BiRightArrowAlt />
       {output &&
-        (output.type === "etc" ? (
+        (output.type === "currency" ? (
           <>
             <img src="/images/m_coin.png" />
             MOC

@@ -1,6 +1,6 @@
 import { TestSystem } from "@shared/test-server";
 
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import * as srv from "../srv";
 import * as gql from "../gql";
 import * as sample from "../sample";

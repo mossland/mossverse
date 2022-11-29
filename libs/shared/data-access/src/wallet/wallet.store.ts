@@ -1,42 +1,23 @@
-import create from "zustand";
+import { StateCreator } from "zustand";
 import * as gql from "../gql";
-import { createActions, createState, DefaultActions, DefaultState, generateStore } from "@shared/util-client";
+import { createActions, createState, DefaultActions, DefaultState, Get, makeStore, SetGet } from "@shared/util-client";
 import { Wallet, walletGraphQL, WalletInput } from "./wallet.gql";
 import * as utils from "./wallet.utils";
 
-type State = DefaultState<"wallet", gql.Wallet> & {
-  activeWallets: gql.Wallet[];
-  newAddress: string;
-  newActiveProvider: gql.LoginMethod;
-  newNetworkId: string;
-  deleteKeyringId: string;
-  deleteWalletId: string;
-  errorMsg: string;
-  newWalletOperation: "sleep" | "idle" | "registered" | "needDelete";
-};
-const initialState: State = {
-  ...createState<"wallet", gql.Wallet, gql.WalletInput>(walletGraphQL),
-  activeWallets: [],
+const state = {
+  ...createState(walletGraphQL),
+  activeWallets: [] as gql.Wallet[],
+  wallets: [] as gql.Wallet[],
   newAddress: "", // wallet 추가시, 새 address
-  newActiveProvider: "klaytn",
+  newActiveProvider: "klaytn" as gql.LoginMethod,
   newNetworkId: "",
   deleteKeyringId: "",
   deleteWalletId: "",
   errorMsg: "",
-  newWalletOperation: "sleep", // wallet 추가 상태
+  newWalletOperation: "sleep" as "sleep" | "idle" | "registered" | "needDelete", // wallet 추가 상태
 };
-type Actions = Omit<DefaultActions<"wallet", gql.Wallet, gql.WalletInput>, "removeWallet"> & {
-  init: (wallets: gql.Wallet[]) => Promise<void>; // 초기화
-  checkWalletChange: () => Promise<void>; // wallet 변경 체크
-  updateCurrentWallet: (newAddress: string, provider: gql.LoginMethod) => void;
-  addWallet: (keyringId: string) => Promise<gql.Keyring>;
-  removeWallet: (keyringId: string, walletId: string, address: string) => Promise<void>;
-  checkNewWallet: () => Promise<void>; // TODO : delte
-  keyringHasWallet: () => Promise<boolean>;
-};
-const store = create<State & Actions>((set, get) => ({
-  ...initialState,
-  ...createActions<"wallet", gql.Wallet, gql.WalletInput>(walletGraphQL, { get, set }),
+const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
+  ...createActions(walletGraphQL, { get, set }),
   init: async (wallets) => {
     const activeWallets: gql.Wallet[] = [];
 
@@ -55,11 +36,11 @@ const store = create<State & Actions>((set, get) => ({
     }
     const wallet = activeWallets[0];
 
-    set({ wallets, wallet, activeWallets, operation: "idle" });
-    get().checkWalletChange();
+    set({ wallets, wallet, activeWallets, walletOperation: "idle" });
+    (get() as Get<typeof state, typeof actions>).checkWalletChange();
   },
   checkWalletChange: async () => {
-    const { updateCurrentWallet } = get();
+    const { updateCurrentWallet } = get() as Get<typeof state, typeof actions>;
     window?.klaytn?.on("accountsChanged", async ([newAddress]: string[]) => {
       updateCurrentWallet(newAddress, "klaytn");
     });
@@ -69,7 +50,6 @@ const store = create<State & Actions>((set, get) => ({
   },
   updateCurrentWallet: (newAddress, provider) => {
     const { activeWallets, wallets, newActiveProvider } = get();
-
     const currentWallet = wallets.find(
       (wallet) => wallet.network.provider === provider && wallet.address === newAddress
     );
@@ -81,18 +61,16 @@ const store = create<State & Actions>((set, get) => ({
     if (newActiveProvider === provider) set({ newAddress });
   },
   addWallet: async (keyringId) => {
-    const { newNetworkId, init } = get();
+    const { newNetworkId, init } = get() as Get<typeof state, typeof actions>;
     const newKeyring = await gql.addWallet(keyringId, newNetworkId);
     await init(newKeyring.wallets);
-    set({ modalOpen: false });
-    return newKeyring;
   },
   removeWallet: async (keyringId, walletId, address) => {
     try {
-      const { init } = get();
+      const { init } = get() as Get<typeof state, typeof actions>;
       const newKeyring = await gql.removeWallet(keyringId, walletId, address);
       await init(newKeyring.wallets);
-      set({ newWalletOperation: "idle", modalOpen: false });
+      set({ newWalletOperation: "idle" });
     } catch (err) {
       err instanceof Error &&
         err.message.includes("Cannot Empty All Wallets") &&
@@ -101,21 +79,17 @@ const store = create<State & Actions>((set, get) => ({
   },
   keyringHasWallet: async () => {
     const { newNetworkId, newAddress } = get();
-    if (!newNetworkId) return false;
+    if (!newNetworkId) return;
     const keyrings = await gql.keyringHasWallet(newNetworkId);
     let walletId = "";
     keyrings.forEach((keyring) => {
       walletId = keyring.wallets.find((wallet) => wallet.address === newAddress)?.id || walletId;
     });
-    if (keyrings.length) {
+    if (keyrings.length)
       set({
         deleteKeyringId: keyrings[0].id,
         deleteWalletId: walletId,
       });
-      return true;
-    } else {
-      return false;
-    }
   },
   checkNewWallet: async () => {
     const { newNetworkId, wallets, newAddress } = get();
@@ -137,5 +111,5 @@ const store = create<State & Actions>((set, get) => ({
       set({ newWalletOperation: "idle", errorMsg: "" });
     }
   },
-}));
-export const wallet = generateStore(store);
+});
+export const wallet = makeStore(walletGraphQL.refName, state, actions);

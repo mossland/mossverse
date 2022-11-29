@@ -4,7 +4,7 @@ import * as Admin from "./admin.model";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 import { LoadService } from "@shared/util-server";
-import { SecurityOptions } from "../options";
+import { SecurityOptions } from "../option";
 
 @Injectable()
 export class AdminService extends LoadService<Admin.Mdl, Admin.Doc, Admin.Input> {

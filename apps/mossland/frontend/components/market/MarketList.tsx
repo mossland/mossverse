@@ -1,100 +1,42 @@
 import React, { useEffect } from "react";
 import styled, { css } from "styled-components";
-import { Market } from "@platform/ui-web";
-
+import { Market, ListingItem } from "@platform/ui-web";
 import { utils, gql } from "@platform/data-access";
-
+import { store } from "../../stores";
+import { MarketItem } from "./MarketItem";
+import { MyItem } from "./MyItem";
 export const MarketList = () => {
-  const service = Market.useMarket();
-  const getOpacity = (listing: gql.Listing) => (listing.status === "soldout" ? 0.5 : 1);
-
-  //! 개선 필요
-  useEffect(() => {
-    if (!service.listings) return;
-    service.filterMyItems(service.listings);
-  }, [service.listings]);
+  const self = store.platform.user.use.self();
+  const myItems = store.platform.user.use.myItems();
+  const filter = store.mocMarket.use.filter();
+  const listings = store.mocMarket.use.listingList();
+  const myTokensFilter = store.mocMarket.use.myTokensFilter();
 
   useEffect(() => {
-    service.initListing({ status: "active" });
+    if (listings === "loading" || !listings || !self || !self.filterMyItems) return;
+    const myItems = self.filterMyItems(self, listings);
+    store.platform.user.set({ myItems });
+  }, [listings]);
+
+  useEffect(() => {
+    store.mocMarket.do.initListing({ query: { status: "active" } });
   }, []);
 
-  if (service.operation !== "idle") return null;
-
-  if (!(service.sellingCount + service.myItems.length)) {
-    return (
-      <Market.EmptyList>
-        {service.filter === "myTokens" ? <>You don&apos;t own any NFTs yet.</> : <>There are no tradable Products.</>}
-      </Market.EmptyList>
-    );
-  }
-
+  if (listings === "loading") return <>loading...</>;
   return (
-    <Market.List>
-      {service.listings
-        .filter((listing) => service.getFilter(listing))
-        .map((listing, index) => {
-          return (
-            <Market.ItemContainer
-              key={index}
-              onClick={() => service.onClickItem(listing)}
-              opacity={getOpacity(listing)}
-            >
-              <Market.ItemImage src={utils.getListingImage(listing) || ""} />
-              <Market.ItemInfo className={service.filter === "myTokens" ? "selling" : ""}>
-                <Market.ItemInfoTitle>{utils.getListingName(listing)}</Market.ItemInfoTitle>
-                <Market.ItemInfoDesc>
-                  <Market.ItemInfoPrice>
-                    {listing.priceTags?.[0]?.thing && (
-                      <>
-                        <img src={listing.priceTags?.[0].thing?.image.url} />
-                        {listing.priceTags?.[0].price}
-                      </>
-                    )}
-                    {listing.priceTags?.[0]?.token && (
-                      <>
-                        <img src={listing.priceTags?.[0].token?.image?.url} />
-                        {listing.priceTags?.[0].price}
-                      </>
-                    )}
-                  </Market.ItemInfoPrice>
-                </Market.ItemInfoDesc>
-              </Market.ItemInfo>
-            </Market.ItemContainer>
-          );
-        })}
-      {service.filter === "myTokens" &&
-        service.myTokensFilter === "all" &&
-        service.myItems.map((item, index) => (
-          <Market.ItemContainer key={index} onClick={() => service.onClickMyItem(item)}>
-            <Market.ItemImage src={utils.getMyItemImage(item) || ""} />
-
-            <Market.ItemInfo>
-              <Market.ItemInfoTitle>{utils.getMyItemName(item)}</Market.ItemInfoTitle>
-              <Market.ItemInfoDesc>
-                <div />
-                <StyledMyTokenButton className="my-token-button button--sell">Sell</StyledMyTokenButton>
-              </Market.ItemInfoDesc>
-            </Market.ItemInfo>
-          </Market.ItemContainer>
+    <div
+      className={
+        "grid px-[33px] py-[20px] h-[calc(100vh-143px)] overflow-y-scroll flex-wrap grid-cols-[1fr_1fr_1fr_1fr] grid-rows-[1fr_1fr_1fr_1fr] items-start gap-[10px]"
+      }
+    >
+      {listings.map((listing, index) => {
+        return <MarketItem key={index} item={listing} />;
+      })}
+      {filter === "myTokens" &&
+        myTokensFilter === "all" &&
+        myItems.map((item, index) => (
+          <MyItem key={index} item={item} onClick={() => store.platform.user.do.openMyItem(item)} />
         ))}
-    </Market.List>
+    </div>
   );
 };
-
-const StyledMyTokenButton = styled.div`
-  font-size: 10px;
-  padding: 3px 13px;
-  border-radius: 4px;
-  &.button--sell {
-    background-color: #ffd749;
-    margin-right: 5px;
-  }
-  &.button--cancel {
-    background-color: #f4f4f4;
-    border: 1px solid #555555;
-  }
-`;
-
-const StyledItemInfoPrice = css`
-  background-color: #ffd749;
-`;

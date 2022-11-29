@@ -62,7 +62,8 @@ export class ContractService
         contracts.filter((c) => c.is("erc1155"))
       )),
     ];
-    return await wallet.merge({ items }).save();
+    // return await wallet.merge({ items }).save();
+    return wallet.merge({ items });
   }
   async #inventoryErc20(wallet: db.Wallet.Doc, contracts: Contract.Doc[]): Promise<gql.TokenItem[]> {
     if (!contracts.length) return [];
@@ -83,10 +84,15 @@ export class ContractService
     tokenLists.map((tokens, idx) =>
       tokens.map((token) => tokenMap.set(`${contracts[idx].address}-${token.tokenId}`, token))
     );
-    const items = await instance.inventory(
-      wallet.address,
-      contracts.map((c) => c.address)
-    );
+    //! Temporary Disabled for MIB
+    // const items = await instance.inventory(
+    //   wallet.address,
+    //   contracts.map((c) => c.address)
+    // );
+    //! Temporary Disabled for MIB
+
+    const items = await instance.inventory2TempForMib(wallet.address);
+
     return await Promise.all(
       items.map(async (item, idx) => {
         const contract = contractMap.get(item.contract);
@@ -199,7 +205,7 @@ export class ContractService
     return async (from, to, value, e) => {
       const bn = e.blockNumber;
       if (bn < contract.bn) return;
-      this.logger.log(`ERC20 Transfer Detectend from ${from} to ${to} value: ${value.toString()} bn: ${bn}`);
+      this.logger.log(`ERC20 Transfer Detected from ${from} to ${to} value: ${value.toString()} bn: ${bn}`);
       const f = await this.walletService.myWallet(contract.network, from);
       const t = await this.walletService.myWallet(contract.network, to);
       await this.walletService.transferItem({
@@ -215,7 +221,7 @@ export class ContractService
     return async (from, to, id, e) => {
       const [bn, tokenId] = [e.blockNumber, parseInt(id.toString())];
       if (bn < contract.bn) return;
-      this.logger.log(`ERC721 Transfer Detectend from ${from} to ${to} id: ${id.toString()} bn: ${bn}`);
+      this.logger.log(`ERC721 Transfer Detected from ${from} to ${to} id: ${id.toString()} bn: ${bn}`);
       const f = await this.walletService.myWallet(contract.network, from);
       const t = await this.walletService.myWallet(contract.network, to);
       const uri = (await this.tokenService.exists({ contract: contract._id, tokenId }))
@@ -236,7 +242,7 @@ export class ContractService
       const [bn, tokenId] = [e.blockNumber, parseInt(id.toString())];
       if (bn < contract.bn) return;
       this.logger.log(
-        `ERC1155 Transfer Detectend from ${from} to ${to} id: ${id.toString()} value: ${value.toString()} bn: ${bn}`
+        `ERC1155 Transfer Detected from ${from} to ${to} id: ${id.toString()} value: ${value.toString()} bn: ${bn}`
       );
       const f = await this.walletService.myWallet(contract.network, from);
       const t = await this.walletService.myWallet(contract.network, to);
@@ -326,6 +332,7 @@ export class ContractService
     try {
       const tx = await instance.contract.provider.getTransaction(hash);
       const decoded = instance.settings.intf.parseTransaction({ data: tx.data, value: tx.value });
+      console.log(decoded);
       //! should check validity of tx
       // TransactionDescription {
       //   args: [

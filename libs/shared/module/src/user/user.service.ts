@@ -15,12 +15,13 @@ export class UserService<
     super(UserService.name, User);
   }
   async whoAmI(keyringId: Id, data: Partial<Doc> = {}) {
-    return (
+    const user =
       ((await this.model.findOne({ keyring: keyringId, status: "active" })) as Doc) ??
-      ((await this.model.create({ keyring: keyringId, ...data })) as Doc)
-    );
+      (await new this.model({ keyring: keyringId, ...data }).save());
+    if (user.isNew) await this.keyringService.update(user.keyring, { user: user._id });
+    return user;
   }
-  async remove(userId: Id, { account }: LoadConfig = {}): Promise<Doc> {
+  async remove(userId: Id, { account }: LoadConfig<Doc> = {}): Promise<Doc> {
     const user = await this.model.pickById(userId);
     if (!account || !user.keyring.equals(account.keyring)) throw new Error("Not authorized");
     await this.keyringService.remove(user.keyring);

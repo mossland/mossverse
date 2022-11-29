@@ -11,15 +11,33 @@ export const CharacterBox = ({ type }: CharacterBoxProps) => {
   const initCharacter = store.character.use.initCharacter();
   useEffect(() => {
     (async () => {
-      await initCharacter(type === "guest" ? { name: "default", status: "inactive" } : { status: "inactive" });
+      await initCharacter({
+        query: type === "guest" ? { name: "default", status: "inactive" } : { status: "inactive" },
+      });
       store.character.setState({ character: characterList[0] });
     })();
   }, [characterList]);
 
+  if (characterList === "loading") return <div>Loading...</div>;
   return (
     <CharacterBoxContainer>
       <div className="choice-box">
-        {characterList.map((character, idx) => (
+        {characterList.map((character, idx) => {
+          console.log(character.file);
+          return (
+            <CharacaterImage
+              key={idx}
+              selected={character === selected}
+              onClick={() => store.character.setState({ character })}
+            >
+              <div className="Image-wrapper">
+                <img src={character.file.url} />
+                <div className="image-deco"></div>
+              </div>
+            </CharacaterImage>
+          );
+        })}
+        {/* {characterList.map((character, idx) => (
           <CharacaterImage
             key={idx}
             selected={character === selected}
@@ -30,7 +48,7 @@ export const CharacterBox = ({ type }: CharacterBoxProps) => {
               <div className="image-deco"></div>
             </div>
           </CharacaterImage>
-        ))}
+        ))} */}
       </div>
       <div className="selected-character">{selected?.file.url && <img src={selected?.file.url} />}</div>
     </CharacterBoxContainer>

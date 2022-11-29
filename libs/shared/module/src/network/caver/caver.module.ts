@@ -2,7 +2,7 @@ import { DynamicModule, Global, Module } from "@nestjs/common";
 import { CaverService } from "./caver.service";
 import { CaverConsumer } from "./caver.consumer";
 import { BullModule } from "@nestjs/bull";
-import { KlaytnOptions } from "../../options";
+import { KlaytnOptions } from "../../option";
 import { RedisOptions } from "@shared/util-server";
 
 @Module({})

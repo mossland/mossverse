@@ -1,6 +1,16 @@
 import graphql from "graphql-tag";
 import { cnst } from "@shared/util";
-import { createGraphQL, Field, InputType, mutate, query, ObjectType, BaseGql } from "@shared/util-client";
+import {
+  createGraphQL,
+  Field,
+  InputType,
+  mutate,
+  query,
+  ObjectType,
+  BaseGql,
+  PickType,
+  SliceModel,
+} from "@shared/util-client";
 import { gql as platform } from "@platform/data-access";
 
 @InputType("MocWalletInput")
@@ -23,8 +33,12 @@ export class MocWallet extends BaseGql(MocWalletInput) {
   @Field(() => String)
   status: cnst.MocWalletStatus;
 }
+@ObjectType("LightMocWallet", { _id: "id", gqlRef: "MocWallet" })
 
-export const mocWalletGraphQL = createGraphQL<"mocWallet", MocWallet, MocWalletInput>(MocWallet, MocWalletInput);
+// ! 라이트 모델 지정 필요
+export class LightMocWallet extends PickType(MocWallet, ["status"] as const) {}
+
+export const mocWalletGraphQL = createGraphQL("mocWallet" as const, MocWallet, MocWalletInput, LightMocWallet);
 export const {
   getMocWallet,
   listMocWallet,
@@ -37,6 +51,7 @@ export const {
   purifyMocWallet,
   defaultMocWallet,
 } = mocWalletGraphQL;
+export type MocWalletSlice = SliceModel<"mocWallet", MocWallet, LightMocWallet>;
 
 // * GetActiveMocWallet Mutation
 export type GetActiveMocWalletQuery = { getActiveMocWallet: MocWallet };

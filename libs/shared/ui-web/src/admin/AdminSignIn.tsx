@@ -4,8 +4,7 @@ import { toast } from "react-toastify";
 import { Field } from "@shared/ui-web";
 
 export const AdminSignIn = () => {
-  const accountId = store.admin.use.accountId();
-  const password = store.admin.use.password();
+  const adminForm = store.admin.use.adminForm();
   const signin = store.admin.use.signin();
   return (
     <Card title="Sign In" size="small">
@@ -18,8 +17,8 @@ export const AdminSignIn = () => {
         onFinishFailed={(e) => toast.error(e)}
         autoComplete="off"
       >
-        <Field.ID value={accountId} onChange={(accountId) => store.admin.setState({ accountId })} />
-        <Field.Password value={password} onChange={(password) => store.admin.setState({ password })} />
+        <Field.ID value={adminForm.accountId} onChange={store.admin.do.setAccountIdOnAdmin} />
+        <Field.Password value={adminForm.password} onChange={store.admin.do.setPasswordOnAdmin} />
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
           <Button type="primary" htmlType="submit" block>
             Submit

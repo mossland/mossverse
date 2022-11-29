@@ -1,6 +1,17 @@
 import { gql as shared } from "@shared/data-access";
 import { cnst } from "@shared/util";
-import { BaseArrayFieldGql, makeDefault, Field, InputType, Int, ObjectType, makePurify } from "@shared/util-client";
+import {
+  BaseArrayFieldGql,
+  makeDefault,
+  Field,
+  InputType,
+  Int,
+  ObjectType,
+  makePurify,
+  InputOf,
+  Float,
+  PickType,
+} from "@shared/util-client";
 
 @InputType("PriceTagInput")
 export class PriceTagInput {
@@ -20,7 +31,7 @@ export class PriceTagInput {
 @ObjectType("PriceTag")
 export class PriceTag extends PriceTagInput {}
 // export class PriceTag extends BaseArrayFieldGql(PriceTagInput) {}
-export const purifyPriceTag = makePurify<PriceTagInput>(PriceTag);
+export const purifyPriceTag = makePurify(PriceTagInput);
 
 @InputType("ExchangeInput")
 export class ExchangeInput {
@@ -28,26 +39,57 @@ export class ExchangeInput {
   type: cnst.ExchangeType;
 
   @Field(() => shared.Token, { nullable: true })
-  token: shared.Token | null;
+  token: shared.Token | shared.LightToken | null;
 
   @Field(() => shared.Thing, { nullable: true })
-  thing: shared.Thing | null;
+  thing: shared.Thing | shared.LightThing | null;
 
   @Field(() => shared.Product, { nullable: true })
-  product: shared.Product | null;
+  product: shared.Product | shared.LightProduct | null;
+
+  @Field(() => shared.Currency, { nullable: true })
+  currency: shared.Currency | shared.LightCurrency | null;
 
   @Field(() => shared.Wallet, { nullable: true })
-  wallet: shared.Wallet | null;
+  wallet: shared.Wallet | shared.LightWallet | null;
 
   @Field(() => String, { nullable: true })
-  hash: string | null;
+  hash?: string | null;
 
-  @Field(() => Int)
+  @Field(() => Float)
   num: number;
+
+  @Field(() => Float, { nullable: true })
+  originalNum: number | null;
 }
 
 @ObjectType("Exchange")
-export class Exchange extends BaseArrayFieldGql(ExchangeInput) {}
+export class Exchange extends ExchangeInput {}
+
+@ObjectType("LightExchange", { gqlRef: "Exchange" })
+export class LightExchange extends PickType(Exchange, [
+  "type",
+  "token",
+  "thing",
+  "product",
+  "currency",
+  "num",
+] as const) {
+  @Field(() => shared.LightToken, { nullable: true })
+  override token: shared.LightToken | null;
+
+  @Field(() => shared.LightThing, { nullable: true })
+  override thing: shared.LightThing | null;
+
+  @Field(() => shared.LightProduct, { nullable: true })
+  override product: shared.LightProduct | null;
+
+  @Field(() => shared.LightCurrency, { nullable: true })
+  override currency: shared.LightCurrency | null;
+}
+
+export const purifyExchange = makePurify(Exchange);
+// export class Exchange extends BaseArrayFieldGql(ExchangeInput) {}
 
 @InputType("SurveyResponseInput")
 export class SurveyResponseInput {
@@ -73,7 +115,7 @@ export class SurveyResponse extends BaseArrayFieldGql(SurveyResponseInput) {
   tokens: shared.Token[];
 }
 export const defaultSurveyResponse = makeDefault<SurveyResponse>(SurveyResponse);
-export const purifySurveyResponse = makePurify<SurveyResponseInput>(SurveyResponse);
+export const purifySurveyResponse = makePurify(SurveyResponseInput);
 
 @InputType("OwnershipInput")
 export class OwnershipInput {}
@@ -104,9 +146,6 @@ export type MyItem = {
   type: "token" | "thing";
   num: number;
 };
-export type ListingFilter = "all" | "mossMarket" | "p2p" | "myTokens";
-export type ListingType = "default" | "delivery" | "p2p" | "myTokens";
-export type MyTokensFilter = "all" | "onSale";
 
 @InputType("ShipInfoInput")
 export class ShipInfoInput {
@@ -137,3 +176,7 @@ export const purifyShipInfo = makePurify<ShipInfoInput>(ShipInfo);
 //! Need to refactor this
 export const typeOfExchangeMode = ["MOCtoMMOC", "MMOCtoMOC"] as const;
 export type TypeOfExchangeMode = typeof typeOfExchangeMode[number];
+
+export type ListingFilter = "all" | "mossMarket" | "p2p" | "myTokens";
+export type ListingType = "default" | "delivery" | "p2p" | "myTokens";
+export type MyTokensFilter = "all" | "onSale";

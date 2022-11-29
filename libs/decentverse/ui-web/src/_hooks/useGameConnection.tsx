@@ -58,7 +58,7 @@ export const useGameConnection = ({ player, scope, socket }: SocketProp) => {
     };
   }, []);
   useInterval(() => {
-    if (!socket || !self) return;
+    if (!socket || !self || emoji === "loading") return;
 
     const data = encodeProtocolV1(
       {

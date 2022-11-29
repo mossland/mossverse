@@ -10,6 +10,8 @@ import {
   ObjectType,
   Int,
   BaseGql,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
 
 @InputType("NetworkInput")
@@ -36,7 +38,10 @@ export class Network extends BaseGql(NetworkInput) {
   status: cnst.NetworkStatus;
 }
 
-export const networkGraphQL = createGraphQL<"network", Network, NetworkInput>(Network, NetworkInput);
+@ObjectType("LightNetwork", { _id: "id", gqlRef: "Network" })
+export class LightNetwork extends PickType(Network, ["name", "networkId", "provider", "type", "status"] as const) {}
+
+export const networkGraphQL = createGraphQL("network" as const, Network, NetworkInput, LightNetwork);
 export const {
   getNetwork,
   listNetwork,
@@ -49,3 +54,4 @@ export const {
   purifyNetwork,
   defaultNetwork,
 } = networkGraphQL;
+export type NetworkSlice = SliceModel<"network", Network, LightNetwork>;

@@ -65,9 +65,25 @@ export class Erc721 {
       contract: calls[idx].address,
       tokenId: parseInt(ret[0].toString()),
       num: 1,
-      bn: ret[0],
+      bn: ret[1],
     }));
     const uris = await this.tokenURIs(inventory.map((inv) => inv.tokenId));
+    return inventory.map((inv, idx) => ({ ...inv, uri: uris[idx].uri }));
+  }
+  async inventory2TempForMib(owner: string) {
+    const supply = await this.#totalSupply();
+    const owners = await this.#ownersOf(new Array(supply).fill(0).map((_, idx) => idx));
+    const tokenIds = owners
+      .map((o, i) => (o.address.toLowerCase() === owner ? i : null))
+      .filter((id) => !!id) as number[];
+    const inventory = tokenIds.map((tokenId, idx) => ({
+      address: owner,
+      contract: this.address,
+      tokenId,
+      num: 1,
+      bn: 0,
+    }));
+    const uris = await this.tokenURIs(tokenIds);
     return inventory.map((inv, idx) => ({ ...inv, uri: uris[idx].uri }));
   }
   async getSaleInfo(key: number) {
@@ -146,7 +162,7 @@ export class Erc721 {
         calls: tokenIds.map((tokenId) => ({ address: this.address, fn: "ownerOf", args: [tokenId] })),
         settings: this.settings,
       })
-    ).map((ret) => ({ address: ret[0], bn: ret[1], num: 1 }));
+    ).map((ret) => ({ address: ret[0].toLowerCase(), bn: ret[1], num: 1 }));
     return owners;
   }
   async #tokenIdsOfOwner(owner: string): Promise<number[]> {
@@ -163,12 +179,14 @@ export class Erc721 {
   }
   async #tokenIdsAll(): Promise<number[]> {
     const supply = await this.#totalSupply();
-    const tokenIds = (
-      await this.settings.multicall.view({
-        calls: new Array(supply).fill(0).map((_, idx) => ({ address: this.address, fn: "tokenByIndex", args: [idx] })),
-        settings: this.settings,
-      })
-    ).map((ret) => parseInt(ret[0].toString()));
+    //! Temporary
+    const tokenIds = new Array(supply).fill(0).map((_, idx) => idx);
+    // const tokenIds = (
+    //   await this.settings.multicall.view({
+    //     calls: new Array(supply).fill(0).map((_, idx) => ({ address: this.address, fn: "tokenByIndex", args: [idx] })),
+    //     settings: this.settings,
+    //   })
+    // ).map((ret) => parseInt(ret[0].toString()));
     return tokenIds;
   }
 }

@@ -6,7 +6,7 @@ const Caver = require("caver-js-latest");
 import { KeyringContainer, default as CaverJs, AbiItem } from "caver-js-latest";
 import { InjectQueue } from "@nestjs/bull";
 import { Queue } from "bull";
-import { KlaytnOptions } from "../../options";
+import { KlaytnOptions } from "../../option";
 import { LogService, Erc721, Erc1155, Erc20, Multicall } from "@shared/util-server";
 import { NetworkFunctionality } from "../network.service";
 import { ethers } from "ethers";

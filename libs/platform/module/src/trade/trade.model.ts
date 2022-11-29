@@ -41,23 +41,36 @@ schema.methods.makeExchange = function (
   const multiple = Math.min(
     ...is.map(
       (input) =>
-        (executedInputs.find((i) => i.thing?.equals(input.thing as Id) || i.token?.equals(input.token as Id))?.num ??
-          0) / input.num
+        (executedInputs.find(
+          (i) =>
+            input.thing?.equals(i.thing as Id) ||
+            input.token?.equals(i.token as Id) ||
+            input.currency?.equals(i.currency as Id) ||
+            input.product?.equals(i.product as Id)
+        )?.num ?? 0) / input.num
     )
   );
   const inputs: gql.ExchangeInput[] = is.map((input) => {
     const executed = executedInputs.find(
-      (executed) => executed.thing?.equals(input.thing as Id) || executed.token?.equals(input.token as Id)
+      (executed) =>
+        input.thing?.equals(executed.thing as Id) ||
+        input.token?.equals(executed.token as Id) ||
+        input.currency?.equals(executed.currency as Id) ||
+        input.product?.equals(executed.product as Id)
     );
     if (!executed) throw new Error("Insufficient Executed Inputs");
-    return { ...executed, ...input, num: Math.floor(input.num * -multiple) };
+    return { ...executed, ...input, num: input.num * -multiple };
   });
   const outputs: gql.ExchangeInput[] = os.map((output) => {
     const desired = desiredOutputs.find(
-      (desired) => desired.thing?.equals(output.thing as Id) || desired.token?.equals(output.token as Id)
+      (desired) =>
+        output.thing?.equals(desired.thing as Id) ||
+        output.token?.equals(desired.token as Id) ||
+        output.currency?.equals(desired.currency as Id) ||
+        output.product?.equals(desired.product as Id)
     );
     if (!desired) throw new Error("Insufficient Desired Outputs");
-    return { ...desired, ...output, num: Math.floor(output.num * multiple), wallet: desired.wallet };
+    return { ...desired, ...output, num: output.num * multiple, wallet: desired.wallet };
   });
   return [inputs, outputs];
 };

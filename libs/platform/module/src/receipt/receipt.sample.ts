@@ -5,6 +5,7 @@ import * as gql from "../gql";
 import { Id } from "@shared/util-server";
 const c = new Chance();
 export const receiptInput = (from: Id): gql.ReceiptInput => ({
+  name: c.name(),
   type: "purchase",
   from,
   inputs: [],

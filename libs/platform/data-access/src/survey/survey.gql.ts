@@ -11,6 +11,8 @@ import {
   BaseGql,
   Int,
   InputOf,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 import { Ownership, SurveyResponse, SurveyResponseInput } from "../_scalar";
@@ -69,7 +71,10 @@ export class Survey extends BaseGql(SurveyInput) {
   status: cnst.SurveyStatus;
 }
 
-export const surveyGraphQL = createGraphQL<"survey", Survey, SurveyInput>(Survey, SurveyInput);
+@ObjectType("LightSurvey", { _id: "id", gqlRef: "Survey" })
+export class LightSurvey extends PickType(Survey, ["status"] as const) {}
+
+export const surveyGraphQL = createGraphQL("survey" as const, Survey, SurveyInput, LightSurvey);
 export const {
   getSurvey,
   listSurvey,
@@ -82,6 +87,7 @@ export const {
   purifySurvey,
   defaultSurvey,
 } = surveyGraphQL;
+export type SurveySlice = SliceModel<"survey", Survey, LightSurvey>;
 
 // * Generate Survey Mutation
 export type GenerateSurveyMutation = { generateSurvey: Survey };

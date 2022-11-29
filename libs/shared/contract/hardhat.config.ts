@@ -12,7 +12,6 @@ import "tsconfig-paths/register";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { env } = require("./env");
 if (process.env["REPORT_GAS"]) require("hardhat-gas-reporter");
-console.log(env.klaytn);
 const config: HardhatUserConfig = {
   paths: {
     root: "./",
@@ -37,20 +36,12 @@ const config: HardhatUserConfig = {
     //         chainId: 1,
     //       }
     //     : undefined,
-    // ropsten:
-    //   env.ethereum.networkName === "ropsten"
+    // goerli:
+    //   env.ethereum.networkName === "goerli"
     //     ? {
-    //         url: `https://ropsten.infura.io/v3/${env.ethereum.infuraId}`,
+    //         url: `https://goerli.infura.io/v3/${env.ethereum.infuraId}`,
     //         accounts: [env.ethereum.privateKey],
-    //         chainId: 3,
-    //       }
-    //     : undefined,
-    // rinkeby:
-    //   env.ethereum.networkName === "rinkeby"
-    //     ? {
-    //         url: `https://rinkeby.infura.io/v3/${env.ethereum.infuraId}`,
-    //         accounts: [env.ethereum.privateKey],
-    //         chainId: 4,
+    //         chainId: 5,
     //       }
     //     : undefined,
     // baobab:
@@ -101,4 +92,3 @@ const config: HardhatUserConfig = {
   // ],
 };
 export default config;
-console.log(config.networks);

@@ -1,28 +1,17 @@
-import create from "zustand";
+import { StateCreator } from "zustand";
 import * as gql from "../gql";
-import { createActions, createState, DefaultActions, DefaultState, generateStore } from "@shared/util-client";
+import { createActions, createState, DefaultActions, DefaultState, Get, makeStore, SetGet } from "@shared/util-client";
 import { emojiGraphQL, Emoji, EmojiInput } from "./emoji.gql";
 
-type State = DefaultState<"emoji", gql.Emoji> & {
-  isEmojiModalOpen: boolean;
-  emojiTimeout: NodeJS.Timeout | null;
-  isShowEmojiSelecter: boolean;
-  isEmojiEdit: boolean;
-};
-const initialState: State = {
-  ...createState<"emoji", gql.Emoji, gql.EmojiInput>(emojiGraphQL),
+const state = {
+  ...createState(emojiGraphQL),
   isEmojiModalOpen: false,
-  emojiTimeout: null,
+  emojiTimeout: null as NodeJS.Timeout | null,
   isShowEmojiSelecter: false,
   isEmojiEdit: false,
 };
-type Actions = DefaultActions<"emoji", gql.Emoji, gql.EmojiInput> & {
-  runEmoji: (emoji: gql.Emoji) => void;
-  addEmojiFiles: (fileList: FileList) => Promise<void>;
-};
-const store = create<State & Actions>((set, get) => ({
-  ...initialState,
-  ...createActions<"emoji", gql.Emoji, gql.EmojiInput>(emojiGraphQL, { get, set }),
+const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
+  ...createActions(emojiGraphQL, { get, set }),
   runEmoji: (emoji: gql.Emoji) => {
     const { emojiTimeout } = get();
     if (emojiTimeout) clearInterval(emojiTimeout);
@@ -30,8 +19,9 @@ const store = create<State & Actions>((set, get) => ({
     set({ emojiTimeout: timeout, emoji, isShowEmojiSelecter: false });
   },
   addEmojiFiles: async (fileList) => {
-    const [file] = await gql.addEmojiFiles(fileList, get().id);
-    set({ file });
+    const { emojiForm, setFileOnEmoji } = get() as Get<typeof state, typeof actions>;
+    const [file] = await gql.addEmojiFiles(fileList, emojiForm.id);
+    setFileOnEmoji(file);
   },
-}));
-export const emoji = generateStore(store);
+});
+export const emoji = makeStore(emojiGraphQL.refName, state, actions);

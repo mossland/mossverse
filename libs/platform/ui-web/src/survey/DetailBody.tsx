@@ -16,22 +16,30 @@ export const DetailBody = ({ survey, voted, answer, selection }: SurveyDetailBod
   const self = store.user.use.self();
   const wallet = store.shared.wallet.use.wallet();
   const respondSurvey = store.survey.use.respondSurvey();
-
+  const keyring = store.shared.keyring.use.keyring();
+  if (keyring === "loading") return;
   const isVotable = (): boolean => {
-    if (!voted && self && self.keyring?.wallets.find((wallet) => wallet.network.id === survey.contract.network.id))
+    if (
+      !voted &&
+      self &&
+      keyring?.wallets.find((wallet) => (wallet as gql.shared.Wallet).network.id === survey.contract.network.id)
+    )
       return true;
     else return false;
   };
   const onSubmit = async () => {
     if (!self || !self.keyring) return alert("로그인 한 유저만 투표할 수 있습니다.");
-    if (!wallet) return alert("해당 컨트랙 네트워크의 지갑을 소유하고 있지 않습니다.");
+    if (!wallet || wallet === "loading") return alert("해당 컨트랙 네트워크의 지갑을 소유하고 있지 않습니다.");
     await sign(wallet.network.provider);
-    await respondSurvey(wallet);
+    await respondSurvey();
+    // await respondSurvey(wallet);
   };
 
   const onCancel = () => {
-    store.survey.setState({ ...gql.defaultSurveyResponse, survey: null, response: null });
-    store.shared.network.setState({ network: null });
+    // store.survey.setState({ ...gql.defaultSurveyResponse, survey: null, response: undefined });
+    // store.shared.network.setState({ network: null });
+    store.survey.do.resetSurvey();
+    store.shared.network.do.resetNetwork();
   };
 
   return (

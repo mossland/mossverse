@@ -7,7 +7,7 @@ import { useMocSurvey } from "./services/useMocSurvey";
 
 export const DetailMobile = () => {
   const mocSurveyService = useMocSurvey();
-  if (!mocSurveyService.mocSurvey || !mocSurveyService.wallet) return <></>;
+  if (!mocSurveyService.mocSurvey) return <></>;
 
   return (
     <SurveyDetailContainer>

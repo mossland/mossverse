@@ -6,7 +6,7 @@ import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 describe("Thing Service", () => {
   const system = new TestSystem();
   let thingService: ThingService;

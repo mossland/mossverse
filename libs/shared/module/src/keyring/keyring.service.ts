@@ -9,8 +9,10 @@ import * as srv from "../srv";
 import * as db from "../db";
 import { WalletService } from "../wallet/wallet.service";
 import { ContractService } from "../contract/contract.service";
+import { MailerService } from "../mailer/mailer.service";
 import { Utils } from "@shared/util";
-import { SecurityOptions } from "../options";
+import { SecurityOptions } from "../option";
+
 @Injectable()
 export class KeyringService extends LoadService<Keyring.Mdl, Keyring.Doc, Keyring.Input> {
   constructor(
@@ -19,7 +21,8 @@ export class KeyringService extends LoadService<Keyring.Mdl, Keyring.Doc, Keyrin
     private readonly Keyring: db.Keyring.Mdl,
     private readonly walletService: WalletService,
     private readonly contractService: ContractService,
-    private readonly securityService: srv.SecurityService
+    private readonly securityService: srv.SecurityService,
+    private readonly mailerService: MailerService
   ) {
     super(KeyringService.name, Keyring);
   }
@@ -50,9 +53,9 @@ export class KeyringService extends LoadService<Keyring.Mdl, Keyring.Doc, Keyrin
       role: true,
       password: true,
     });
-    if (!account) throw new Error("No Account");
+    if (!account) throw new Error("Signin Failed");
     if (account.status !== "active" || !(await bcrypt.compare(password, account.password || "")))
-      throw new Error(`not match`);
+      throw new Error("Signin Failed");
     const keyring = await this.Keyring.pickById(account._id);
     return this.securityService.generateToken(keyring);
   }
@@ -76,6 +79,14 @@ export class KeyringService extends LoadService<Keyring.Mdl, Keyring.Doc, Keyrin
     if (account && !(await bcrypt.compare(prevPassword, account.password || ""))) throw new Error(`not match`);
     const keyring = await this.Keyring.pickAndWrite(keyringId, { password });
     return this.securityService.generateToken(keyring);
+  }
+  async resetPassword(accountId: string): Promise<boolean> {
+    const account = await this.Keyring.findOne({ accountId, status: "active" });
+    if (!account) throw new Error(`The Account does not exists`);
+    else if (account.updatedAt.getTime() > Date.now() - 1000 * 60 * 3) throw new Error(`Retry after 3 minutes`);
+    const password = (Math.random() + 1).toString(36).slice(2, 14);
+    const keyring = await this.Keyring.pickAndWrite(account._id, { password });
+    return this.mailerService.sendPasswordResetMail(accountId, password);
   }
   async remove(keyringId: Id): Promise<Keyring.Doc> {
     const keyring = await this.Keyring.pickById(keyringId);

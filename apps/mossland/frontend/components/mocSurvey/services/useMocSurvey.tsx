@@ -29,28 +29,21 @@ export const useMocSurvey = () => {
     false;
 
   const sign = store.shared.keyring.use.sign();
-
-  const createMocSurvey = store.mocSurvey.use.createMocSurvey();
-
   const hasMmoc = () => (self ? self.items.some((item) => item.thing.name === "MMOC") : false);
-
-  const findResponse = store.mocSurvey.use.findResponse();
-
-  const initSurvey = store.mocSurvey.use.initMocSurvey();
-
-  const signWalletConnect = store.shared.keyring.use.signWalletConnect();
-
   const response = store.mocSurvey.use.responseMocSurvey();
-
+  const initSurvey = store.mocSurvey.use.initMocSurvey();
+  const findResponse = store.mocSurvey.use.findResponse();
+  const createMocSurvey = store.mocSurvey.use.createMocSurvey();
+  const signWalletConnect = store.shared.keyring.use.signWalletConnect();
   const creatable = () =>
-    hasMmoc() &&
-    title &&
-    openAt &&
-    closeAt &&
-    selections.length > 1 &&
-    selections.every((selection) => selection.length > 2)
-      ? true
-      : false;
+    (hasMmoc() &&
+      title &&
+      openAt &&
+      closeAt &&
+      (type === "objective" && selections.length > 1 && selections.every((selection) => selection.length > 2)
+        ? true
+        : false)) ||
+    (type === "subjective" && description && description.length > 2 ? true : false);
 
   const create = async () => {
     if (!self || !self.keyring) return alert("로그인 한 유저만 투표할 수 있습니다.");
@@ -103,6 +96,7 @@ export const useMocSurvey = () => {
     if (!self) return store.mocSurvey.setState({ mocSurvey });
     const item = self.items.find((item) => item.thing.id === mocSurvey.thing.id);
     if (!item) return store.mocSurvey.setState({ mocSurvey });
+    console.log(mocSurvey, item);
     const response = findResponse(mocSurvey.id, self.id);
     store.shared.wallet.setState({ wallet });
     store.mocSurvey.setState({ mocSurvey, ...(response ?? gql.defaultUserSurveyResponse) });

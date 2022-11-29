@@ -12,7 +12,7 @@ export const Connect = () => {
   const onClickLoginSelect = async (loginMethod: gql.shared.LoginMethod) => {
     const network = networkList.find((network) => network.provider === loginMethod);
     if (!network) return;
-    await login(loginMethod);
+    await login(networkList, loginMethod);
     await whoAmI();
     store.shared.keyring.setState({ isOpenModal: false }); // ! 추상화 필요
   };

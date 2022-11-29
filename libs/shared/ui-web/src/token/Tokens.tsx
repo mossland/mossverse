@@ -1,53 +1,59 @@
 import React, { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { ToolOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Modal, Button, Table, Space, Input, Radio, Col, Row, Select, List, Card, Popconfirm } from "antd";
+import { Modal, Button, Table, Space, Input, Radio, Col, Row, Select, List, Card, Popconfirm, Skeleton } from "antd";
 import { gql, store } from "@shared/data-access";
 import { Field, Img } from "../index";
 import { ThreeEvent, useFrame } from "@react-three/fiber";
 import { Mesh, PlaneGeometry, Sprite, TextureLoader, Vector3 } from "three";
 import { Utils } from "@shared/util";
+import { SliceModel } from "@shared/util-client";
 
-export const Tokens = () => {
-  const initToken = store.token.use.initToken();
-  const tokens = store.token.use.tokenList();
-  const tokenModal = store.token.use.tokenModal();
-  const newToken = store.token.use.newToken();
+interface TokensProps {
+  tokenSlice: gql.TokenSlice;
+  contractSlice: gql.ContractSlice;
+}
 
+export const Tokens = ({ tokenSlice, contractSlice }: TokensProps) => {
+  const tokenList = tokenSlice.use.tokenList();
+  const tokenModal = tokenSlice.use.tokenModal();
   useEffect(() => {
-    initToken();
+    tokenSlice.do.initToken();
   }, []);
 
   return (
     <div>
       <Header>
         <h2>Tokens</h2>
-        <Button onClick={newToken} icon={<PlusOutlined />}>
+        <Button onClick={() => tokenSlice.do.newToken()} icon={<PlusOutlined />}>
           Add
         </Button>
       </Header>
-      <List
-        grid={{ gutter: 16, column: 5 }}
-        dataSource={tokens}
-        renderItem={(token) => <Token key={token.id} token={token} />}
-      ></List>
-      <TokenEdit />
+      {tokenList === "loading" ? (
+        <Skeleton />
+      ) : (
+        <List
+          grid={{ gutter: 16, column: 5 }}
+          dataSource={tokenList}
+          renderItem={(token) => <Token key={token.id} token={token} tokenSlice={tokenSlice} />}
+        ></List>
+      )}
+      <TokenEdit tokenSlice={tokenSlice} contractSlice={contractSlice} />
     </div>
   );
 };
 
 interface TokenProps {
-  token: gql.Token;
+  token: gql.LightToken;
+  tokenSlice: gql.TokenSlice;
 }
-export const Token = React.memo(({ token }: TokenProps) => {
-  const editToken = store.token.use.editToken();
-  const removeToken = store.token.use.removeToken();
+export const Token = React.memo(({ token, tokenSlice }: TokenProps) => {
   return (
     <Card
       hoverable
       actions={[
-        <EditOutlined key="edit" onClick={() => editToken(token)} />,
-        <Popconfirm title="Are you sure to remove?" onConfirm={() => removeToken(token.id)}>
+        <EditOutlined key="edit" onClick={() => tokenSlice.do.editToken(token.id)} />,
+        <Popconfirm title="Are you sure to remove?" onConfirm={() => tokenSlice.do.removeToken(token.id)}>
           <DeleteOutlined key="remove" />
         </Popconfirm>,
       ]}
@@ -56,45 +62,52 @@ export const Token = React.memo(({ token }: TokenProps) => {
     </Card>
   );
 });
-export const TokenEdit = () => {
-  const tokenModal = store.token.use.tokenModal();
-  const id = store.token.use.id();
-  const contractList = store.contract.use.contractList();
-  const setContract = store.contract.use.setContract();
-  const tokenId = store.token.use.tokenId();
-  const uri = store.token.use.uri();
-  const meta = store.token.use.meta();
-  const image = store.token.use.image();
-  const contract = store.token.use.contract();
-  const purifyToken = store.token.use.purifyToken();
-  const createToken = store.token.use.createToken();
-  const updateToken = store.token.use.updateToken();
-  const resetToken = store.token.use.resetToken();
+interface TokenEditProps {
+  tokenSlice: gql.TokenSlice;
+  contractSlice: gql.ContractSlice;
+}
+export const TokenEdit = ({ tokenSlice, contractSlice }: TokenEditProps) => {
+  const tokenForm = tokenSlice.use.tokenForm();
+  const tokenModal = tokenSlice.use.tokenModal();
+  const contractList = contractSlice.use.contractList();
+  const tokenSumbit = tokenSlice.use.tokenSubmit();
+  useEffect(() => {
+    tokenSlice.do.checkTokenSubmitable();
+  }, [tokenForm]);
   return (
     <Modal
-      title={id ? "New Token" : `Token - ${contract?.displayName ?? contract?.address}/${tokenId ?? "Token"}`}
+      title={
+        tokenForm.id
+          ? "New Token"
+          : `Token - ${tokenForm.contract?.displayName ?? tokenForm.contract?.address}/${tokenForm.tokenId ?? "Token"}`
+      }
       open={!!tokenModal}
-      onOk={() => (id ? updateToken() : createToken())}
-      onCancel={() => resetToken()}
-      // okButtonProps={{ disabled: !purify() }}
+      onOk={tokenSlice.do.submitToken}
+      onCancel={() => tokenSlice.do.resetToken()}
+      okButtonProps={tokenSumbit}
     >
       <Field.Container>
-        <Select
-          value={contract}
-          style={{ width: "100%" }}
-          onChange={(contract) => setContract(contract)}
-          disabled={!!id}
-        >
-          {contractList.map((contract) => (
-            <Select.Option value={contract}>{contract?.displayName ?? contract?.address}</Select.Option>
-          ))}
-        </Select>
-        <Field.Number label="Token ID" value={tokenId} onChange={(tokenId) => store.token.setState({ tokenId })} />
+        {contractList === "loading" ? (
+          <Skeleton.Input />
+        ) : (
+          <Select
+            value={tokenForm.contract}
+            style={{ width: "100%" }}
+            onChange={tokenSlice.do.setContractOnToken}
+            disabled={!!tokenForm.id}
+          >
+            {contractList.map((contract) => (
+              <Select.Option value={contract}>{contract?.displayName ?? contract?.address}</Select.Option>
+            ))}
+          </Select>
+        )}
 
-        <Field.Text label="tokenURI" value={uri} onChange={(uri) => store.token.setState({ uri })} disabled={true} />
+        <Field.Number label="Token ID" value={tokenForm.tokenId} onChange={tokenSlice.do.setTokenIdOnToken} />
+
+        <Field.Text label="tokenURI" value={tokenForm.uri} onChange={tokenSlice.do.setUriOnToken} disabled={true} />
         <Field.Text
           label="meta"
-          value={JSON.stringify(meta)}
+          value={JSON.stringify(tokenForm.meta)}
           onChange={(meta) => {
             //
           }}
@@ -102,11 +115,9 @@ export const TokenEdit = () => {
         />
         <Field.Img
           label="Image"
-          addFiles={(fileList) => {
-            //
-          }}
-          file={image}
-          onRemove={() => store.token.setState({ image: null })}
+          addFiles={tokenSlice.do.uploadImageOnToken}
+          file={tokenForm.image}
+          onRemove={() => tokenSlice.do.setImageOnToken(null)}
         />
       </Field.Container>
     </Modal>

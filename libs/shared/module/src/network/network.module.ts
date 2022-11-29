@@ -3,7 +3,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import * as Network from "./network.model";
 import { NetworkService } from "./network.service";
 import { NetworkResolver } from "./network.resolver";
-import { NetworkOptions } from "../options";
+import { NetworkOptions } from "../option";
 import { RedisOptions } from "@shared/util-server";
 import { EtherModule } from "./ether/ether.module";
 import { CaverModule } from "./caver/caver.module";

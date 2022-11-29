@@ -4,7 +4,7 @@ import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
 import * as sample from "../sample";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { UserService } from "./user.service";
 
 describe("User Service", () => {

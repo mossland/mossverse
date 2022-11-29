@@ -1,6 +1,6 @@
 import { DynamicModule, Global, Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { StorageOptions } from "../options";
+import { StorageOptions } from "../option";
 import * as File from "./file.model";
 import { FileService } from "./file.service";
 import { S3Module } from "./s3/s3.module";

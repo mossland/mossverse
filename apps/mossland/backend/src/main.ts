@@ -9,7 +9,6 @@ import { boot } from "@shared/util-server";
 import { environment } from "./environments/environment";
 
 async function bootstrap() {
-  console.log();
   const app = await NestFactory.create(AppModule.register(environment));
   await boot(app, environment);
 }

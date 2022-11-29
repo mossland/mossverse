@@ -40,6 +40,10 @@ export const adminMenuKeys = [
   "part",
   "mintEvent",
   "mintLog",
+  "trade",
+  "currency",
+  "heartCoupon",
+  "user",
 ] as const;
 export type AdminMenuKey = typeof adminMenuKeys[number];
 export const menuIconMap: { [key in AdminMenuKey]: React.ReactNode | null } = {
@@ -66,6 +70,10 @@ export const menuIconMap: { [key in AdminMenuKey]: React.ReactNode | null } = {
   part: <FileOutlined />,
   mintEvent: <FileOutlined />,
   mintLog: <FileOutlined />,
+  trade: <FileOutlined />,
+  currency: <FileOutlined />,
+  heartCoupon: <FileOutlined />,
+  user: <FileOutlined />,
 };
 
 interface AdminMenuProps {
@@ -75,31 +83,24 @@ interface AdminMenuProps {
 
 export const AdminMenu = ({ menus, defaultMenu }: AdminMenuProps) => {
   useEffect(() => {
-    defaultMenu && store.admin.setState({ adminMenu: defaultMenu ?? menus[0] });
+    store.admin.do.setAdminMenu(defaultMenu ?? adminMenu[0]);
   }, []);
   const menuOpen = store.admin.use.menuOpen();
-  const signout = store.admin.use.signout();
   const adminMenu = store.admin.use.adminMenu();
   return (
     <div>
-      <StyledButton
-        icon={<BarsOutlined />}
-        type="primary"
-        onClick={(e: any) => {
-          store.admin.setState({ menuOpen: true });
-        }}
-      >
+      <StyledButton icon={<BarsOutlined />} type="primary" onClick={() => store.admin.do.setMenuOpen(true)}>
         Menu
       </StyledButton>
-      <Drawer title="Menu" placement="left" onClose={() => store.admin.setState({ menuOpen: false })} open={menuOpen}>
+      <Drawer title="Menu" placement="left" onClose={() => store.admin.do.setMenuOpen(false)} open={menuOpen}>
         <Menu
           selectedKeys={[adminMenu]}
           mode="inline"
           items={menus.map((menu) => ({ label: Utils.capitalize(menu), key: menu, icon: menuIconMap[menu] }))}
-          onClick={(val) => store.admin.setState({ menuOpen: false, adminMenu: val.key })}
+          onClick={(val) => store.admin.set({ menuOpen: false, adminMenu: val.key })}
         />
         <hr />
-        <Button type="link" block onClick={signout}>
+        <Button type="link" block onClick={store.admin.do.signout}>
           Log out
         </Button>
       </Drawer>

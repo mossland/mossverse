@@ -8,10 +8,13 @@ import * as srv from "../srv";
 
 @Injectable()
 export class UserService<
-  Mdl extends User.Mdl = User.Mdl,
-  Doc extends User.Doc = User.Doc,
-  Input extends User.Input = User.Input
-> extends LoadService<Mdl, Doc, Input> implements srv.shared.UserService<Mdl, Doc, Input>, OnModuleInit {
+    Mdl extends User.Mdl = User.Mdl,
+    Doc extends User.Doc = User.Doc,
+    Input extends User.Input = User.Input
+  >
+  extends LoadService<Mdl, Doc, Input>
+  implements srv.shared.UserService<Mdl, Doc, Input>, OnModuleInit
+{
   root: Doc;
   constructor(@InjectModel(User.name) readonly User: Mdl) {
     super(UserService.name, User);

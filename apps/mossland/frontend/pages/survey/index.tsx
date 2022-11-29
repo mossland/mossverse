@@ -18,18 +18,16 @@ export function Survey() {
   }, []);
 
   return (
-    <GqlProvider uri={env.endpoint} ws={env.ws} networkType={env.networkType}>
-      <PlatformLayout>
-        <Header />
-        <Body />
-        <CreateButton />
-        {isWriteMode && (
-          <SurveyCreateMobile className="only-mobile">
-            <CreateBox />
-          </SurveyCreateMobile>
-        )}
-      </PlatformLayout>
-    </GqlProvider>
+    <PlatformLayout>
+      <Header />
+      <Body />
+      <CreateButton />
+      {isWriteMode && (
+        <SurveyCreateMobile className="only-mobile">
+          <CreateBox />
+        </SurveyCreateMobile>
+      )}
+    </PlatformLayout>
   );
 }
 

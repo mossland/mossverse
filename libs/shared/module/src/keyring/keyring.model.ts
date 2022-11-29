@@ -3,7 +3,7 @@ import { Document, Model, Types, Query, Schema as Sch } from "mongoose";
 import { dbConfig, Id } from "@shared/util-server";
 import { KeyringSchema, KeyringInput } from "./keyring.gql";
 import * as bcrypt from "bcrypt";
-import { SecurityOptions } from "../options";
+import { SecurityOptions } from "../option";
 
 @Schema(dbConfig.defaultSchemaOptions)
 class Keyring extends KeyringSchema {}
@@ -45,7 +45,8 @@ schema.methods.addWallet = function (this: Doc, walletId: Id) {
 };
 schema.methods.removeWallet = function (this: Doc, walletId: Id) {
   this.wallets = this.wallets.filter((_id) => !_id.equals(walletId));
-  if (!this.wallets.length) throw new Error(`Cannot Empty All Wallets keyring(${this._id}), wallet(${walletId})}`);
+  if (!this.wallets.length && !this.accountId)
+    throw new Error(`Cannot Empty All Wallets keyring(${this._id}), wallet(${walletId})}`);
   return this;
 };
 schema.methods.reset = function (this: Doc) {

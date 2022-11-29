@@ -73,9 +73,9 @@ export function BaseResolver<
       @Args({ name: "query", type: () => JSON }) query: DbQuery<Doc>,
       @Args({ name: "skip", type: () => Int, nullable: true }) skip: number,
       @Args({ name: "limit", type: () => Int, nullable: true }) limit: number,
-      @UserIp() ip: string
+      @Args({ name: "sort", type: () => JSON, nullable: true }) sort: any
     ): Promise<Doc[]> {
-      return await this.service.list(query, skip, limit);
+      return await this.service.list(query, skip, limit, sort);
     }
     @UseGuards(list ?? Allow.Public)
     @Query(() => Int, { name: `${lowerlize(classRef.name)}Count` })
@@ -89,22 +89,26 @@ export function BaseResolver<
     }
     @UseGuards(cru ?? Allow.Public)
     @Mutation(() => classRef, { name: `create${capitalize(classRef.name)}` })
-    async create(@Args({ name: `data`, type: () => inputRef }) data: Input): Promise<Doc> {
-      return await this.service.create(data);
+    async create(
+      @Args({ name: `data`, type: () => inputRef }) data: Input,
+      @Auth() account: Account | null
+    ): Promise<Doc> {
+      return await this.service.create(data, { account });
     }
     @UseGuards(cru ?? Allow.Public)
     @Mutation(() => classRef, { name: `update${capitalize(classRef.name)}` })
     async update(
       @Args({ name: `${Utils.lowerlize(classRef.name)}Id`, type: () => ID }) id: string,
-      @Args({ name: "data", type: () => inputRef }) data: Partial<Doc>
+      @Args({ name: "data", type: () => inputRef }) data: Partial<Doc>,
+      @Auth() account: Account | null
     ): Promise<Doc> {
-      return await this.service.update(new Id(id), data);
+      return await this.service.update(new Id(id), data, { account });
     }
     @UseGuards(cru ?? Allow.Public)
     @Mutation(() => classRef, { name: `remove${capitalize(classRef.name)}` })
     async remove(
       @Args({ name: `${Utils.lowerlize(classRef.name)}Id`, type: () => ID }) id: string,
-      @Auth() account: Account
+      @Auth() account: Account | null
     ): Promise<Doc> {
       return await this.service.remove(new Id(id), { account });
     }

@@ -2,7 +2,7 @@ import { Global, Module, DynamicModule } from "@nestjs/common";
 import { EtherResolver } from "./ether.resolver";
 import { BullModule } from "@nestjs/bull";
 import { EtherService } from "./ether.service";
-import { EtherOptions } from "../../options";
+import { EtherOptions } from "../../option";
 import { RedisOptions } from "@shared/util-server";
 
 @Module({})

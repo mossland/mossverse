@@ -11,6 +11,8 @@ import {
   BaseGql,
   Int,
   BaseArrayFieldGql,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 import { Collision, MapConfig } from "../_scalar/scalar.gql";
@@ -87,7 +89,10 @@ export class Map extends BaseGql(MapInput) {
   status: cnst.MapStatus;
 }
 
-export const mapGraphQL = createGraphQL<"map", Map, MapInput>(Map, MapInput);
+@ObjectType("LightMap", { _id: "id", gqlRef: "Map" })
+export class LightMap extends PickType(Map, ["status"] as const) {}
+
+export const mapGraphQL = createGraphQL("map" as const, Map, MapInput, LightMap);
 export const {
   getMap,
   listMap,
@@ -100,6 +105,7 @@ export const {
   purifyMap,
   defaultMap,
 } = mapGraphQL;
+export type MapSlice = SliceModel<"map", Map, LightMap>;
 
 // * Add MapFiles Mutation
 export type AddMapFilesMutation = { addMapFiles: shared.File[] };

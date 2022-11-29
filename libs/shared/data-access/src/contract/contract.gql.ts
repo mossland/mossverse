@@ -10,13 +10,15 @@ import {
   ObjectType,
   Int,
   BaseGql,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
-import { Network } from "../network/network.gql";
+import { LightNetwork, Network } from "../network/network.gql";
 
 @InputType("ContractInput")
 export class ContractInput {
   @Field(() => Network)
-  network: Network;
+  network: Network | LightNetwork;
 
   @Field(() => String)
   address: string;
@@ -49,7 +51,19 @@ export class Contract extends BaseGql(ContractInput) {
   status: cnst.ContractStatus;
 }
 
-export const contractGraphQL = createGraphQL<"contract", Contract, ContractInput>(Contract, ContractInput);
+@ObjectType("LightContract", { _id: "id", gqlRef: "Contract" })
+export class LightContract extends PickType(Contract, [
+  "displayName",
+  "name",
+  "network",
+  "address",
+  "status",
+] as const) {
+  @Field(() => LightNetwork)
+  override network: LightNetwork;
+}
+
+export const contractGraphQL = createGraphQL("contract" as const, Contract, ContractInput, LightContract);
 export const {
   getContract,
   listContract,
@@ -62,6 +76,7 @@ export const {
   purifyContract,
   defaultContract,
 } = contractGraphQL;
+export type ContractSlice = SliceModel<"contract", Contract, LightContract>;
 
 // * Snapshot Contract Query
 export type SnapshotContractMutation = { snapshotContract: Contract };

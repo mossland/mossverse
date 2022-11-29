@@ -9,4 +9,5 @@ export * from "./keyring/keyring.gql";
 export * from "./wallet/wallet.gql";
 export * from "./product/product.gql";
 export * from "./user/user.gql";
+export * from "./currency/currency.gql";
 export * from "./discord/discord.dto";

@@ -8,9 +8,9 @@ import { CheckIcon } from "@shared/ui-web";
 export const MyTokensHeader = () => {
   const self = store.platform.user.use.self();
   const myItems = store.platform.user.use.myItems();
-  const listings = store.platform.listing.use.listingList();
-  const myTokensFilter = store.platform.listing.use.myTokensFilter();
-  const onClickBackButton = () => store.platform.listing.setState({ filter: "all" });
+  const listings = store.mocMarket.use.listingList();
+  const myTokensFilter = store.mocMarket.use.myTokensFilter();
+  const onClickBackButton = () => store.mocMarket.setState({ filter: "all" });
 
   const getFilter = (listing: gql.platform.Listing) => {
     return self ? listing.user && listing.user.id === self.id : false;
@@ -35,14 +35,14 @@ export const MyTokensHeader = () => {
       <div className="buttons">
         <div
           className={`button ${myTokensFilter === "all" && "active"}`}
-          onClick={() => store.platform.listing.setState({ myTokensFilter: "all" })}
+          onClick={() => store.mocMarket.set({ myTokensFilter: "all" })}
         >
           {myTokensFilter === "all" && <CheckIcon />}
           All({allCount})
         </div>
         <div
           className={`button selling-button ${myTokensFilter === "onSale" && "active"}`}
-          onClick={() => store.platform.listing.setState({ myTokensFilter: "onSale" })}
+          onClick={() => store.mocMarket.set({ myTokensFilter: "onSale" })}
         >
           {myTokensFilter === "onSale" && <CheckIcon />}
           On Sale({onSaleCount})

@@ -4,7 +4,7 @@ import { cnst } from "@shared/util";
 import { CheckIcon } from "@shared/ui-web";
 import { gql, utils, store } from "../../stores";
 import { useMocSurvey } from "./services/useMocSurvey";
-
+import { MocSurveyFilter } from "./MocSurveyFilter";
 type CustomProps = { filter?: cnst.SurveyFilterType };
 
 export const FilterButtons = () => {
@@ -12,26 +12,22 @@ export const FilterButtons = () => {
 
   if (!mocSurveyService.self && !mocSurveyService.mocSurveyList) return <></>;
   return (
-    <Container filter={mocSurveyService.filter}>
-      <Survey.Button
-        className="all-button"
-        backgroundColor="#a0e3ff"
-        filter={mocSurveyService.filter}
+    <MocSurveyFilter>
+      <MocSurveyFilter.Button
+        className={`bg-[#A0E3FF] ${mocSurveyService.filter !== "all" && "opacity-50"}`}
         onClick={() => mocSurveyService.changeFilter("all")}
       >
         {mocSurveyService.filter === "all" && <CheckIcon />}
         {`All(${mocSurveyService.allCount})`}
-      </Survey.Button>
-      <Survey.Button
-        className="active-button"
-        backgroundColor="#ffe177"
-        filter={mocSurveyService.filter}
+      </MocSurveyFilter.Button>
+      <MocSurveyFilter.Button
+        className={`bg-[#FFE177] ${mocSurveyService.filter !== "active" && "opacity-50"}`}
         onClick={() => mocSurveyService.changeFilter("active")}
       >
         {mocSurveyService.filter === "active" && <CheckIcon />}
         {`Active(${mocSurveyService.activeCount})`}
-      </Survey.Button>
-    </Container>
+      </MocSurveyFilter.Button>
+    </MocSurveyFilter>
   );
 };
 

@@ -11,6 +11,8 @@ import {
   Int,
   BaseArrayFieldGql,
   createFragment,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 import { Collision } from "../_scalar/scalar.gql";
@@ -54,7 +56,10 @@ export class Asset extends BaseGql(AssetInput) {
   status: cnst.AssetStatus;
 }
 
-export const assetGraphQL = createGraphQL<"asset", Asset, AssetInput>(Asset, AssetInput);
+@ObjectType("LightAsset", { _id: "id", gqlRef: "Asset" })
+export class LightAsset extends PickType(Asset, ["name", "bottom", "top", "lighting"] as const) {}
+
+export const assetGraphQL = createGraphQL("asset" as const, Asset, AssetInput, LightAsset);
 export const {
   getAsset,
   listAsset,
@@ -67,6 +72,7 @@ export const {
   purifyAsset,
   defaultAsset,
 } = assetGraphQL;
+export type AssetSlice = SliceModel<"asset", Asset, LightAsset>;
 
 @InputType("PlacementInput")
 export class PlacementInput {

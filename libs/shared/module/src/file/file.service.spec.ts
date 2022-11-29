@@ -7,7 +7,7 @@ import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
 import { S3Service } from "./s3/s3.service";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 
 describe("File Service", () => {
   const system = new TestSystem();

@@ -5,6 +5,7 @@ import { ConnectEthereum, ConnectKlaytn, ConnectLuniverse, ConnectButton } from 
 import { MetamaskIcon, KlaytnIcon, LuniverseIcon, EthereumIcon, ModalContainer } from "../common";
 import { cnst, Utils } from "@shared/util";
 import { walletConnect } from "@shared/util-client";
+import { generateSignMessage } from "libs/shared/data-access/src/store";
 
 export type LoginSelectorMobileProps = {
   klaytn?: () => Promise<void>;
@@ -18,12 +19,11 @@ export const LoginSelectorMobile = ({ klaytn, ethereum }: LoginSelectorMobilePro
   const signMessage = store.keyring.use.signMessage();
   const signStatus = store.keyring.use.signStatus();
   const connector = store.keyring.use.connector();
-  const generateSignMessage = store.keyring.use.generateSignMessage();
-
+  if (network === "loading" || networkList === "loading") return <></>;
   const connect = async (provider: cnst.NetworkProvider) => {
     const network = networkList.find((n) => n.provider === provider);
     if (!network) return;
-    store.network.setState({ network });
+    await store.network.do.viewNetwork(network.id);
     const { accounts, chainId, networkId, rpcUrl } = await walletConnect.connect(connector);
     if (network.networkId !== chainId) {
       store.keyring.setState({

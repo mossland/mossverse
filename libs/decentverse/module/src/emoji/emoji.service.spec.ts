@@ -2,7 +2,7 @@ import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { EmojiService } from "./emoji.service";
 import { TestSystem } from "@shared/test-server";
 import { EmojiModule } from "./emoji.module";

@@ -5,7 +5,7 @@ import { PointModule } from "./point.module";
 import * as sample from "../sample";
 import * as db from "../db";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { v4 as uuidv4 } from "uuid";
 import * as srv from "../srv";
 

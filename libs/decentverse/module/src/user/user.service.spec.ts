@@ -3,7 +3,7 @@ import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
 import { TestingModule } from "@nestjs/testing";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { TestSystem } from "@shared/test-server";
 import { UserService } from "./user.service";
 describe("User Service", () => {

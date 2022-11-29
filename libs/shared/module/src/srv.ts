@@ -11,7 +11,11 @@ export { WalletService } from "./wallet/wallet.service";
 export { ProductService } from "./product/product.service";
 export { S3Service } from "./file/s3/s3.service";
 export { IpfsService } from "./file/ipfs/ipfs.service";
+export { EtherService } from "./network/ether/ether.service";
+export { CaverService } from "./network/caver/caver.service";
 export { UserService } from "./user/user.service";
+export { CurrencyService } from "./currency/currency.service";
+export { MailerService } from "./mailer/mailer.service";
 
 import { DiscordService } from "./discord/discord.service";
 import { FileService } from "./file/file.service";

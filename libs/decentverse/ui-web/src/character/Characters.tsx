@@ -7,47 +7,49 @@ import { Field, Img } from "@shared/ui-web";
 import { ThreeEvent, useFrame } from "@react-three/fiber";
 import { Mesh, PlaneGeometry, TextureLoader, Vector3 } from "three";
 import { Utils } from "@shared/util";
-
-export const Characters = () => {
-  const init = store.character.use.initCharacter();
-  const characterList = store.character.use.characterList();
-  const characterModal = store.character.use.characterModal();
-  const newCharacter = store.character.use.newCharacter();
+interface CharactersProps {
+  characterSlice: gql.CharacterSlice;
+}
+export const Characters = ({ characterSlice }: CharactersProps) => {
+  const characterList = characterSlice.use.characterList();
+  const characterModal = characterSlice.use.characterModal();
   useEffect(() => {
-    init();
+    store.character.do.initCharacter();
   }, []);
 
+  if (characterList === "loading") return <></>;
   return (
     <div>
       <Header>
         <h2>Characters</h2>
-        <Button onClick={newCharacter} icon={<PlusOutlined />}>
+        <Button onClick={() => store.character.do.newCharacter()} icon={<PlusOutlined />}>
           Add
         </Button>
       </Header>
       <List
         grid={{ gutter: 16, column: 5 }}
-        dataSource={characterList}
-        renderItem={(character) => <Character key={character.id} character={character} />}
+        dataSource={characterList as gql.Character[]}
+        renderItem={(character) => (
+          <Character key={character.id} characterSlice={characterSlice} character={character} />
+        )}
       ></List>
-      <CharacterEdit />
+      <CharacterEdit characterSlice={characterSlice} />
     </div>
   );
 };
 
 interface CharacterProps {
   character: gql.Character;
+  characterSlice: gql.CharacterSlice;
 }
-export const Character = React.memo(({ character }: CharacterProps) => {
-  const editCharacter = store.character.use.editCharacter();
-  const removeCharacter = store.character.use.removeCharacter();
+export const Character = React.memo(({ character, characterSlice }: CharacterProps) => {
   return (
     <Card
       hoverable
       cover={<img alt="file" src={character.file.url} />}
       actions={[
-        <EditOutlined key="edit" onClick={() => editCharacter(character)} />,
-        <Popconfirm title="Are you sure to remove?" onConfirm={() => removeCharacter(character.id)}>
+        <EditOutlined key="edit" onClick={() => characterSlice.do.editCharacter(character)} />,
+        <Popconfirm title="Are you sure to remove?" onConfirm={() => store.character.do.removeCharacter(character.id)}>
           <DeleteOutlined key="remove" />
         </Popconfirm>,
       ]}
@@ -56,81 +58,80 @@ export const Character = React.memo(({ character }: CharacterProps) => {
     </Card>
   );
 });
-export const CharacterEdit = () => {
-  const characterModal = store.character.use.characterModal();
-  const id = store.character.use.id();
-  const name = store.character.use.name();
-  const file = store.character.use.file();
-  const tileSize = store.character.use.tileSize();
-  const totalSize = store.character.use.totalSize();
-  const size = store.character.use.size();
-  const left = store.character.use.left();
-  const right = store.character.use.right();
-  const up = store.character.use.up();
-  const down = store.character.use.down();
+
+interface CharacterEditProps {
+  characterSlice: gql.CharacterSlice;
+}
+
+export const CharacterEdit = ({ characterSlice }: CharacterEditProps) => {
+  const characterModal = characterSlice.use.characterModal();
+  const characterForm = characterSlice.use.characterForm();
   // const thing = store.character.use.thing();
   // const token = store.character.use.token();
-  const purifyCharacter = store.character.use.purifyCharacter();
-  const createCharacter = store.character.use.createCharacter();
-  const updateCharacter = store.character.use.updateCharacter();
-  const addCharacterFiles = store.character.use.addCharacterFiles();
-  const resetCharacter = store.character.use.resetCharacter();
   return (
     <Modal
       title="New Character"
       open={!!characterModal}
-      onOk={() => (id ? updateCharacter() : createCharacter())}
-      onCancel={() => resetCharacter()}
-      okButtonProps={{ disabled: !purifyCharacter() }}
+      onOk={() => (characterForm.id ? characterSlice.do.updateCharacter() : characterSlice.do.createCharacter())}
+      onCancel={() => characterSlice.do.resetCharacter()}
+      okButtonProps={{ disabled: !characterSlice.use.purifyCharacter() }}
       width={1300}
     >
       <Field.Container>
         <Row gutter={10}>
           <Col span={8}>
-            <Field.Text label="Name" value={name} onChange={(name) => store.character.setState({ name })} />
+            <Field.Text label="Name" value={characterForm.name} onChange={characterSlice.do.setNameOnCharacter} />
             <Field.Img
               label="File"
-              addFiles={addCharacterFiles}
-              file={file}
-              onRemove={() => store.character.setState({ file: null })}
+              addFiles={characterSlice.do.addCharacterFiles}
+              file={characterForm.file}
+              onRemove={() => characterSlice.do.setFileOnCharacter(null)}
             />
             <Field.DoubleNumber
               label="TotalSize"
-              onChange={(totalSize) => store.character.setState({ totalSize })}
-              value={totalSize}
+              onChange={characterSlice.do.setTotalSizeOnCharacter}
+              value={characterForm.totalSize}
               disabled={true}
             />
             <Field.DoubleNumber
               label="TileSize"
-              onChange={(tileSize) => store.character.setState({ tileSize })}
-              value={tileSize}
+              onChange={characterSlice.do.setTileSizeOnCharacter}
+              value={characterForm.tileSize}
             />
-            <Field.DoubleNumber label="Size" onChange={(size) => store.character.setState({ size })} value={size} />
+            <Field.DoubleNumber
+              label="Size"
+              onChange={characterSlice.do.setSizeOnCharacter}
+              value={characterForm.size}
+            />
           </Col>
           <Col span={8}>
-            {right ? (
+            {characterForm.right ? (
               <Sprite direction="right" />
             ) : (
-              <Button onClick={() => store.character.setState({ right: gql.defaultCharacter.right })}>
+              <Button onClick={() => characterSlice.do.setRightOnCharacter(gql.defaultCharacter.right)}>
                 Create-right
               </Button>
             )}
-            {left ? (
+            {characterForm.left ? (
               <Sprite direction="left" />
             ) : (
-              <Button onClick={() => store.character.setState({ left: gql.defaultCharacter.left })}>Create-left</Button>
+              <Button onClick={() => characterSlice.do.setLeftOnCharacter(gql.defaultCharacter.left)}>
+                Create-left
+              </Button>
             )}
           </Col>
           <Col span={8}>
-            {up ? (
+            {characterForm.up ? (
               <Sprite direction="up" />
             ) : (
-              <Button onClick={() => store.character.setState({ up: gql.defaultCharacter.up })}>Create-up</Button>
+              <Button onClick={() => characterSlice.do.setUpOnCharacter(gql.defaultCharacter.up)}>Create-up</Button>
             )}
-            {down ? (
+            {characterForm.down ? (
               <Sprite direction="down" />
             ) : (
-              <Button onClick={() => store.character.setState({ down: gql.defaultCharacter.down })}>Create-down</Button>
+              <Button onClick={() => characterSlice.do.setDownOnCharacter(gql.defaultCharacter.down)}>
+                Create-down
+              </Button>
             )}
           </Col>
         </Row>
@@ -149,7 +150,7 @@ export const Sprite = ({ direction }: SpriteProps) => {
       <br />
       walk
       <SpriteDef direction={direction} type="walk" />
-      <Button onClick={() => store.character.setState(Utils.update(direction, null))}>Remove-{direction}</Button>
+      <Button onClick={() => store.character.use.setState(Utils.update(direction, null))}>Remove-{direction}</Button>
       <br />
     </>
   );

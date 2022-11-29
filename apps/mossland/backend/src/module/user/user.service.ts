@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable, OnModuleInit } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import * as User from "./user.model";
-import { modules } from "@shared/module";
+
 import * as db from "../db";
 import * as gql from "../gql";
 import * as srv from "../srv";

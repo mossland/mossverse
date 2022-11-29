@@ -1,7 +1,7 @@
 import { Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Model, Types, Query, Schema as Sch } from "mongoose";
 import { dbConfig, Id } from "@shared/util-server";
-import { modules } from "@shared/module";
+
 import { UserSchema, UserInput } from "./user.gql";
 import * as gql from "../gql";
 @Schema(dbConfig.defaultSchemaOptions)

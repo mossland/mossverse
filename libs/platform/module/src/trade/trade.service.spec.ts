@@ -6,7 +6,7 @@ import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { TestingModule } from "@nestjs/testing";
 import { ethers } from "ethers";
 import { Erc1155, Erc20, Erc721 } from "@shared/util-server";

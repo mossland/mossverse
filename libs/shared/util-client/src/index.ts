@@ -8,3 +8,5 @@ export { default as client } from "./apollo";
 export * from "./apollo";
 export * from "./decorators";
 export * from "./call";
+export * from "./router";
+export * from "./wallet";
