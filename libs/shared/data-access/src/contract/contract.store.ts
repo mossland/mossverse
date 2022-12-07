@@ -1,21 +1,12 @@
-import create from "zustand";
+import { StateCreator } from "zustand";
 import * as gql from "../gql";
-import { setLink, createActions, createState, DefaultActions, DefaultState, generateStore } from "@shared/util-client";
+import { createActions, createState, DefaultActions, DefaultState, makeStore, SetGet } from "@shared/util-client";
 import { contractGraphQL, Contract, ContractInput } from "./contract.gql";
 
-type State = DefaultState<"contract", gql.Contract> & {
-  //
+const state = {
+  ...createState(contractGraphQL),
 };
-const initialState: State = {
-  ...createState<"contract", gql.Contract, gql.ContractInput>(contractGraphQL),
-};
-type Actions = DefaultActions<"contract", gql.Contract, gql.ContractInput> & {
-  // initAuth: (uri: string) => Promise<void>; // 초기화
-  // signin: () => Promise<void>;
-  // signout: () => void;
-};
-const store = create<State & Actions>((set, get) => ({
-  ...initialState,
-  ...createActions<"contract", gql.Contract, gql.ContractInput>(contractGraphQL, { get, set }),
-}));
-export const contract = generateStore(store);
+const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
+  ...createActions(contractGraphQL, { get, set }),
+});
+export const contract = makeStore(contractGraphQL.refName, state, actions);

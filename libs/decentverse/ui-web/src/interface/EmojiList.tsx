@@ -5,13 +5,11 @@ import { WindowHeader } from "@shared/ui-web";
 import { Row, Col } from "antd";
 
 export const EmojiList = () => {
-  const runEmoji = store.emoji.use.runEmoji();
   const isShowEmojiSelecter = store.emoji.use.isShowEmojiSelecter();
-  const initEmoji = store.emoji.use.initEmoji();
   const emojiList = store.emoji.use.emojiList();
 
   useEffect(() => {
-    initEmoji();
+    store.emoji.do.initEmoji();
   }, []);
 
   if (!isShowEmojiSelecter) return null;
@@ -22,7 +20,7 @@ export const EmojiList = () => {
       <div className="list">
         <Row gutter={14}>
           {emojiList.map((emoji, idx) => (
-            <Col span={6} key={emoji.id} className="item" onClick={() => runEmoji(emoji)}>
+            <Col span={6} key={emoji.id} className="item" onClick={() => store.emoji.do.runEmoji(emoji)}>
               {<img alt="emoji" src={emoji.file.url} />}
             </Col>
           ))}

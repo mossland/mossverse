@@ -1,6 +1,6 @@
 import { DynamicModule, Global, Module } from "@nestjs/common";
 import { DiscordService } from "./discord.service";
-import { DiscordOptions } from "../options";
+import { DiscordOptions } from "../option";
 import { makeDiscordBots } from "@shared/util-server";
 @Global()
 @Module({

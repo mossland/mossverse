@@ -1,20 +1,13 @@
 import type { Config } from "@jest/types";
-import * as fs from "fs";
-const swcrc = JSON.parse(fs.readFileSync(`${__dirname}/.lib.swcrc`, "utf-8").toString());
-swcrc.jsc.minify = null;
+import { readFileSync } from "fs";
+const { exclude: _, ...swcJestConfig } = JSON.parse(readFileSync(`${__dirname}/.lib.swcrc`, "utf-8"));
 const config: Config.InitialOptions = {
   displayName: "platform/module",
   preset: "../../../jest.preset.js",
-  // globals: {
-  //   "ts-jest": {
-  //     tsconfig: "<rootDir>/tsconfig.spec.json",
-  //   },
-  // },
-  testEnvironment: "node",
   transform: {
-    "^.+\\.(t|j)sx?$": ["@swc/jest", swcrc],
+    "^.+\\.[tj]s$": ["@swc/jest", swcJestConfig],
   },
-  moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
+  moduleFileExtensions: ["ts", "js", "html"],
   coverageDirectory: "../../../coverage/libs/platform/module",
 };
 

@@ -4,4 +4,4 @@ export * as Survey from "./survey/survey.model";
 export * as Listing from "./listing/listing.model";
 export * as Receipt from "./receipt/receipt.model";
 export * as Trade from "./trade/trade.model";
-export * from "./__scalar";
+export * from "./_scalar";

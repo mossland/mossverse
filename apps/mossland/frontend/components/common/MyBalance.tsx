@@ -17,7 +17,7 @@ export const MyBalance = (props: MyBalanceProps) => {
 
   useEffect(() => {
     if (!self?.keyring) return;
-    store.shared.wallet.setState({ wallet: self.keyring.wallets[0] });
+    // store.shared.wallet.setState({ wallet: self.keyring.wallets[0] });
   }, [self?.keyring]);
 
   return (

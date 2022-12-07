@@ -44,7 +44,7 @@ export const Game = ({ socket }: GameProps) => {
   const lockState = useRef(false);
   const zoom = isMobile ? 2 : 3;
   const map = store.map.use.map();
-  if (!self || !map) return <></>;
+  if (!self || !map || map === "loading") return <></>;
 
   return (
     <>

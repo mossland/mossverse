@@ -1,24 +1,30 @@
 import React from "react";
 import styled from "styled-components";
 import { Market } from "@platform/ui-web";
+import { gql } from "./../../../stores";
 
-export const BuyBox = () => {
-  const service = Market.useMarket();
+interface BuyBoxProps {
+  listingSlice: gql.platform.ListingSlice;
+}
+export const BuyBox = ({ listingSlice }: BuyBoxProps) => {
+  // const service = Market.useMarket();
+  const listing = listingSlice.use.listing();
 
-  if (!service.listing) return null;
+  if (!listing || listing === "loading" || !listing.thing) return null;
   return (
     <BuyBoxContainer>
-      {service.listing.status !== "soldout" ? (
+      {listing.status !== "soldout" ? (
         <>
           <div>
             <div className="label">Price</div>
             <div className="price">
-              <img src={service.listing.priceTags?.[0].thing?.image.url ?? ""} />
-              {service.listing.priceTags?.[0].price}
+              <img src={listing.priceTags?.[0].thing?.image.url ?? ""} />
+              {listing.priceTags?.[0].price}
             </div>
           </div>
           <div
-            className={`buy-button ${service.checkIsBuyDisabled() && "disabled"}`}
+            // className={`buy-button ${service.checkIsBuyDisabled() && "disabled"}`}
+            className={`buy-button`}
             onClick={async () => await service.onBuy()}
           >
             Buy

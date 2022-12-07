@@ -5,3 +5,4 @@ export * from "./survey/survey.store";
 export * from "./listing/listing.store";
 export * from "./receipt/receipt.store";
 export * from "./shipInfo/shipInfo.store";
+export * from "./trade/trade.store";

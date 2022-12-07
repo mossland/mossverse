@@ -8,7 +8,7 @@ export const createLoader = <Key, Value>(
   defaultQuery: FilterQuery<unknown> = {}
 ) => {
   return new DataLoader<Key, Value>(
-    (fields) => {
+    (fields: any): any => {
       const query: FilterQuery<unknown> = {
         status: { $ne: "inactive" },
         ...defaultQuery,
@@ -46,7 +46,7 @@ export const createArrayElementLoader = <K, V>(
   defaultQuery: FilterQuery<unknown> = {}
 ) => {
   return new DataLoader<K, V>(
-    (fields) => {
+    (fields: any): any => {
       const query: FilterQuery<unknown> = {
         status: { $ne: "inactive" },
         ...defaultQuery,
@@ -74,7 +74,7 @@ export const createPopulatedLoader = <K, V>(
   defaultQuery: FilterQuery<unknown> = {}
 ) => {
   return new DataLoader<K, V>(
-    (fields) => {
+    (fields: any): any => {
       const query: FilterQuery<unknown> = {
         status: { $ne: "inactive" },
         ...defaultQuery,

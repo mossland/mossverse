@@ -6,4 +6,4 @@ export * as Map from "./map/map.model";
 export * as Role from "./role/role.model";
 export * as Dialog from "./dialog/dialog.model";
 export * as Emoji from "./emoji/emoji.model";
-export * from "./__scalar";
+export * from "./_scalar";

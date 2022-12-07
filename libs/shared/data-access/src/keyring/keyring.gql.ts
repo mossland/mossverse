@@ -10,23 +10,29 @@ import {
   ObjectType,
   JSON,
   BaseGql,
+  PickType,
+  SliceModel,
+  ID,
 } from "@shared/util-client";
-import { Wallet } from "../wallet/wallet.gql";
-import { Contract } from "../contract/contract.gql";
+import { LightWallet, Wallet } from "../wallet/wallet.gql";
+import { Contract, LightContract } from "../contract/contract.gql";
 
 @InputType("KeyringInput")
 export class KeyringInput {}
 
 @ObjectType("Keyring", { _id: "id" })
 export class Keyring extends BaseGql(KeyringInput) {
-  @Field(() => String, { nullable: true })
-  prevUser: string | null;
+  @Field(() => ID, { nullable: true })
+  user?: string;
+
+  @Field(() => String)
+  accountId: string;
 
   @Field(() => [Wallet])
-  wallets: Wallet[];
+  wallets: (Wallet | LightWallet)[];
 
   @Field(() => [Contract])
-  holds: Contract[];
+  holds: (Contract | LightContract)[];
 
   @Field(() => JSON)
   discord: Record<string, any> | null;
@@ -34,8 +40,10 @@ export class Keyring extends BaseGql(KeyringInput) {
   @Field(() => String)
   status: cnst.KeyringStatus;
 }
+@ObjectType("LightKeyring", { _id: "id", gqlRef: "Keyring" })
+export class LightKeyring extends PickType(Keyring, ["status"] as const) {}
 
-export const keyringGraphQL = createGraphQL<"keyring", Keyring, KeyringInput>(Keyring, KeyringInput);
+export const keyringGraphQL = createGraphQL("keyring" as const, Keyring, KeyringInput, LightKeyring);
 export const {
   getKeyring,
   listKeyring,
@@ -48,6 +56,7 @@ export const {
   purifyKeyring,
   defaultKeyring,
 } = keyringGraphQL;
+export type KeyringSlice = SliceModel<"keyring", Keyring, LightKeyring>;
 
 export type EncryptMutation = { encrypt: string };
 export const encryptMutation = graphql`
@@ -131,14 +140,27 @@ export const changePasswordMutation = graphql`
     }
   }
 `;
-export const changePassword = async (accountId: string, password: string, prevPassword: string) =>
+export const changePassword = async (keyringId: string, password: string, prevPassword: string) =>
   (
     await mutate<ChangePasswordMutation>(changePasswordMutation, {
-      accountId,
+      keyringId,
       password,
       prevPassword,
     })
   ).changePassword.accessToken;
+
+export type ResetPasswordMutation = { resetPassword: boolean };
+export const resetPasswordMutation = graphql`
+  mutation resetPassword($accountId: String!) {
+    resetPassword(accountId: $accountId)
+  }
+`;
+export const resetPassword = async (accountId: string) =>
+  (
+    await mutate<ResetPasswordMutation>(resetPasswordMutation, {
+      accountId,
+    })
+  ).resetPassword;
 
 export type SigninUserMutation = { signinUser: { accessToken: string } };
 

@@ -2,7 +2,7 @@ import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate, mixInputType, mixObjectType } from "@shared/util-server";
 import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
 import * as gql from "../gql";
-import { modules } from "@shared/module";
+
 import { ApiProperty } from "@nestjs/swagger";
 import { gql as shared } from "@shared/module";
 

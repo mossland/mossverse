@@ -11,6 +11,8 @@ import {
   BaseGql,
   Int,
   BaseArrayFieldGql,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
 import { File, fileFragment } from "../file/file.gql";
 
@@ -35,7 +37,10 @@ export class Thing extends BaseGql(ThingInput) {
   status: cnst.ThingStatus;
 }
 
-export const thingGraphQL = createGraphQL<"thing", Thing, ThingInput>(Thing, ThingInput);
+@ObjectType("LightThing", { _id: "id", gqlRef: "Thing" })
+export class LightThing extends PickType(Thing, ["name", "image", "status"] as const) {}
+
+export const thingGraphQL = createGraphQL("thing" as const, Thing, ThingInput, LightThing);
 export const {
   getThing,
   listThing,
@@ -47,20 +52,9 @@ export const {
   thingFragment,
   purifyThing,
   defaultThing,
+  addThingFiles,
 } = thingGraphQL;
-
-// * Add ThingFiles Mutation
-export type AddThingFilesMutation = { addThingFiles: File[] };
-export const addThingFilesMutation = graphql`
-  ${fileFragment}
-  mutation addThingFiles($files: [Upload!]!, $thingId: String) {
-    addThingFiles(files: $files, thingId: $thingId) {
-      ...fileFragment
-    }
-  }
-`;
-export const addThingFiles = async (files: FileList, thingId?: string) =>
-  (await mutate<AddThingFilesMutation>(addThingFilesMutation, { files, thingId })).addThingFiles;
+export type ThingSlice = SliceModel<"thing", Thing, LightThing>;
 
 @InputType("ThingItemInput")
 export class ThingItemInput {

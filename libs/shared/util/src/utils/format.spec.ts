@@ -14,6 +14,6 @@ describe("Format Utils Test", () => {
     expect(format.numberWithCommas(100000)).toEqual("100,000");
   });
   it("toIsoString", () => {
-    expect(format.toIsoString(new Date("1999-01-01", true))).toEqual("1999-01-01");
+    expect(format.toIsoString(new Date("1999-01-01"), true)).toEqual("1999-01-01");
   });
 });

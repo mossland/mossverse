@@ -1,5 +1,5 @@
 export { gql as shared } from "@shared/module";
-export * from "./__scalar";
+export * from "./_scalar";
 export * from "./user/user.gql";
 export * from "./listing/listing.gql";
 export * from "./receipt/receipt.gql";

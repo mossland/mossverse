@@ -3,26 +3,29 @@ import styled from "styled-components";
 import { gql, store, utils } from "@platform/data-access";
 import { SurveyIcon } from "@shared/ui-web";
 import { Survey } from "@platform/ui-web";
-import { cnst } from "@shared/util";
+import { cnst, Utils } from "@shared/util";
 import { useMocSurvey } from "./services/useMocSurvey";
+import { MocSurveyDetailHeader } from "./MocSurveyDetail";
 
 export const DetailHeader = () => {
   const mocSurveyService = useMocSurvey();
   if (!mocSurveyService.mocSurvey) return <></>;
   return (
-    <StyledDetailHeader>
-      <Survey.Wrapper className="title-container">
+    <MocSurveyDetailHeader>
+      <MocSurveyDetailHeader.TitleWrapper>
         <SurveyIcon />
-
-        <Survey.Text className="title">{mocSurveyService.mocSurvey.title}</Survey.Text>
-      </Survey.Wrapper>
-      <Survey.Wrapper className="sub-title-container">
+        <MocSurveyDetailHeader.Title>{mocSurveyService.mocSurvey.title}</MocSurveyDetailHeader.Title>
+      </MocSurveyDetailHeader.TitleWrapper>
+      <MocSurveyDetailHeader.SubTitleWrapper>
         {utils.checkIsActiveSurvey(mocSurveyService.mocSurvey.status, mocSurveyService.mocSurvey.closeAt) && (
           <Survey.ActiveTag />
         )}
-        <Survey.Period openAt={mocSurveyService.mocSurvey.openAt} closeAt={mocSurveyService.mocSurvey.closeAt} />
-      </Survey.Wrapper>
-    </StyledDetailHeader>
+        <MocSurveyDetailHeader.Period>
+          {Utils.toIsoString(mocSurveyService.mocSurvey.openAt, true)} ~{" "}
+          {Utils.toIsoString(mocSurveyService.mocSurvey.closeAt, true)}
+        </MocSurveyDetailHeader.Period>
+      </MocSurveyDetailHeader.SubTitleWrapper>
+    </MocSurveyDetailHeader>
   );
 };
 

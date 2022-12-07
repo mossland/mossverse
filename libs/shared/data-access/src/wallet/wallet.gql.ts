@@ -9,6 +9,8 @@ import {
   query,
   ObjectType,
   BaseGql,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
 import { Network } from "../network/network.gql";
 import { TokenItem } from "../token/token.gql";
@@ -34,7 +36,10 @@ export class Wallet extends BaseGql(WalletInput) {
   status: cnst.WalletStatus;
 }
 
-export const walletGraphQL = createGraphQL<"wallet", Wallet, WalletInput>(Wallet, WalletInput);
+@ObjectType("LightWallet", { _id: "id", gqlRef: "Wallet" })
+export class LightWallet extends PickType(Wallet, ["address", "status"] as const) {}
+
+export const walletGraphQL = createGraphQL("wallet" as const, Wallet, WalletInput, LightWallet);
 export const {
   getWallet,
   listWallet,
@@ -47,3 +52,4 @@ export const {
   purifyWallet,
   defaultWallet,
 } = walletGraphQL;
+export type WalletSlice = SliceModel<"wallet", Wallet, LightWallet>;

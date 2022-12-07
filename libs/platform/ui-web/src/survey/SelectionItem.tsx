@@ -13,12 +13,7 @@ type SelectionItemProps = {
 export const SelectionItem = ({ selection, itemIndex, removeItem, updateItem }: SelectionItemProps) => {
   return (
     <StyledSelectionItem>
-      <Survey.Button
-        disabled={itemIndex === 0}
-        className="remove-button"
-        onClick={() => removeItem(itemIndex)}
-        src="/images/remove.svg"
-      >
+      <Survey.Button disabled={itemIndex === 0} className="remove-button" onClick={() => removeItem(itemIndex)}>
         <Survey.Image src="/images/remove.svg" alt="remove" />
       </Survey.Button>
       <Survey.Wrapper className="selection-input">
@@ -34,7 +29,7 @@ const StyledSelectionItem = styled.div`
   margin-bottom: 10px;
   .remove-button {
     margin-right: 10px;
-    border: 10px;
+    border: 0;
   }
   /* gap: 10px; */
   .selection-input {

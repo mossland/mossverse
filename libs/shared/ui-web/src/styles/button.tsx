@@ -8,7 +8,8 @@ export const Container = styled.button<Types.UiWebButtonProps>`
   justify-content: center;
   margin-right: 5px;
   border-radius: 6px;
-  border: 1px solid;
+  border: 1px;
+  border-style: solid;
   font-family: Ubuntu Mono;
   font-style: normal;
   font-weight: 700;

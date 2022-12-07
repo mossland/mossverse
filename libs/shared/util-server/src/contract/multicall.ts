@@ -10,6 +10,7 @@ export interface ContractSettings {
   market: AkaMarket;
   abi: any;
   intf: Interface;
+  scanNum?: number;
 }
 
 type Call = {
@@ -21,6 +22,7 @@ const SCAN_NUM = 5500;
 export class Multicall {
   constructor(private readonly contract: MulticallContract) {}
   async view(input: MulticallInput) {
+    const scanNum = input.settings.scanNum || SCAN_NUM;
     if (!input.calls.length) return [];
     const returnData = await pageProcess({
       name: `Multicall-view`,
@@ -32,12 +34,12 @@ export class Multicall {
         const [blockNumber, returnData] = (await this.contract.aggregate(calls)) as any;
         const bn = parseInt(blockNumber.toString());
         const data = input.calls
-          .slice(from, from + SCAN_NUM)
+          .slice(from, from + scanNum)
           .map((call, idx) => [...input.settings.intf.decodeFunctionResult(call.fn, returnData[idx]), bn]);
         return data;
       },
       to: input.calls.length,
-      step: SCAN_NUM,
+      step: scanNum,
     });
     return returnData;
   }

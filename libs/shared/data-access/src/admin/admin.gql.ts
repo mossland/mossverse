@@ -9,6 +9,8 @@ import {
   query,
   ObjectType,
   BaseGql,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
 import { AccessToken } from "../_scalar";
 
@@ -32,7 +34,11 @@ export class Admin extends BaseGql(AdminInput) {
   @Field(() => String)
   status: cnst.AdminStatus;
 }
-export const adminGraphQL = createGraphQL<"admin", Admin, AdminInput>(Admin, AdminInput);
+
+@ObjectType("LightAdmin", { _id: "id", gqlRef: "Admin" })
+export class LightAdmin extends PickType(Admin, ["accountId", "email", "role", "status"] as const) {}
+
+export const adminGraphQL = createGraphQL("admin" as const, Admin, AdminInput, LightAdmin);
 export const {
   getAdmin,
   listAdmin,
@@ -45,6 +51,8 @@ export const {
   purifyAdmin,
   defaultAdmin,
 } = adminGraphQL;
+export type AdminSlice = SliceModel<"admin", Admin, LightAdmin>;
+
 // * Ping Query
 export type PingQuery = { ping: string };
 export const pingQuery = graphql`

@@ -48,8 +48,10 @@ describe("Time Utils Test", () => {
 
     clock.setMinutes(clock.getMinutes() + 1);
     expect(time.getNextMinutes(1, date).getTime()).toEqual(clock.getTime());
+    clock.setMinutes(clock.getMinutes() - 1);
 
     clock.setFullYear(clock.getFullYear() + 1);
     expect(time.getNextYears(1, date).getTime()).toEqual(clock.getTime());
+    clock.setFullYear(clock.getFullYear() - 1);
   });
 });

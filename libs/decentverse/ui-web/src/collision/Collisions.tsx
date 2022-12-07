@@ -13,7 +13,7 @@ export interface CollisionsProp {
   collisions?: gql.Collision[] | null;
   engine?: MutableRefObject<Engine>;
 }
-export const Collisions = ({ engine, collisions = store.map.use.collisions() }: CollisionsProp) => {
+export const Collisions = ({ engine, collisions = store.map((state) => state.mapForm.collisions) }: CollisionsProp) => {
   return (
     <Suspense fallback={null}>
       {collisions?.map((collision, idx) => (
@@ -58,7 +58,7 @@ export const CollisionPreview = ({ mouse }: CollisionPreviewProps) => {
   const mesh = useRef<Mesh>(null);
   const plane = useRef<PlaneGeometry>(null);
   const point = useRef<[number, number] | null>();
-  const collisions = store.map.use.collisions();
+  const collisions = store.map((state) => state.mapForm.collisions);
   const updateMap = store.map.use.updateMap();
 
   useEffect(() => {
@@ -95,7 +95,7 @@ export const CollisionPreview = ({ mouse }: CollisionPreviewProps) => {
         Math.abs(Math.floor(e.point.x - point.current[0])),
         Math.abs(Math.floor(e.point.y - point.current[1])),
       ] as [number, number];
-      store.map.setState({ collisions: [...collisions, { center, wh, id: "", message: "message" }] });
+      store.map.do.addCollisionsOnMap({ center, wh, id: "", message: "message" });
       plane.current?.copy(new PlaneGeometry(5, 5));
       point.current = null;
       await updateMap();
@@ -110,24 +110,24 @@ export const CollisionPreview = ({ mouse }: CollisionPreviewProps) => {
 };
 
 export const CollsionList = () => {
-  const collisions = store.map.use.collisions();
+  const collisions = store.map((state) => state.mapForm.collisions);
   const pointer = store.map.use.pointer();
   const updateMap = store.map.use.updateMap();
   if (!collisions) return <></>;
   const targets = collisions.filter((collision) => Utils.isIn(pointer, collision));
   const handleRemove = async (collision: gql.Collision) => {
-    store.map.setState({ collisions: collisions.filter((c) => c !== collision) });
+    store.map.do.setCollisionsOnMap(collisions.filter((c) => c !== collision));
     await updateMap();
   };
 
   const handleModify = (collision: gql.Collision): ((center: [number, number], wh: [number, number]) => void) => {
     return async (center: [number, number], wh: [number, number]) => {
-      store.map.setState({
-        collisions: collisions.map((c) => {
+      store.map.do.setCollisionsOnMap(
+        collisions.map((c) => {
           if (c !== collision) return c;
           return { ...c, center, wh };
-        }),
-      });
+        })
+      );
       await updateMap();
     };
   };

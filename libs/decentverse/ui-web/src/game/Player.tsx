@@ -95,7 +95,7 @@ export const Player = React.memo(({ sprite, animation, keyboard, player, engine,
     const position = get().camera.position;
     const playerPosition = player.current.position;
 
-    if (!map) return;
+    if (!map || map === "loading") return;
     const x = Math.floor((playerPosition[0] - position.x) / 10);
     const y = Math.floor((playerPosition[1] - position.y) / 10);
     const tileSize = map.tileSize;
@@ -207,11 +207,7 @@ const MyChat = () => {
 };
 const MyEmoji = () => {
   const character = store.world((state) => state.me.character);
-  // const checkEmoji = emojiStore.use.checkEmoji();
   const url = store.emoji((state) => state.emoji?.file.url);
-  // useEffect(() => {
-  //   checkEmoji(keyboard, inventory);
-  // }, [keyboard, inventory]);
 
   return (
     <Html

@@ -1,6 +1,6 @@
 import { Global, Module, DynamicModule } from "@nestjs/common";
 import { S3Service } from "./s3.service";
-import { ObjectStorageOptions } from "../../options";
+import { ObjectStorageOptions } from "../../option";
 
 @Module({})
 export class S3Module {

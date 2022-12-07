@@ -17,7 +17,7 @@ import {
 } from "@shared/ui-web";
 import { Surveys } from "../components";
 import { cnst } from "@shared/util";
-import { env } from "../env";
+import { env } from "../env/env";
 
 const { Sider, Content } = Layout;
 export interface MapEditorProps {

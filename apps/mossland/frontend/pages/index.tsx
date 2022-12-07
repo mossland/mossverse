@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
+
 export function Index() {
   /*
    * Replace the elements below with your own.

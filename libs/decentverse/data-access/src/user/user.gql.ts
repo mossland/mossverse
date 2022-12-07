@@ -12,6 +12,8 @@ import {
   BaseArrayFieldGql,
   Int,
   ID,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 import { Emoji } from "../emoji/emoji.gql";
@@ -42,7 +44,10 @@ export class UserInput extends shared.User {
 @ObjectType("User", { _id: "id" })
 export class User extends UserInput {}
 
-export const userGraphQL = createGraphQL<"user", User, UserInput>(User, UserInput);
+@ObjectType("LightUser", { _id: "id", gqlRef: "User" })
+export class LightUser extends PickType(User, ["status"] as const) {}
+
+export const userGraphQL = createGraphQL("user" as const, User, UserInput, LightUser);
 export const {
   getUser,
   listUser,
@@ -55,6 +60,7 @@ export const {
   purifyUser,
   defaultUser,
 } = userGraphQL;
+export type UserSlice = SliceModel<"user", User, LightUser>;
 
 // ! Need to refactor
 export type MyItem = {

@@ -1,9 +1,10 @@
+import { environment } from "../_environments/environment";
 import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
 import { TestingModule } from "@nestjs/testing";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { TestSystem } from "@shared/test-server";
 import { UserService } from "./user.service";
 describe("User Service", () => {
@@ -11,7 +12,7 @@ describe("User Service", () => {
   let userService: UserService;
   let keyring: db.shared.Keyring.Doc;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     userService = app.get<UserService>(UserService);
     keyring = await sample.shared.createKeyring(app);
   });

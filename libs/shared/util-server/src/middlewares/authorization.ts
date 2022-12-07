@@ -3,7 +3,7 @@ import { Types } from "mongoose";
 import { Id } from "../dbConfig";
 export type Account = {
   _id: Id;
-  keyring: string;
+  keyring: Id;
   role: "user" | "admin" | "superAdmin";
   status: "active" | "inactive";
 };
@@ -12,7 +12,7 @@ export const verifyToken = (secret: string, authorization: string | undefined): 
   if (!token) return null;
   const account = jwt.verify(token, secret) as Account;
   if (!account || account.status === "inactive") return null;
-  return { ...account, _id: new Id(account._id) };
+  return { ...account, keyring: new Id(account.keyring), _id: new Id(account._id) };
 };
 
 export const allow = (account: Account, roles: string[], userId?: Types.ObjectId) => {

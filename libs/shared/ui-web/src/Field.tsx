@@ -113,21 +113,34 @@ type ImageProps = {
   onRemove: () => void;
   required?: boolean;
   disabled?: boolean;
+  direction?: "horizontal" | "vertical";
+  isCircle?: boolean;
 };
-export const Img = ({ file, addFiles, onRemove, label, required, disabled }: ImageProps) => {
+export const Img = ({
+  file,
+  addFiles,
+  onRemove,
+  label,
+  required,
+  disabled,
+  isCircle,
+  direction = "horizontal",
+}: ImageProps) => {
   return (
-    <Space style={{ marginTop: 10 }}>
+    <Space style={{ marginTop: 10 }} direction={direction}>
       <div className="label">
         {required && <span>*</span>}
         {label}
       </div>
       {file ? (
-        <>
-          <img alt={label} src={file.url} height={300} />
+        <StyledFile>
+          <div className={isCircle ? "circle" : "normal"}>
+            <img alt={label} src={file.url} height={300} />
+          </div>
           <Button onClick={onRemove} disabled={disabled}>
             remove
           </Button>
-        </>
+        </StyledFile>
       ) : (
         <Upload
           multiple
@@ -148,10 +161,22 @@ export const Img = ({ file, addFiles, onRemove, label, required, disabled }: Ima
   );
 };
 
+const StyledFile = styled.div`
+  text-align: center;
+  div.circle {
+    border-radius: 50%;
+    overflow: hidden;
+    aspect-ratio: 1 /1;
+  }
+  button {
+    margin-top: 10px;
+  }
+`;
+
 type ImagesProps = {
   label?: string | null;
   files: gql.File[] | null;
-  addFiles: (value: FileList) => Promise<gql.File[]>;
+  addFiles: (value: FileList) => Promise<void>;
   onUpdate: (values: gql.File[]) => void;
   secret?: boolean;
   disabled?: boolean;
@@ -217,11 +242,16 @@ export const ID = ({ value, onChange }: IDProps) => {
 };
 type PasswordProps = {
   value: string | null;
+  label?: string | null;
   onChange: (value: string) => void;
 };
-export const Password = ({ value, onChange }: PasswordProps) => {
+export const Password = ({ label, value, onChange }: PasswordProps) => {
   return (
-    <Form.Item label="password" name="password" rules={[{ required: true, message: "Please input your password!" }]}>
+    <Form.Item
+      label={label || "password"}
+      name="password"
+      rules={[{ required: true, message: "Please input your password!" }]}
+    >
       <Input.Password value={value ?? ""} onChange={(e) => onChange(e.target.value)} />
     </Form.Item>
   );
@@ -326,27 +356,26 @@ export const SelectItem = ({ mode, label, items, value, onChange }: SelectProps)
 
 type TagsProps = {
   label?: string | null;
-  value: string | null;
   values: string[] | null;
-  onChange: (value: string) => void;
   onUpdate: (values: string[]) => void;
   placeholder?: string;
   required?: boolean;
   secret?: boolean;
   disabled?: boolean;
 };
-export const Tags = ({ label, value, values, onChange, onUpdate, placeholder, required, disabled }: TagsProps) => {
+export const Tags = ({ label, values, onUpdate, placeholder, required, disabled }: TagsProps) => {
   const inputRef = useRef<InputRef>(null);
   const [inputVisible, setInputVisible] = useState(false);
+  const [tag, setTag] = useState("");
   const addTag = () => {
-    if (!value || !value.length) return;
-    onChange("");
-    onUpdate([...(values ?? []), value]);
+    if (!tag.length) return;
+    onUpdate([...(values ?? []), tag]);
     setInputVisible(false);
+    setTag("");
   };
   return (
     <div>
-      <Space style={{ marginTop: 10 }}>
+      <Space style={{ marginTop: 10, flexWrap: "wrap" }}>
         {label && (
           <div className="label">
             {required && <span>*</span>}
@@ -365,8 +394,8 @@ export const Tags = ({ label, value, values, onChange, onUpdate, placeholder, re
             type="text"
             size="small"
             className="tag-input"
-            value={value ?? ""}
-            onChange={(e) => onChange(e.target.value)}
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
             onBlur={addTag}
             onPressEnter={addTag}
           />

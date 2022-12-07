@@ -1,33 +1,23 @@
 import React, { ReactNode } from "react";
-import * as Style from "./MocSurveyHeader.style";
 import Link from "next/link";
+import { Props } from "@shared/ui-web";
 
-type BaseProps = {
-  children: ReactNode;
-  className?: string;
+export const MocSurveyHeader = ({ children, className }: Props.BaseProps) => {
+  return <div className={`relative p-[20px] h-[101px] ${className}`}>{children}</div>;
 };
 
-export const MocSurveyHeader = ({ children, className }: BaseProps) => {
-  return <Style.HeaderContainer className={className}>{children}</Style.HeaderContainer>;
+const Title = ({ children, className }: Props.BaseProps) => {
+  return <div className={`flex-1 font-bold text-[26px] leading-5 color-black border-0${className}`}>{children}</div>;
 };
 
-export const Title = ({ children, className }: BaseProps) => {
-  return <Style.Title className={className}>{children}</Style.Title>;
+const TopField = ({ children, className }: Props.BaseProps) => {
+  return <div className={`w-full flex items-start justify-center bg-red-500${className}`}>{children}</div>;
 };
 
-export const TopField = ({ children, className }: BaseProps) => {
-  return <Style.TopField className={className}>{children}</Style.TopField>;
+const Right = ({ children, className }: Props.BaseProps) => {
+  return <div className={`flex-1 ${className}`}>{children}</div>;
 };
 
-export const Right = ({ children, className }: BaseProps) => {
-  return <Style.Right className={className}>{children}</Style.Right>;
-};
-
-// export const MocSurveyHeader = ({ children, className }: BaseProps) => {
-//   <Style.HeaderContainer>
-//   <Style.TopField>
-//     <Style.Title>Proposals</Style.Title>
-//     <Style.Right className="right">{mocSurveyService.wallet ? <MyAddress /> : <Connect />}</Style.Right>
-//   </Style.TopField>
-//   <FilterButtons />
-// </Style.HeaderContainer>
+MocSurveyHeader.Title = Title;
+MocSurveyHeader.Right = Right;
+MocSurveyHeader.TopField = TopField;

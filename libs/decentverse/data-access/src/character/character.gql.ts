@@ -1,6 +1,17 @@
 import graphql from "graphql-tag";
 import { cnst } from "@shared/util";
-import { Field, InputType, mutate, query, ObjectType, BaseGql, Int, createGraphQL } from "@shared/util-client";
+import {
+  Field,
+  InputType,
+  mutate,
+  query,
+  ObjectType,
+  BaseGql,
+  Int,
+  createGraphQL,
+  PickType,
+  SliceModel,
+} from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 import { Sprite } from "../_scalar/scalar.gql";
 
@@ -45,7 +56,11 @@ export class Character extends BaseGql(CharacterInput) {
   @Field(() => String)
   status: cnst.CharacterStatus;
 }
-export const characterGraphQL = createGraphQL<"character", Character, CharacterInput>(Character, CharacterInput);
+
+@ObjectType("LightCharacter", { _id: "id", gqlRef: "Character" })
+export class LightCharacter extends PickType(Character, ["status"] as const) {}
+
+export const characterGraphQL = createGraphQL("character" as const, Character, CharacterInput, LightCharacter);
 export const {
   getCharacter,
   listCharacter,
@@ -56,18 +71,7 @@ export const {
   removeCharacter,
   characterFragment,
   purifyCharacter,
-  // defaultCharacter,
+  defaultCharacter,
+  addCharacterFiles,
 } = characterGraphQL;
-
-// * Add CharacterFiles Mutation
-export type AddCharacterFilesMutation = { addCharacterFiles: shared.File[] };
-export const addCharacterFilesMutation = graphql`
-  ${shared.fileFragment}
-  mutation addCharacterFiles($files: [Upload!]!, $characterId: String) {
-    addCharacterFiles(files: $files, characterId: $characterId) {
-      ...fileFragment
-    }
-  }
-`;
-export const addCharacterFiles = async (files: FileList, characterId?: string | null) =>
-  (await mutate<AddCharacterFilesMutation>(addCharacterFilesMutation, { files, characterId })).addCharacterFiles;
+export type CharacterSlice = SliceModel<"character", Character, LightCharacter>;

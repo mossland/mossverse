@@ -17,6 +17,7 @@ import {
 import { Utils } from "@shared/util";
 import { ethers } from "ethers";
 import { getAccount } from "./utils";
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Caver = require("caver-js");
 
 export const mint = async (

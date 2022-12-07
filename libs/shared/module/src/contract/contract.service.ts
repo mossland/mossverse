@@ -23,7 +23,7 @@ import { WalletService } from "../wallet/wallet.service";
 @Injectable()
 export class ContractService
   extends AddrLoadService<Contract.Mdl, Contract.Doc, Contract.Input>
-  implements OnModuleInit, OnModuleDestroy
+  implements OnModuleDestroy
 {
   destroyers: (() => Promise<void> | void)[] = [];
   constructor(
@@ -35,12 +35,9 @@ export class ContractService
   ) {
     super(ContractService.name, Contract);
   }
-  async onModuleInit() {
-    // const contracts = await this.Contract.find({ status: "active" });
-    // await Promise.all(contracts.map(async (contract) => await this.#listenContract(contract)));
-  }
-  async onModuleDestroy() {
-    await Promise.all(this.destroyers.map(async (destroyer) => await destroyer()));
+  async listenAllContracts() {
+    const contracts = await this.Contract.find({ status: "active" });
+    return await Promise.all(contracts.map(async (contract) => await this.#listenContract(contract)));
   }
   async myInventory(walletId: Id) {
     const wallet = await this.walletService.get(walletId);
@@ -62,7 +59,8 @@ export class ContractService
         contracts.filter((c) => c.is("erc1155"))
       )),
     ];
-    return await wallet.merge({ items }).save();
+    // return await wallet.merge({ items }).save();
+    return wallet.merge({ items });
   }
   async #inventoryErc20(wallet: db.Wallet.Doc, contracts: Contract.Doc[]): Promise<gql.TokenItem[]> {
     if (!contracts.length) return [];
@@ -179,7 +177,9 @@ export class ContractService
     return snapshot;
   }
   async getSnapshot(contractId: Id) {
-    return (await this.Contract.findById(contractId).select("snapshot")) ?? this.snapshot(contractId, [], true);
+    return (
+      (await this.Contract.findById(contractId).select("snapshot"))?.snapshot ?? this.snapshot(contractId, [], true)
+    );
   }
   async #listenContract(contract: Contract.Doc) {
     const instance = await this.networkService.loadContract(contract);
@@ -193,13 +193,15 @@ export class ContractService
         onTransferSingle: this.#onErc1155TransferSingle(contract, instance as Erc1155),
         onTransferBatch: this.#onErc1155TransferBatch(contract, instance as Erc1155),
       });
-    this.destroyers.push(() => instance.destroy());
+    const destroyer = () => instance.destroy();
+    this.destroyers.push(destroyer);
+    return destroyer;
   }
   #onErc20Transfer(contract: Contract.Doc, token: db.Token.Doc, instance: Erc20): Erc20TrasferEventHandler {
     return async (from, to, value, e) => {
       const bn = e.blockNumber;
       if (bn < contract.bn) return;
-      this.logger.log(`ERC20 Transfer Detectend from ${from} to ${to} value: ${value.toString()} bn: ${bn}`);
+      this.logger.log(`ERC20 Transfer Detected from ${from} to ${to} value: ${value.toString()} bn: ${bn}`);
       const f = await this.walletService.myWallet(contract.network, from);
       const t = await this.walletService.myWallet(contract.network, to);
       await this.walletService.transferItem({
@@ -215,7 +217,7 @@ export class ContractService
     return async (from, to, id, e) => {
       const [bn, tokenId] = [e.blockNumber, parseInt(id.toString())];
       if (bn < contract.bn) return;
-      this.logger.log(`ERC721 Transfer Detectend from ${from} to ${to} id: ${id.toString()} bn: ${bn}`);
+      this.logger.log(`ERC721 Transfer Detected from ${from} to ${to} id: ${id.toString()} bn: ${bn}`);
       const f = await this.walletService.myWallet(contract.network, from);
       const t = await this.walletService.myWallet(contract.network, to);
       const uri = (await this.tokenService.exists({ contract: contract._id, tokenId }))
@@ -236,7 +238,7 @@ export class ContractService
       const [bn, tokenId] = [e.blockNumber, parseInt(id.toString())];
       if (bn < contract.bn) return;
       this.logger.log(
-        `ERC1155 Transfer Detectend from ${from} to ${to} id: ${id.toString()} value: ${value.toString()} bn: ${bn}`
+        `ERC1155 Transfer Detected from ${from} to ${to} id: ${id.toString()} value: ${value.toString()} bn: ${bn}`
       );
       const f = await this.walletService.myWallet(contract.network, from);
       const t = await this.walletService.myWallet(contract.network, to);
@@ -326,6 +328,7 @@ export class ContractService
     try {
       const tx = await instance.contract.provider.getTransaction(hash);
       const decoded = instance.settings.intf.parseTransaction({ data: tx.data, value: tx.value });
+      console.log(decoded);
       //! should check validity of tx
       // TransactionDescription {
       //   args: [
@@ -363,15 +366,15 @@ export class ContractService
       return false;
     }
   }
-  async create(data: Contract.Input) {
+  override async create(data: Contract.Input) {
     return await this.generateContract(data);
   }
   async generateContract(data: Contract.Input, ids: number[] = []) {
     const intf = await this.networkService.getInterface(data.network, data.address);
     // return true;
     const contract: Contract.Doc =
-      (await this.Contract.findOne({ address: data.address })) ??
-      (await this.Contract.create({ interface: intf, ...data }));
+      (await this.Contract.findOne({ address: data.address.toLowerCase() })) ??
+      (await this.Contract.create({ interface: intf, ...data, address: data.address.toLowerCase() }));
     if (!contract.isNew) await this.tokenService.activateTokens(contract._id);
     const instance = await this.networkService.loadContract(contract);
     const info = await instance.info();
@@ -387,10 +390,13 @@ export class ContractService
     await this.#listenContract(contract);
     return contract;
   }
-  async remove(contractId: Id) {
+  override async remove(contractId: Id) {
     const contract = await this.Contract.pickById(contractId);
     await this.walletService.resetItems(contractId);
     await this.tokenService.deactivateTokens(contractId);
     return await contract.merge({ status: "inactive" }).save();
+  }
+  async onModuleDestroy() {
+    await Promise.all(this.destroyers.map(async (destroyer) => await destroyer()));
   }
 }

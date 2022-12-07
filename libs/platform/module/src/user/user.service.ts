@@ -1,19 +1,22 @@
 import { Injectable, OnModuleInit } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Id, LoadService } from "@shared/util-server";
-import { Utils } from "@shared/util";
+import { Utils, GetObject } from "@shared/util";
 import * as User from "./user.model";
 import * as gql from "../gql";
-import * as srv from "../srv";
+import { srv as shared } from "@shared/module";
 
 @Injectable()
 export class UserService<
-  Mdl extends User.Mdl = User.Mdl,
-  Doc extends User.Doc = User.Doc,
-  Input extends User.Input = User.Input
-> extends LoadService<Mdl, Doc, Input> implements srv.shared.UserService<Mdl, Doc, Input>, OnModuleInit {
+    Mdl extends User.Mdl = User.Mdl,
+    Doc extends User.Doc = User.Doc,
+    Input extends User.Input = User.Input
+  >
+  extends LoadService<Mdl, Doc, Input>
+  implements GetObject<shared.UserService<Mdl, Doc, Input>>, OnModuleInit
+{
   root: Doc;
-  constructor(@InjectModel(User.name) readonly User: Mdl) {
+  constructor(@InjectModel(User.name) readonly User: Mdl, private readonly keyringService: shared.KeyringService) {
     super(UserService.name, User);
   }
   async onModuleInit() {
@@ -31,10 +34,11 @@ export class UserService<
     return await user.incItems(exchanges).save();
   }
 }
+
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface UserService<
   Mdl extends User.Mdl = User.Mdl,
   Doc extends User.Doc = User.Doc,
   Input extends User.Input = User.Input
-> extends srv.shared.UserService<Mdl, Doc, Input> {}
-Utils.applyMixins(UserService, [srv.shared.UserService]);
+> extends GetObject<shared.UserService<Mdl, Doc, Input>> {}
+Utils.applyMixins(UserService, [shared.UserService]);

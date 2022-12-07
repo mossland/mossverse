@@ -1,38 +1,32 @@
-import { MyBalance, ExchangeButtons } from "../../components";
 import { gql, utils, store } from "../../stores";
 import styled from "styled-components";
-import { Connect, MyAddress, MarketNav } from "../";
+import { Connect, MyAddress, MarketNav, MyBalance, MyTokens } from "../";
+
 import { BiChevronRight } from "react-icons/bi";
 import { darken } from "polished";
-
+import { ListingHeader } from "@platform/ui-web";
 export const MarketHeader = () => {
-  const wallet = store.shared.wallet.use.wallet();
-  const onClickMyTokensButton = () => store.platform.listing.setState({ filter: "myTokens" });
+  const self = store.platform.user.use.self();
 
   return (
-    <StyledMarketHeader isLogin={!!wallet}>
-      <div className="header-menu">
-        <div className="header-item">
+    <ListingHeader>
+      <ListingHeader.Menu>
+        <ListingHeader.Item>
           <MyBalance />
-        </div>
-        <div className="header-item">
-          {wallet ? (
+        </ListingHeader.Item>
+        <ListingHeader.Item>
+          {self ? (
             <>
               <MyAddress />
-              <div className="my-tokens-button" onClick={onClickMyTokensButton}>
-                MyTokens
-                <div className="arrow">
-                  <BiChevronRight />
-                </div>
-              </div>
+              <MyTokens />
             </>
           ) : (
             <Connect />
           )}
-        </div>
-      </div>
+        </ListingHeader.Item>
+      </ListingHeader.Menu>
       <MarketNav />
-    </StyledMarketHeader>
+    </ListingHeader>
   );
 };
 

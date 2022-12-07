@@ -1,3 +1,4 @@
+import { environment } from "../_environments/environment";
 import { TokenService } from "./token.service";
 import { TestSystem } from "@shared/test-server";
 import { TokenModule } from "./token.module";
@@ -6,12 +7,12 @@ import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 describe("Token Service", () => {
   const system = new TestSystem();
   let tokenService: TokenService;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     tokenService = app.get<TokenService>(TokenService);
   });
   afterAll(async () => await system.terminate());

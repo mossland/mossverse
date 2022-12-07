@@ -1,17 +1,17 @@
+import { environment } from "../_environments/environment";
 import { AdminService } from "./admin.service";
-
 import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { TestSystem } from "@shared/test-server";
 
 describe("Admin Service", () => {
   const system = new TestSystem();
   let adminService: AdminService;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     adminService = app.get<AdminService>(AdminService);
   });
   afterAll(async () => await system.terminate());

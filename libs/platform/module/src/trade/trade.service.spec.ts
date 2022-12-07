@@ -1,3 +1,4 @@
+import { environment } from "../_environments/environment";
 import { TestSystem } from "@shared/test-server";
 import { TradeModule } from "./trade.module";
 import { TradeService } from "./trade.service";
@@ -6,7 +7,7 @@ import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { TestingModule } from "@nestjs/testing";
 import { ethers } from "ethers";
 import { Erc1155, Erc20, Erc721 } from "@shared/util-server";
@@ -29,12 +30,12 @@ describe("trade Service", () => {
   let keyring: db.shared.Keyring.Doc;
   let otherWallet: db.shared.Wallet.Doc;
   let app: TestingModule;
-  const provider = new ethers.providers.JsonRpcProvider(system.env.network.klaytn.endpoint);
-  const signer = new ethers.Wallet(system.env.network.klaytn.testWallets[0].privateKey, provider);
+  const provider = new ethers.providers.JsonRpcProvider(environment.klaytn.endpoint);
+  const signer = new ethers.Wallet(environment.klaytn.testWallets[0].privateKey, provider);
   let erc20: Erc20;
   let hash: string;
   beforeAll(async () => {
-    app = await system.init(registerModules);
+    app = await system.init(registerModules(environment));
     tradeService = app.get<TradeService>(TradeService);
     networkService = app.get<srv.shared.NetworkService>(srv.shared.NetworkService);
     contractService = app.get<srv.shared.ContractService>(srv.shared.ContractService);
@@ -42,21 +43,17 @@ describe("trade Service", () => {
     walletService = app.get<srv.shared.WalletService>(srv.shared.WalletService);
     image = await sample.shared.createFile(app);
     network = await sample.shared.createNetwork(app, "klaytn");
-    [user, keyring, wallet] = await sample.createUser(
-      app,
-      network._id,
-      system.env.network.klaytn.testWallets[0].address
-    );
-    const rootWallet = (await walletService.myWallet(network._id, system.env.network.klaytn.root.address))
+    [user, keyring, wallet] = await sample.createUser(app, network._id, environment.klaytn.testWallets[0].address);
+    const rootWallet = (await walletService.myWallet(network._id, environment.klaytn.root.address))
       .merge({ type: "root" })
       .save();
     thing = await sample.shared.createThing(app, image._id);
-    otherWallet = await walletService.myWallet(network._id, system.env.network.klaytn.testWallets[1].address);
-    contract = await sample.shared.createContract(app, network._id, system.env.network?.klaytn.erc20);
+    otherWallet = await walletService.myWallet(network._id, environment.klaytn.testWallets[1].address);
+    contract = await sample.shared.createContract(app, network._id, environment?.klaytn.erc20);
     token = await tokenService.generate(contract);
     erc20 = (await networkService.loadContract(contract)) as Erc20;
     await erc20.contract.transfer(wallet.address, 10, { gasLimit: 100000 });
-    await erc20.contract.approve(system.env.network.klaytn.market, 100, { gasLimit: 100000 });
+    await erc20.contract.approve(environment.klaytn.market, 100, { gasLimit: 100000 });
     wallet = await contractService.inventory(wallet);
   }, 30000);
   afterAll(async () => await system.terminate());
@@ -81,9 +78,8 @@ describe("trade Service", () => {
     const [beforeTokenBalance] = await erc20.balances([wallet.address]);
     const beforeTokenNum = wallet.items.find((item) => item.contract.equals(contract._id) && item.num > 0)?.num ?? 0;
     const beforeThingNum = user.items.find((item) => item.thing.equals(thing._id) && item.num > 0)?.num ?? 0;
-    hash = (
-      await erc20.contract.connect(signer).transfer(system.env.network.klaytn.root.address, 10, { gasLimit: 100000 })
-    ).hash;
+    hash = (await erc20.contract.connect(signer).transfer(environment.klaytn.root.address, 10, { gasLimit: 100000 }))
+      .hash;
     inputs = [
       {
         type: "token",

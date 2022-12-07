@@ -49,16 +49,17 @@ export class MocWalletService extends LoadService<MocWallet.Mdl, MocWallet.Doc, 
     //* transfer address
     const hash = await this.luniverseService.transfer(this.root.address, address, amount);
     const inputs: gql.platform.ExchangeInput[] = [{ type: "thing", thing: this.mmoc.id, num: amount }];
-    const outputs: gql.platform.ExchangeInput[] = [{ type: "etc", num: amount, hash }];
+    const outputs: gql.platform.ExchangeInput[] = [{ type: "currency", num: amount, hash }];
 
     await user.decItems(inputs).save();
     const receipt = await this.receiptService.create({
+      name: "Withdraw MMOC",
       type: "trade",
       from: user._id,
       inputs,
       outputs,
     });
-    return await receipt.merge({ status: "success", tag: ["MMOC to MOC"] }).save();
+    return await receipt.merge({ status: "success", tags: ["MMOC to MOC"] }).save();
   }
 
   async confirmDeposit(wallet: MocWallet.Doc) {
@@ -67,10 +68,11 @@ export class MocWalletService extends LoadService<MocWallet.Mdl, MocWallet.Doc, 
     await wallet.merge({ status: "inProgress" }).save();
     const hash = await this.luniverseService.getTxHash(wallet.address);
     const user = await this.userService.get(wallet.user);
-    const inputs: gql.platform.ExchangeInput[] = [{ type: "etc", num: amount, hash }];
+    const inputs: gql.platform.ExchangeInput[] = [{ type: "currency", num: amount, hash }];
     const outputs: gql.platform.ExchangeInput[] = [{ type: "thing", thing: this.mmoc.id, num: amount }];
     await user.incItems(outputs).save();
     const receipt = await this.receiptService.create({
+      name: "Deposit MMOC",
       type: "trade",
       from: user._id,
       inputs,
@@ -79,7 +81,7 @@ export class MocWalletService extends LoadService<MocWallet.Mdl, MocWallet.Doc, 
 
     await this.luniverseService.transfer(wallet.address, this.root.address, amount);
     await wallet.merge({ status: "active" }).save();
-    return await receipt.merge({ status: "success", tag: ["MOC to MMOC"] }).save();
+    return await receipt.merge({ status: "success", tags: ["MOC to MMOC"] }).save();
   }
 
   async confirmDepositAll() {

@@ -73,7 +73,7 @@ export type StoryStatus = typeof storyStatuses[number];
 export const defaultStatuses = ["active", "inactive"] as const;
 export type DefaultStatus = typeof defaultStatuses[number];
 
-export const receiptStatuses = ["active", "inProgress", "success", "inactive"] as const;
+export const receiptStatuses = ["active", "inProgress", "success", "failed", "inactive"] as const;
 export type ReceiptStatus = typeof receiptStatuses[number];
 
 export const listingStatuses = ["active", "soldout", "closed", "inactive"] as const;
@@ -94,7 +94,7 @@ export type ListingType = typeof listingTypes[number];
 export const priceTagTypes = ["token", "thing"] as const;
 export type PriceTagType = typeof priceTagTypes[number];
 
-export const exchangeTypes = ["token", "thing", "product", "etc"] as const;
+export const exchangeTypes = ["token", "thing", "product", "currency"] as const;
 export type ExchangeType = typeof exchangeTypes[number];
 
 export const receiptTypes = ["trade", "purchase", "use", "admin", "unknown"] as const;
@@ -138,6 +138,7 @@ export type RoomType = typeof roomTypes[number];
 
 export const defaultSexyRate = { face: 0, body: 0, voice: 0, sexy: 0, acting: 0 } as const;
 export const defaultVideoStat = { viewNum: 0, clickNum: 0, payNum: 0, commentNum: 0 } as const;
+export const defaultAccessStat = { request: 0, device: 0, ip: 0, country: 0 } as const;
 export const defaultStoryStat = { views: 0, likes: 0, unlikes: 0 } as const;
 export const clusterStatuses = ["active", "inactive"] as const;
 export type ClusterStatus = typeof clusterStatuses[number];
@@ -226,29 +227,20 @@ export const quillEditorFormats = [
   "indent",
   "link",
   "image",
+  "video",
 ];
 
-export type PageMap = {
-  [key in "user" | "admin" | "public"]: {
-    paths: string[];
-    home: string;
-    unauthorized: string;
-  };
-};
-export const defaultPageMap: PageMap = {
-  public: {
-    paths: ["/"],
-    home: "/",
-    unauthorized: "/",
-  },
-  user: {
-    paths: ["/"],
-    home: "/",
-    unauthorized: "/",
-  },
-  admin: {
-    paths: ["/"],
-    home: "/",
-    unauthorized: "/",
-  },
-};
+export const videoTicketStatuses = ["active", "prepaid", "inactive"] as const;
+export type VideoTicketStatus = typeof videoTicketStatuses[number];
+
+export const currencyStatuses = ["active", "inactive"] as const;
+export type CurrencyStatus = typeof currencyStatuses[number];
+
+export const currencySymbols = ["KRW", "ETH", "USD"] as const;
+export type CurrencySymbol = typeof currencySymbols[number];
+
+export const currencyTypes = ["legal", "crypto"] as const;
+export type CurrencyType = typeof currencyTypes[number];
+
+export const heartCouponStatuses = ["active", "used", "expired", "inactive"] as const;
+export type HeartCouponStatus = typeof heartCouponStatuses[number];

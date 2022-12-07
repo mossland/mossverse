@@ -9,6 +9,10 @@ import { cnst } from "@shared/util";
 @InputType({ isAbstract: true })
 @Schema()
 class Base {
+  @Field(() => String)
+  @Prop({ type: String, required: true, index: true })
+  name: string;
+
   @Field(() => [gql.Exchange])
   @Prop([{ type: gql.ExchangeSchema, required: true }])
   inputs: gql.Exchange[];

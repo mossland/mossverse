@@ -24,9 +24,9 @@ export class Erc20 {
       await this.settings.multicall.view({
         calls: [
           { address: this.address, fn: "name", args: [] },
-          { address: this.address, fn: "symbol", args: [] },
-          { address: this.address, fn: "decimals", args: [] },
-          { address: this.address, fn: "totalSupply", args: [] },
+          // { address: this.address, fn: "symbol", args: [] },
+          // { address: this.address, fn: "decimals", args: [] },
+          // { address: this.address, fn: "totalSupply", args: [] },
         ],
         settings: this.settings,
       })

@@ -3,102 +3,78 @@ import styled from "styled-components";
 import { Survey, DefaultButton } from "@platform/ui-web";
 import { gql, utils, store } from "../../stores";
 import { useMocSurvey } from "./services/useMocSurvey";
-
+import { MocSurveyDetailBody } from "./MocSurveyDetail";
 export const DetailBody = () => {
   const mocSurveyService = useMocSurvey();
   if (!mocSurveyService.mocSurvey) return null;
-
   return (
-    <StyledSurveyDetailBody>
+    <MocSurveyDetailBody>
       {mocSurveyService.mocSurvey.type === "objective" ? (
-        <Survey.ObjectiveForm
-          isVoted={utils.isVoted(
-            mocSurveyService.mocSurveyList,
-            mocSurveyService.mocSurvey.id,
-            mocSurveyService.self?.id
-          )}
-          selections={mocSurveyService.selections}
+        <MocSurveyDetailBody.ObjectiveForm
+          disabled={
+            utils.isVoted(mocSurveyService.mocSurveyList, mocSurveyService.mocSurvey.id, mocSurveyService.self?.id) ||
+            mocSurveyService.mocSurvey.status !== "opened" ||
+            new Date(mocSurveyService.mocSurvey.closeAt).getTime() < Date.now()
+          }
+          selections={mocSurveyService.mocSurvey.selections}
           selection={mocSurveyService.selection}
           onSelect={(selection) => store.mocSurvey.setState({ selection })}
         />
       ) : (
-        <Survey.SubjectiveForm
+        <MocSurveyDetailBody.SubjectiveForm
           answer={mocSurveyService.answer}
-          isVoted={utils.isVoted(
-            mocSurveyService.mocSurveyList,
-            mocSurveyService.mocSurvey.id,
-            mocSurveyService.self?.id
-          )}
+          disabled={
+            utils.isVoted(mocSurveyService.mocSurveyList, mocSurveyService.mocSurvey.id, mocSurveyService.self?.id) ||
+            mocSurveyService.mocSurvey.status !== "opened" ||
+            new Date(mocSurveyService.mocSurvey.closeAt).getTime() < Date.now()
+          }
           onChange={(answer) => store.mocSurvey.setState({ answer })}
         />
       )}
       <>
-        <div className="only-pc">
-          <div className="button-container">
-            <DefaultButton className="survey-button" block onClick={mocSurveyService.closeDetail}>
+        <MocSurveyDetailBody.Wrapper className="only-pc">
+          <MocSurveyDetailBody.ButtonWrapper>
+            <MocSurveyDetailBody.SurveyButton onClick={mocSurveyService.closeDetail}>
               Close
-            </DefaultButton>
-            <DefaultButton
-              className="survey-button"
-              block
-              disabled={utils.isVoted(
-                mocSurveyService.mocSurveyList,
-                mocSurveyService.mocSurvey.id,
-                mocSurveyService.self?.id
-              )}
-              type={
-                utils.isVoted(mocSurveyService.mocSurveyList, mocSurveyService.mocSurvey.id, mocSurveyService.self?.id)
-                  ? "default"
-                  : "primary"
-              }
+            </MocSurveyDetailBody.SurveyButton>
+            <MocSurveyDetailBody.SurveyButton
+              className={"bg-[#66fef1]"}
               onClick={() => mocSurveyService.responseMocSurvey()}
-            >
-              Submit
-            </DefaultButton>
-          </div>
-        </div>
-        <div className="only-mobile">
-          <div className="button-container">
-            <DefaultButton className="survey-button" block onClick={mocSurveyService.closeDetail}>
-              Close
-            </DefaultButton>
-            <DefaultButton
-              className="survey-button"
-              block
-              disabled={utils.isVoted(
-                mocSurveyService.mocSurveyList,
-                mocSurveyService.mocSurvey.id,
-                mocSurveyService.self?.id
-              )}
-              type={
-                utils.isVoted(mocSurveyService.mocSurveyList, mocSurveyService.mocSurvey.id, mocSurveyService.self?.id)
-                  ? "default"
-                  : "primary"
+              disabled={
+                mocSurveyService.isVoted(mocSurveyService.mocSurvey.id) ||
+                mocSurveyService.mocSurvey.status !== "opened" ||
+                new Date(mocSurveyService.mocSurvey.closeAt).getTime() < Date.now() ||
+                (mocSurveyService.mocSurvey.type === "subjective"
+                  ? mocSurveyService.answer === null || (mocSurveyService.answer && mocSurveyService.answer.length < 3)
+                  : mocSurveyService.mocSurvey.type === "objective" && mocSurveyService.selection === null)
               }
-              onClick={() => mocSurveyService.responseMocSurveyMobile()}
             >
               Submit
-            </DefaultButton>
-          </div>
-        </div>
+            </MocSurveyDetailBody.SurveyButton>
+          </MocSurveyDetailBody.ButtonWrapper>
+        </MocSurveyDetailBody.Wrapper>
+        <MocSurveyDetailBody.Wrapper className="only-mobile">
+          <MocSurveyDetailBody.ButtonWrapper>
+            <MocSurveyDetailBody.SurveyButton onClick={mocSurveyService.closeDetail}>
+              Close
+            </MocSurveyDetailBody.SurveyButton>
+            <MocSurveyDetailBody.SurveyButton
+              className={"bg-[#66FEF1]"}
+              onClick={() => mocSurveyService.responseMocSurvey()}
+              disabled={
+                mocSurveyService.isVoted(mocSurveyService.mocSurvey.id) ||
+                mocSurveyService.mocSurvey.status !== "opened" ||
+                new Date(mocSurveyService.mocSurvey.closeAt).getTime() < Date.now() ||
+                (mocSurveyService.mocSurvey.type === "subjective"
+                  ? mocSurveyService.answer && mocSurveyService.answer.length < 3
+                  : mocSurveyService.mocSurvey.type === "objective" && !mocSurveyService.selection)
+              }
+            >
+              Submit
+            </MocSurveyDetailBody.SurveyButton>
+          </MocSurveyDetailBody.ButtonWrapper>
+        </MocSurveyDetailBody.Wrapper>
       </>
-    </StyledSurveyDetailBody>
+    </MocSurveyDetailBody>
   );
 };
-
-const StyledSurveyDetailBody = styled.div`
-  background-color: #e8e8e8;
-  padding: 23px;
-  .button-container {
-    display: flex;
-    justify-content: space-around;
-    gap: 10px;
-    .survey-button button {
-      min-height: 44px;
-    }
-    @media screen and (max-width: 800px) {
-      justify-content: center;
-      gap: 18px;
-    }
-  }
-`;

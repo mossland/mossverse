@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Erc20, Id, LoadService } from "@shared/util-server";
+import { Erc20, Id, LoadConfig, LoadService } from "@shared/util-server";
 import * as Listing from "./listing.model";
 import * as gql from "../gql";
 import * as db from "../db";
@@ -19,6 +19,10 @@ export class ListingService extends LoadService<Listing.Mdl, Listing.Doc, Listin
     private readonly keyringService: srv.shared.KeyringService
   ) {
     super(ListingService.name, Listing);
+  }
+  override async create(data: Listing.Input, { address }: LoadConfig<Listing.Doc> = {}) {
+    if (!address) throw new Error("address is required");
+    return await this.generateListing(data, address);
   }
   async generateListing(data: Listing.Input, address: string) {
     if (await this.Listing.isDuplicated(data)) throw new Error("Listing Already Exists");
@@ -82,6 +86,7 @@ export class ListingService extends LoadService<Listing.Mdl, Listing.Doc, Listin
       await this.contractService.checkApproval(listing.token as Id, listing.wallet as Id, listing.limit ?? 0);
       const [buyer, seller] = await this.userService.exchangeItems(user._id, listing.user, inputs);
       const receipt = await this.receiptService.create({
+        name: `Token Listing from ${seller.nickname} to ${buyer.nickname}`,
         type: "purchase",
         from: buyer._id,
         fromWallet: fromWallet._id,
@@ -108,6 +113,7 @@ export class ListingService extends LoadService<Listing.Mdl, Listing.Doc, Listin
       const exchanges = [...inputs, ...outputs.map((o) => ({ ...o, num: -num }))];
       const [buyer, seller] = await this.userService.exchangeItems(user._id, listing.user, exchanges);
       const receipt = await this.receiptService.create({
+        name: `Thing Listing from ${seller.nickname} to ${buyer.nickname}`,
         type: "purchase",
         from: buyer._id,
         to: seller._id,
@@ -130,6 +136,7 @@ export class ListingService extends LoadService<Listing.Mdl, Listing.Doc, Listin
       const exchanges = [...inputs, ...outputs.map((o) => ({ ...o, num: -num }))];
       const [buyer, seller] = await this.userService.exchangeItems(user._id, listing.user, exchanges);
       const receipt = await this.receiptService.create({
+        name: `Product Listing from ${seller.nickname} to ${buyer.nickname}`,
         type: "purchase",
         from: buyer._id,
         to: seller._id,

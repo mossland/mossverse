@@ -2,13 +2,35 @@ import React from "react";
 import styled from "styled-components";
 import { DeliveryForm } from "./";
 import { Market } from "@platform/ui-web";
+import { gql, store } from "./../../../stores";
 
-export const DeliveryBuyBox = () => {
-  const service = Market.useMarket();
-  const price = service?.listing?.priceTags?.[0].price ?? 0;
-  const limit = service?.listing?.limit ?? 0;
+interface BuyBoxProps {
+  listingSlice: gql.platform.ListingSlice;
+}
 
-  if (!service.listing) return null;
+export const DeliveryBuyBox = ({ listingSlice }: BuyBoxProps) => {
+  const wallet = store.shared.wallet.use.wallet();
+  const listing = listingSlice.use.listing();
+  const name = store.platform.shipInfo.use.name();
+  const address = store.platform.shipInfo.use.address();
+  const phone = store.platform.shipInfo.use.phone();
+  const num = store.platform.listing.use.num();
+  if (!listing || listing === "loading" || !listing.product) return null;
+
+  const onDeliveryBuy = async () => {
+    //? 어떻게 해야하지
+    // if (!wallet) return alert("로그인 후  다시 시도해주세요.");
+    // if (!listing) return;
+    // store.platform.listing.setState({ priceTag: (listing as any).priceTags[0], num: 1 });
+    // await sign((wallet as any).network.provider);
+    // const shipInfoInput = store.platform.purifyShipInfo();
+    // if (!shipInfoInput) return;
+    // const receipt: any = await buyItem(shipInfoInput);
+    // await initUser();
+    // await initListing();
+    // store.listing.setState({ listing: null });
+    // store.receipt.setState({ receipt });
+  };
 
   return (
     <DeliveryBuyBoxContainer>
@@ -16,14 +38,14 @@ export const DeliveryBuyBox = () => {
         <div className="price-group">
           <div className="label">Price</div>
           <div className="price">
-            {service.listing.priceTags
+            {listing.priceTags
               .filter((tag) => tag.thing && tag.thing.type === "root")
               .map((tag, index) => {
                 if (!tag.thing) return;
                 return (
                   <div key={tag.thing.id}>
                     <img src={tag.thing.image.url} />
-                    {price}
+                    {tag.price}
                   </div>
                 );
               })}
@@ -33,40 +55,40 @@ export const DeliveryBuyBox = () => {
       </div>
       <DeliveryForm.Text
         label="Name"
-        value={service.name ?? ""}
+        value={name ?? ""}
         placeholder={"받으실 분의 성함을 적어주세요."}
-        onChange={service.updateName}
+        onChange={(name) => store.platform.shipInfo.set({ name })}
       />
       <DeliveryForm.Text
         label="Address"
-        value={service.address ?? ""}
+        value={address ?? ""}
         placeholder={"살고있는 거주지를 적어주세요"}
-        onChange={service.updateAddress}
+        onChange={(address) => store.platform.shipInfo.set({ address })}
       />
       <DeliveryForm.Text
         label="Phone"
-        value={service.phone ?? ""}
+        value={phone ?? ""}
         placeholder={"010-xxxx-xxxx"}
-        onChange={service.updatePhone}
+        onChange={(phone) => store.platform.shipInfo.set({ phone })}
       />
       <div className="stage-2-box">
         <div className="price-group">
           <div className="label">Total Price</div>
           <div className="price">
-            {service.listing.priceTags
+            {listing.priceTags
               .filter((tag) => tag.thing && tag.thing.type === "root")
               .map((tag, index) => {
                 if (!tag.thing) return;
                 return (
                   <div key={tag.thing.id}>
                     <img src={tag.thing.image.url} />
-                    {price * (isNaN(service.num) ? 1 : service.num)}
+                    {tag.price * (isNaN(num) ? 1 : num)}
                   </div>
                 );
               })}
           </div>
         </div>
-        <div className="button" onClick={async () => await service.onDeliveryBuy()}>
+        <div className="button" onClick={async () => await onDeliveryBuy()}>
           Buy
         </div>
       </div>

@@ -6,7 +6,7 @@
 // import * as db from "../db";
 // import * as srv from "../srv";
 // import * as gql from "../gql";
-// import { registerModules } from "../modules";
+// import { registerModules } from "../module";
 // describe("Comment Service", () => {
 //   const system = new TestSystem();
 //   let commentService: CommentService;

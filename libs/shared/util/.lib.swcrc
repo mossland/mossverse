@@ -1,24 +1,31 @@
 {
   "jsc": {
-    "target": "es2016",
+    "target": "es2017",
     "parser": {
       "syntax": "typescript",
       "decorators": true,
-      "tsx": false,
-      "dynamicImport": true,
-      "exportDefaultFrom": false,
-      "exportNamespaceFrom": true
+      "dynamicImport": true
     },
     "transform": {
       "decoratorMetadata": true,
       "legacyDecorator": true
     },
-    "keepClassNames": true
+    "keepClassNames": true,
+    "externalHelpers": true,
+    "loose": true
   },
   "module": {
     "type": "commonjs",
     "strict": true,
     "noInterop": true
   },
-  "sourceMaps": true
+  "sourceMaps": true,
+  "exclude": [
+    "jest.config.ts",
+    ".*.spec.tsx?$",
+    ".*.test.tsx?$",
+    "./src/jest-setup.ts$",
+    "./**/jest-setup.ts$",
+    ".*.js$"
+  ]
 }

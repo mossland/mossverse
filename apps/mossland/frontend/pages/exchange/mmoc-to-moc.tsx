@@ -2,12 +2,9 @@ import { PlatformLayout } from "@platform/ui-web";
 import { MyBalance, MmocToMocForm, MmocToMocHeader, MmcoToMocFooter } from "../../components";
 import styled from "styled-components";
 import { GqlProvider } from "@shared/ui-web";
-import { env } from "../../env";
-import { usePageInit } from "../../hooks";
+import { env } from "../../env/env";
 
 export function MmocToMoc() {
-  usePageInit();
-
   return (
     <GqlProvider uri={env.endpoint} ws={env.ws} networkType={env.networkType}>
       <PlatformLayout>

@@ -113,9 +113,10 @@ export const WebviewPreview = ({ mouse }: WebviewPreviewProps) => {
     if (!point.current) point.current = [e.point.x, e.point.y];
     else {
       const { center, wh } = Utils.getBox(e.point, point.current);
-      store.map.setState({
-        webviews: [...webviews, { ...get(), center, wh, id: "" }],
-      });
+      store.map.set({ webviews: [...webviews, { center, wh }] });
+      // store.map.setState({
+      //   webviews: [...webviews, { ...get(), center, wh, id: "" }],
+      // });
       plane.current?.copy(new PlaneGeometry(5, 5));
       point.current = null;
       await updateMap();
@@ -164,10 +165,10 @@ const guideStyle: CSSProperties = {
   border: "2px dashed #000",
 };
 export const WebviewList = () => {
-  const webviews = store.map.use.webviews();
+  const webviews = store.map.use.webviewList();
   const pointer = store.map.use.pointer();
   const updateMap = store.map.use.updateMap();
-  if (!webviews) return <></>;
+  if (!webviews || webviews === "loading") return <></>;
   const targets = webviews.filter((webview) => Utils.isIn(pointer, webview));
   const handleRemove = async (webview: gql.Webview) => {
     store.map.setState({ webviews: webviews.filter((l) => l !== webview) });

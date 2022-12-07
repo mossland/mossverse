@@ -19,11 +19,11 @@ const main = async () => {
   console.log("Deploying the contracts with the account:", await deployer.getAddress());
   console.log("Account balance:", (await deployer.getBalance()).toString());
   await Promise.all([
-    // await deployErc20(deployer),
+    await deployErc20(deployer),
     await deployErc721(deployer),
-    // await deployErc1155(deployer),
-    // await deployMulticall(),
-    // await deployMarket(),
+    await deployErc1155(deployer),
+    await deployMulticall(),
+    await deployMarket(),
   ]);
 
   // const marketAddress = "0xe2AB819885E2d5A6691aBA9145E03724578b9995";
@@ -45,7 +45,7 @@ const deployErc721 = async (deployer: SignerWithAddress) => {
     "belif Herb Club",
     "BHC",
     1200,
-    "https://belif.backend.akamir.com/generative/opensea/634c86c7adc2f22a103057f9/",
+    "https://belifherb.s3.ap-northeast-2.amazonaws.com/meta/",
     // "https://testnet.belif.backend.akamir.com/generative/opensea/634c86c7adc2f22a103057f9/",
     true
   );
@@ -53,6 +53,8 @@ const deployErc721 = async (deployer: SignerWithAddress) => {
   await contract
     .connect(deployer)
     .setSaleInfoList(...saleInfosToArrays([makeSaleInfo([deployer.address], 200)]), 0, { gasLimit: 200000 });
+  await Utils.sleep(1000);
+  await contract.setMetadata("https://belifherb.s3.ap-northeast-2.amazonaws.com/meta/", ".json", true);
   await Utils.sleep(1000);
   await contract.connect(deployer).mint(0, 200, [], { gasLimit: 1000000 });
   console.log(`${name} Deployed Contract Address: ${contract.address}`);
@@ -78,6 +80,14 @@ const deployMulticall = async () => {
 };
 const deployMarket = async () => {
   const name = "AkaMarket";
+  const factory = await ethers.getContractFactory(name);
+  const contract = await factory.deploy();
+  await contract.deployed();
+  console.log(`${name} Deployed Contract Address: ${contract.address}`);
+  return contract;
+};
+const deployTether = async () => {
+  const name = "TetherToken";
   const factory = await ethers.getContractFactory(name);
   const contract = await factory.deploy();
   await contract.deployed();

@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { gql, utils, store } from "../stores";
 import { cnst } from "@shared/util";
 import { env } from "../env";
-import { setLink } from "@shared/util-client";
+import { client } from "@shared/util-client";
 
 export const usePageInit = () => {
   const self = store.platform.user.use.self();
@@ -11,9 +11,9 @@ export const usePageInit = () => {
   const initKeyring = store.shared.keyring.use.init();
 
   useEffect(() => {
-    setLink(env.endpoint);
+    client.setLink(env.endpoint);
     initUser();
-    initNetwork({ type: env.networkType });
+    initNetwork({ query: { type: env.networkType } });
     initKeyring();
   }, [self]);
 };

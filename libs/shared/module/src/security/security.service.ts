@@ -4,7 +4,7 @@ import { Account, LogService, serverUtils, verifyToken } from "@shared/util-serv
 import * as crypto from "crypto-js";
 import * as jwt from "jsonwebtoken";
 import { ethers } from "ethers";
-import { SecurityOptions } from "../options";
+import { SecurityOptions } from "../option";
 import * as gql from "../gql";
 import * as db from "../db";
 @Injectable()
@@ -23,7 +23,7 @@ export class SecurityService extends LogService {
   }
   generateToken(keyring: db.Keyring.Doc): gql.AccessToken {
     const accessToken = jwt.sign(
-      { keyring: keyring._id, role: "user", status: keyring.status },
+      { keyring: keyring._id, role: "user", status: keyring.status, _id: keyring.user },
       this.options.jwtSecret
     );
     return { accessToken };

@@ -43,55 +43,41 @@ export const Map = () => {
 };
 
 export const NewMap = () => {
-  const name = store.map.use.name();
-  const tileSize = store.map.use.tileSize();
+  const mapForm = store.map.use.mapForm();
   const mapModal = store.map.use.mapModal();
-  const addMapFiles = store.map.use.addMapFiles();
-  const purifyMap = store.map.use.purifyMap();
-  const createMap = store.map.use.createMap();
-  const resetMap = store.map.use.resetMap();
-  const newMap = store.map.use.newMap();
-  const top = store.map.use.top();
-  const bottom = store.map.use.bottom();
-  const lighting = store.map.use.lighting();
   return (
     <>
-      <Button block onClick={newMap}>
+      <Button block onClick={() => store.map.do.newMap()}>
         New
       </Button>
       <Modal
         title="New Map"
         open={!!mapModal}
-        onOk={createMap}
-        onCancel={() => resetMap()}
-        okButtonProps={{ disabled: !purifyMap() }}
+        onOk={store.map.do.createMap}
+        onCancel={() => store.map.do.resetMap()}
+        okButtonProps={{ disabled: !store.map.do.purifyMap() }}
       >
         <Field.Container>
-          <Field.Text label="Name" value={name} onChange={(name) => store.map.setState({ name })} />
-          <Field.Number
-            label="TileSize"
-            value={tileSize}
-            onChange={(tileSize) => store.map.setState({ tileSize })}
-            required
-          />
+          <Field.Text label="Name" value={mapForm.name} onChange={store.map.do.setNameOnMap} />
+          <Field.Number label="TileSize" value={mapForm.tileSize} onChange={store.map.do.setTileSizeOnMap} required />
           <Field.Img
             label="Bottom"
-            addFiles={(fileList) => addMapFiles(fileList, "bottom")}
-            file={bottom}
+            addFiles={(fileList) => store.map.do.addMapFiles(fileList, "bottom", store.map.id)}
+            file={mapForm.bottom}
             required
-            onRemove={() => store.map.setState({ bottom: null })}
+            onRemove={() => store.map.do.setBottomOnMap(null)}
           />
           <Field.Img
             label="Top"
-            addFiles={(fileList) => addMapFiles(fileList, "top")}
-            file={top}
-            onRemove={() => store.map.setState({ top: null })}
+            addFiles={(fileList) => store.map.do.addMapFiles(fileList, "top", store.map.id)}
+            file={mapForm.top}
+            onRemove={() => store.map.do.setTopOnMap(null)}
           />
           <Field.Img
             label="Lighting"
-            addFiles={(fileList) => addMapFiles(fileList, "lighting")}
-            file={lighting}
-            onRemove={() => store.map.setState({ lighting: null })}
+            addFiles={(fileList) => store.map.do.addMapFiles(fileList, "lighting", store.map.id)}
+            file={mapForm.lighting}
+            onRemove={() => store.map.do.setLightingOnMap(null)}
           />
         </Field.Container>
       </Modal>
@@ -100,11 +86,9 @@ export const NewMap = () => {
 };
 
 export const LoadMap = () => {
-  const init = store.map.use.init();
   const mapList = store.map.use.mapList();
   const loadModalOpen = store.map.use.loadModalOpen();
-  const resetMap = store.map.use.resetMap();
-  loadModalOpen && init("editor");
+  loadModalOpen && store.map.do.init("editor");
 
   return (
     <>
@@ -161,13 +145,13 @@ export const MapInfo = () => {
   );
 };
 export const MapConfig = () => {
-  const dayNight = store.map((state) => state.config?.dayNight);
+  const dayNight = store.map((state) => state.mapForm.config?.dayNight);
   return (
     <Card title="Options" size="small">
       <OptionList>
         <div className="option-item">
           <span>Day Night Mode</span>
-          <Switch checked={dayNight} onChange={() => store.map.setState({ config: { dayNight: !dayNight } })} />
+          <Switch checked={dayNight} onChange={() => store.map.do.setConfigOnMap({ dayNight: !dayNight })} />
         </div>
       </OptionList>
     </Card>

@@ -22,7 +22,7 @@ const initialState: State = {
     id: "",
     nickname: "",
     type: "guest",
-    character: gql.defaultCharacter,
+    character: gql.defaultCharacter as gql.Character,
     maxSpeed: 3,
     acceleration: 1,
     deceleration: 1,

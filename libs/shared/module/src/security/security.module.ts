@@ -1,7 +1,7 @@
 import { DynamicModule, Global, Module } from "@nestjs/common";
 import { SecurityService } from "./security.service";
 import { SecurityResolver } from "./security.resolver";
-import { SecurityOptions } from "../options";
+import { SecurityOptions } from "../option";
 
 @Global()
 @Module({})

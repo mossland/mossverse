@@ -17,7 +17,7 @@ export const createUser = async (
   const keyringService = app.get<srv.shared.KeyringService>(srv.shared.KeyringService);
   const userService = app.get<srv.UserService>(srv.UserService);
   await keyringService.signinWithAddress(network, address);
-  const wallet = await walletService.pick({ network, address });
+  const wallet = await walletService.pick({ network, address: address.toLowerCase() });
   const keyring = await keyringService.pick({ wallets: wallet._id });
   const user = await userService.whoAmI(keyring._id);
   return [user, keyring, wallet];

@@ -4,7 +4,7 @@ import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 describe("MocSurvey Service", () => {
   const system = new TestSystem();
   let mocSurveyService: srv.MocSurveyService;
@@ -18,7 +18,7 @@ describe("MocSurvey Service", () => {
   let network: db.shared.Network.Doc;
 
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     mocSurveyService = app.get<srv.MocSurveyService>(srv.MocSurveyService);
     thingService = app.get<srv.shared.ThingService>(srv.shared.ThingService);
     networkService = app.get<srv.shared.NetworkService>(srv.shared.NetworkService);

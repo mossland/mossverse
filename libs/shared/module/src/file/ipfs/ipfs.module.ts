@@ -1,6 +1,6 @@
 import { Global, Module, DynamicModule } from "@nestjs/common";
 import { IpfsService } from "./ipfs.service";
-import { IpfsOptions } from "../../options";
+import { IpfsOptions } from "../../option";
 
 @Module({})
 export class IpfsModule {

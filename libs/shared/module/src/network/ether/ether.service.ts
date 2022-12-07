@@ -2,7 +2,7 @@ import { Injectable, Logger, Inject, OnModuleDestroy } from "@nestjs/common";
 import * as dto from "./ether.dto";
 import { Utils } from "@shared/util";
 import { ethers } from "ethers";
-import { EtherOptions } from "../../options";
+import { EtherOptions } from "../../option";
 import { LogService, serverUtils, Multicall, Erc721, Erc1155, Erc20 } from "@shared/util-server";
 import { NetworkFunctionality } from "../network.service";
 import {

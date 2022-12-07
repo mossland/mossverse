@@ -3,24 +3,27 @@ import * as gql from "../gql";
 // export const getMyItems = (wallets: gql.shared.Wallet[], thingItems: gql.shared.ThingItem[]): gql.MyItem[] => {
 export const getMyItems = (user: gql.User): gql.MyItem[] => {
   if (!user.keyring) return [];
-  let tokenItems: gql.shared.TokenItem[] = [];
+  // let tokenItems: gql.shared.TokenItem[] = [];
   // user.keyring.wallets.reduce((pre: gql.shared.Wallet, cur: gql.shared.Wallet, idx: number) => {
   //   tokenItems = [...tokenItems, ...cur.items.filter((item) => item.type !== "root")];
   //   return cur;
   // });
-  user.keyring.wallets.map((wallet: gql.shared.Wallet, idx: number) => {
-    tokenItems = [
-      ...tokenItems,
-      ...wallet.items,
-      // .filter((item) => item.type !== "root")
-    ];
-  });
-  return [
-    ...tokenItems.map((item): gql.MyItem => ({ token: item.token, type: "token", num: item.num })),
-    ...user.items
-      .filter((item) => item.thing.type !== "root")
-      .map((item): gql.MyItem => ({ thing: item.thing, type: "thing", num: item.num })),
-  ];
+
+  //! 새로 만들어야함. 더이상 User에서 Keyring resolve를 지원하지 않음
+  return [];
+  // user.keyring.wallets.map((wallet: gql.shared.Wallet, idx: number) => {
+  //   tokenItems = [
+  //     ...tokenItems,
+  //     ...wallet.items,
+  //     // .filter((item) => item.type !== "root")
+  //   ];
+  // });
+  // return [
+  //   ...tokenItems.map((item): gql.MyItem => ({ token: item.token, type: "token", num: item.num })),
+  //   ...user.items
+  //     .filter((item) => item.thing.type !== "root")
+  //     .map((item): gql.MyItem => ({ thing: item.thing, type: "thing", num: item.num })),
+  // ];
   // [tokenItems,thingItems].map((item):gql.MyItem=>({thing:item.thing, token:item.token}));
 };
 

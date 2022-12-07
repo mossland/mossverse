@@ -7,7 +7,7 @@ import * as srv from "./../srv";
 import * as gql from "./../gql";
 import * as ethers from "ethers";
 import { TestingModule } from "@nestjs/testing";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 
 describe("MocWallet Service", () => {
   const system = new TestSystem();

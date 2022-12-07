@@ -5,15 +5,14 @@ import fetch, { Response } from "node-fetch";
 import * as fs from "fs";
 import { LoadService, LogService } from "@shared/util-server";
 import { Utils } from "@shared/util";
-import { ItemOptions } from "../options";
+import { ItemOptions } from "../option";
 import * as db from "../db";
 import * as gql from "../gql";
 import * as srv from "../srv";
 @Injectable()
 export class InventoryService extends LogService {
   // private allService: srv.AllService;
-  constructor() // private readonly assetService: srv.AssetService, // private readonly tokenService: srv.shared.TokenService,
-  // private readonly contractService: srv.shared.ContractService,
+  constructor() // private readonly contractService: srv.shared.ContractService, // private readonly assetService: srv.AssetService, // private readonly tokenService: srv.shared.TokenService,
   // private readonly adminService: srv.shared.AdminService,
   // private readonly characterService: srv.CharacterService,
   // private readonly dialogService: srv.DialogService,

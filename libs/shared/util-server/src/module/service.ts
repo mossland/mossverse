@@ -3,10 +3,11 @@ import { Id, DataLoader, createLoader, Query } from "../dbConfig";
 import { Model, Document } from "mongoose";
 import { Account } from "../middlewares";
 
-export interface LoadConfig {
-  account?: Account;
+export interface LoadConfig<Doc = any> {
+  account?: Account | null;
   address?: string;
   ip?: string;
+  tail?: Partial<Doc>;
 }
 
 export class LogService {
@@ -36,9 +37,10 @@ export class LoadService<Mdl extends Model<any>, Doc extends Document<any>, Inpu
     if (!doc) throw new Error(`No Document (${this.name}): ${id}`);
     return doc;
   }
-  async list(query: Query<Doc>, skip = 0, limit = 0): Promise<Doc[]> {
+  async list(query: Query<Doc>, skip = 0, limit = 0, sort: any = {}): Promise<Doc[]> {
     return await this.model
       .find({ status: { $ne: "inactive" }, ...query })
+      .sort(sort)
       .skip(skip)
       .limit(limit);
   }
@@ -53,19 +55,21 @@ export class LoadService<Mdl extends Model<any>, Doc extends Document<any>, Inpu
   async count(query: Query<Doc>): Promise<number> {
     return await this.model.countDocuments({ status: { $ne: "inactive" }, ...query });
   }
-  async create(data: Input, config?: LoadConfig): Promise<Doc> {
-    return await new this.model(data).save();
+  async create(data: Input, config?: LoadConfig<Doc>): Promise<Doc> {
+    const doc = await new this.model(data).save();
+    if (config?.tail) await doc.merge(config.tail).save();
+    return doc;
   }
-  async update(id: Id, data: Partial<Doc>, config?: LoadConfig): Promise<Doc> {
+  async update(id: Id, data: Partial<Doc>, config?: LoadConfig<Doc>): Promise<Doc> {
     const doc = await this.get(id);
     if (!doc) throw new Error(`No Document (${this.name}): ${id}`);
-    Object.assign(doc, data);
+    Object.assign(doc, data, config?.tail ?? {});
     return await doc.save();
   }
-  async remove(id: Id, config: LoadConfig = {}): Promise<Doc> {
+  async remove(id: Id, config: LoadConfig<Doc> = {}): Promise<Doc> {
     const doc = await this.get(id);
     if (!doc) throw new Error(`No Document (${this.name}): ${id}`);
-    Object.assign(doc, { status: "inactive" });
+    Object.assign(doc, { status: "inactive" }, config?.tail ?? {});
     return await doc.save();
   }
 }

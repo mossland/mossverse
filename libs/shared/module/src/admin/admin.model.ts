@@ -2,7 +2,7 @@ import { Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Model, Types, Query, Schema as MongoSchema } from "mongoose";
 import { dbConfig } from "@shared/util-server";
 import { AdminSchema, AdminInput } from "./admin.gql";
-import { SecurityOptions } from "../options";
+import { SecurityOptions } from "../option";
 import * as bcrypt from "bcrypt";
 
 @Schema(dbConfig.defaultSchemaOptions)

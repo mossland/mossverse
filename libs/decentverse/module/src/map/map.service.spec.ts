@@ -1,8 +1,9 @@
+import { environment } from "../_environments/environment";
 import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { MapService } from "./map.service";
 import { TestSystem } from "@shared/test-server";
 
@@ -11,7 +12,7 @@ describe("Map Service", () => {
   let mapService: MapService;
   let file: db.shared.File.Doc;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     mapService = app.get<MapService>(MapService);
     file = await sample.shared.createFile(app);
   });

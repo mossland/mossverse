@@ -11,6 +11,8 @@ import {
   BaseGql,
   BaseArrayFieldGql,
   Int,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 import { Character } from "../character/character.gql";
@@ -72,7 +74,10 @@ export class Dialog extends BaseGql(DialogInput) {
   status: cnst.DialogStatus;
 }
 
-export const dialogGraphQL = createGraphQL<"dialog", Dialog, DialogInput>(Dialog, DialogInput);
+@ObjectType("LightDialog", { _id: "id", gqlRef: "Dialog" })
+export class LightDialog extends PickType(Dialog, ["status"] as const) {}
+
+export const dialogGraphQL = createGraphQL("dialog" as const, Dialog, DialogInput, LightDialog);
 export const {
   getDialog,
   listDialog,
@@ -85,6 +90,7 @@ export const {
   purifyDialog,
   defaultDialog,
 } = dialogGraphQL;
+export type DialogSlice = SliceModel<"dialog", Dialog, LightDialog>;
 
 @InputType("DialogueInput")
 export class DialogueInput {

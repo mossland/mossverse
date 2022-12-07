@@ -1,8 +1,9 @@
+import { environment } from "../_environments/environment";
 import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { RoleService } from "./role.service";
 import { TestSystem } from "@shared/test-server";
 import { RoleModule } from "./role.module";
@@ -15,7 +16,7 @@ describe("Role Service", () => {
   let user: db.User.Doc;
   let keyring: db.shared.Keyring.Doc;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     roleService = app.get<RoleService>(RoleService);
     file = await sample.shared.createFile(app);
     map = await sample.createMap(app, file._id);

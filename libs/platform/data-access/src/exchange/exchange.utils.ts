@@ -5,7 +5,7 @@ export const getExchangeName = (exchange: gql.Exchange) => {
     ? (exchange.thing as gql.shared.Thing).name
     : exchange.type === "token"
     ? exchange?.token?.meta?.name ?? "unknown token"
-    : exchange.type === "etc"
+    : exchange.type === "currency"
     ? "MOC"
     : "unknown";
 };

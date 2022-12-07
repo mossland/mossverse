@@ -9,19 +9,17 @@ import { Mesh, PlaneGeometry, Sprite, TextureLoader, Vector3 } from "three";
 import { Utils } from "@shared/util";
 
 export const Emojis = () => {
-  const init = store.emoji.use.initEmoji();
   const emojis = store.emoji.use.emojiList();
   const emojiModal = store.emoji.use.emojiModal();
-  const newEmoji = store.emoji.use.newEmoji();
   useEffect(() => {
-    init();
+    store.emoji.do.initEmoji();
   }, []);
-
+  if (emojis === "loading") return <></>;
   return (
     <div>
       <Header>
         <h2>Emojis</h2>
-        <Button onClick={newEmoji} icon={<PlusOutlined />}>
+        <Button onClick={() => store.emoji.do.newEmoji()} icon={<PlusOutlined />}>
           Add
         </Button>
       </Header>
@@ -39,15 +37,13 @@ interface EmojiProps {
   emoji: gql.Emoji;
 }
 export const Emoji = React.memo(({ emoji }: EmojiProps) => {
-  const editEmoji = store.emoji.use.editEmoji();
-  const removeEmoji = store.emoji.use.removeEmoji();
   return (
     <Card
       hoverable
       cover={<img alt="file" src={emoji.file.url} />}
       actions={[
-        <EditOutlined key="edit" onClick={() => editEmoji(emoji)} />,
-        <Popconfirm title="Are you sure to remove?" onConfirm={() => removeEmoji(emoji.id)}>
+        <EditOutlined key="edit" onClick={() => store.emoji.do.editEmoji(emoji)} />,
+        <Popconfirm title="Are you sure to remove?" onConfirm={() => store.emoji.do.removeEmoji(emoji.id)}>
           <DeleteOutlined key="remove" />
         </Popconfirm>,
       ]}
@@ -57,30 +53,23 @@ export const Emoji = React.memo(({ emoji }: EmojiProps) => {
   );
 });
 export const EmojiEdit = () => {
-  const addEmojiFiles = store.emoji.use.addEmojiFiles();
   const emojiModal = store.emoji.use.emojiModal();
-  const id = store.emoji.use.id();
-  const name = store.emoji.use.name();
-  const file = store.emoji.use.file();
-  const purifyEmoji = store.emoji.use.purifyEmoji();
-  const createEmoji = store.emoji.use.createEmoji();
-  const updateEmoji = store.emoji.use.updateEmoji();
-  const resetEmoji = store.emoji.use.resetEmoji();
+  const emojiForm = store.emoji.use.emojiForm();
   return (
     <Modal
       title="New Emoji"
       open={!!emojiModal}
-      onOk={() => (id ? updateEmoji() : createEmoji())}
-      onCancel={() => resetEmoji()}
-      okButtonProps={{ disabled: !purifyEmoji() }}
+      onOk={() => (emojiForm.id ? store.emoji.do.updateEmoji() : store.emoji.do.createEmoji())}
+      onCancel={() => store.emoji.do.resetEmoji()}
+      okButtonProps={{ disabled: !store.emoji.do.purifyEmoji() }}
     >
       <Field.Container>
-        <Field.Text label="Name" value={name} onChange={(name) => store.emoji.setState({ name })} />
+        <Field.Text label="Name" value={emojiForm.name} onChange={store.emoji.do.setNameOnEmoji} />
         <Field.Img
           label="File"
-          addFiles={addEmojiFiles}
-          file={file}
-          onRemove={() => store.emoji.setState({ file: null })}
+          addFiles={store.emoji.do.addEmojiFiles}
+          file={emojiForm.file}
+          onRemove={() => store.emoji.do.setFileOnEmoji(null)}
         />
       </Field.Container>
     </Modal>

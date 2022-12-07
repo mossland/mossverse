@@ -5,7 +5,6 @@ export * as akamirCollectionSol from "./AkamirCollection.sol";
 export * as akamirFractionSol from "./AkamirFraction.sol";
 export * as erc1155Sol from "./ERC1155.sol";
 export * as erc721ASol from "./ERC721A.sol";
-export * as erc721ATokenLegacySol from "./ERC721ATokenLegacy.sol";
 export * as vaultFactorySol from "./VaultFactory.sol";
 export * as extensions from "./extensions";
 export * as mocks from "./mocks";

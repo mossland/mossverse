@@ -91,3 +91,42 @@ export type WalletConnectType = {
 };
 export type LoginMethod = cnst.NetworkProvider | "walletConnect" | "guest" | "password" | "none";
 export type MetamaskProvider = "ethereum";
+
+@InputType("AccessStatInput")
+export class AccessStatInput {
+  @Field(() => Int)
+  request: number;
+
+  @Field(() => Int)
+  device: number;
+
+  @Field(() => Int)
+  ip: number;
+
+  @Field(() => Int)
+  country: number;
+}
+
+@ObjectType("AccessStat")
+export class AccessStat extends AccessStatInput {}
+
+@InputType("AccessLogInput")
+export class AccessLogInput {
+  @Field(() => Int)
+  period: number;
+
+  @Field(() => Int)
+  device: number;
+
+  @Field(() => Int)
+  ip: number;
+
+  @Field(() => Int)
+  country: number;
+
+  @Field(() => Int)
+  at: Date;
+}
+
+@ObjectType("AccessLog")
+export class AccessLog extends AccessLogInput {}

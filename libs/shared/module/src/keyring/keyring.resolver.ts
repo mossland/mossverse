@@ -55,6 +55,10 @@ export class KeyringResolver extends BaseResolver(gql.Keyring, gql.KeyringInput,
   ) {
     return await this.keyringService.changePassword(new Id(keyringId), password, prevPassword);
   }
+  @Mutation(() => Boolean)
+  async resetPassword(@Args({ name: "accountId", type: () => String }) accountId: string) {
+    return await this.keyringService.resetPassword(accountId);
+  }
   @Query(() => [gql.Keyring])
   async keyringHasWallet(@Args({ name: "networkId", type: () => ID }) networkId: string, @Signature() address: string) {
     return await this.keyringService.keyringsHasWallet(new Id(networkId), address);

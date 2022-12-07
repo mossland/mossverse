@@ -1,3 +1,4 @@
+import { environment } from "../_environments/environment";
 import { WalletService } from "./wallet.service";
 import { TestSystem } from "@shared/test-server";
 
@@ -5,13 +6,13 @@ import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 describe("Wallet Service", () => {
   const system = new TestSystem();
   let walletService: WalletService;
   let networkService: srv.NetworkService;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     walletService = app.get<WalletService>(WalletService);
     networkService = app.get<srv.NetworkService>(srv.NetworkService);
   });

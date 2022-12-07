@@ -1,6 +1,16 @@
 import graphql from "graphql-tag";
 import { cnst } from "@shared/util";
-import { createGraphQL, Field, InputType, mutate, query, ObjectType, BaseGql } from "@shared/util-client";
+import {
+  createGraphQL,
+  Field,
+  InputType,
+  mutate,
+  query,
+  ObjectType,
+  BaseGql,
+  PickType,
+  SliceModel,
+} from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 
 @InputType("EmojiInput")
@@ -21,7 +31,10 @@ export class Emoji extends BaseGql(EmojiInput) {
   status: cnst.EmojiStatus;
 }
 
-export const emojiGraphQL = createGraphQL<"emoji", Emoji, EmojiInput>(Emoji, EmojiInput);
+@ObjectType("LightEmoji", { _id: "id", gqlRef: "Emoji" })
+export class LightEmoji extends PickType(Emoji, ["status"] as const) {}
+
+export const emojiGraphQL = createGraphQL("emoji" as const, Emoji, EmojiInput, LightEmoji);
 export const {
   getEmoji,
   listEmoji,
@@ -34,6 +47,7 @@ export const {
   purifyEmoji,
   defaultEmoji,
 } = emojiGraphQL;
+export type EmojiSlice = SliceModel<"emoji", Emoji, LightEmoji>;
 
 // * Add EmojiFiles Mutation
 export type AddEmojiFilesMutation = { addEmojiFiles: shared.File[] };

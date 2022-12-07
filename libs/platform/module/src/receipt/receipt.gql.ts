@@ -22,6 +22,10 @@ import { ApiProperty } from "@nestjs/swagger";
 @Schema()
 class Base {
   @Field(() => String)
+  @Prop({ type: String, required: true, index: true })
+  name: string;
+
+  @Field(() => String)
   @Prop({ type: String, required: true, enum: cnst.receiptTypes, index: true })
   type: cnst.ReceiptType;
 
@@ -94,7 +98,11 @@ class InputOverwrite {
 class Tail extends Base {
   @Field(() => [String])
   @Prop([{ type: String, required: true, index: true }])
-  tag: string[];
+  tags: string[];
+
+  @Field(() => String, { nullable: true })
+  @Prop({ type: String, required: false })
+  err?: string;
 
   @Field(() => String)
   @Prop({ type: String, enum: cnst.receiptStatuses, required: true, default: "active" })

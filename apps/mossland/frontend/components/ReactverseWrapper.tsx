@@ -1,6 +1,6 @@
 import { Reactverse } from "@decentverse/ui-web";
 import { gql } from "../stores";
-import { env } from "../env";
+import { env } from "../env/env";
 //
 const ReactVerseWrapper = () => {
   const config: gql.decentverse.Configuration = {

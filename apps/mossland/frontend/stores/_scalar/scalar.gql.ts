@@ -23,8 +23,8 @@ export class UserSurveyResponse extends BaseArrayFieldGql(UserSurveyResponseInpu
   @Field(() => Float)
   num: number;
 }
-export const defaultUserSurveyResponse = makeDefault<UserSurveyResponse>(UserSurveyResponse);
-export const purifyUserSurveyResponse = makePurify<UserSurveyResponseInput>(UserSurveyResponse);
+export const defaultUserSurveyResponse = makeDefault(UserSurveyResponse);
+export const purifyUserSurveyResponse = makePurify(UserSurveyResponse);
 
 @InputType("MocOwnershipInput")
 export class MocOwnershipInput {}
@@ -36,3 +36,7 @@ export class MocOwnership extends BaseArrayFieldGql(MocOwnershipInput) {
   @Field(() => Float)
   num: number;
 }
+
+export type ListingFilter = "all" | "mossMarket" | "p2p" | "myTokens";
+export type ListingType = "default" | "delivery" | "p2p" | "myTokens";
+export type MyTokensFilter = "all" | "onSale";

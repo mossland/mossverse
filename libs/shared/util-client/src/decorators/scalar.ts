@@ -3,24 +3,21 @@ export class BaseObject {
   createdAt: Date;
   updatedAt: Date;
 }
-export interface BaseEntity extends Function {
-  new (...any: any[]): any;
-  [key: string]: any;
+export interface Type<T = any> extends Function {
+  new (...args: any[]): T;
 }
-
+export class ProtoFile {
+  id: string;
+  imageSize: [number, number];
+  url: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 export class Int {}
 export class Float {}
 export class ID {}
 export class JSON {}
-export type SingleFieldType =
-  | Int
-  | Float
-  | StringConstructor
-  | BooleanConstructor
-  | ID
-  | DateConstructor
-  | JSON
-  | BaseEntity;
+export type SingleFieldType = Int | Float | StringConstructor | BooleanConstructor | ID | DateConstructor | JSON | Type;
 
 export const defaultMap = {
   ID: "",
@@ -40,14 +37,17 @@ export const getNonArrayModelRef = (modelRef: any) => {
 export interface ClassProps {
   _id?: string;
   isAbstract?: boolean;
+  gqlRef?: string;
 }
 export interface ClassMeta extends ClassProps {
   refName: string;
   default: any;
+  gqlRef: string;
   gqlStr: string;
   purify: PurifyFunc<any>;
   modelRef: any;
   childRefs: any[];
+  hasFile: boolean;
 }
 export type FieldMeta = {
   key: string;
@@ -85,7 +85,7 @@ export const getFieldMetas = (modelRef: any) => {
 
 export type InputField<T> = T extends (infer K)[] ? InputField<K>[] : T extends BaseObject ? string : T;
 export type InputOf<T> = { [K in keyof T]: InputField<T[K]> };
-export type PurifyFunc<I> = (self: any, isChild?: boolean) => InputOf<I>;
+export type PurifyFunc<I> = (self: DefaultOf<I>, isChild?: boolean) => InputOf<I> | null;
 
 export const getId = (self: any, key: string) => {
   const _id = self[key];
@@ -106,7 +106,6 @@ export type FieldState<T> = T extends string
   : T | null;
 
 export type DefaultOf<S> = S extends infer T ? { [K in keyof T]: FieldState<T[K]> } : never;
-
 type ListQueryResponse<T extends string, M> = T extends `${infer S}`
   ? { [K in `list${Capitalize<S>}`]: M[] } & { [K in `${Uncapitalize<S>}Count`]: number }
   : never;
@@ -114,7 +113,14 @@ type GetQuery<T extends string, M> = T extends `${infer S}`
   ? { [K in `get${Capitalize<S>}`]: (id: string) => Promise<M> }
   : never;
 type ListQuery<T extends string, M> = T extends `${infer S}`
-  ? { [K in `list${Capitalize<S>}`]: (query: any, skip?: number, limit?: number) => Promise<ListQueryResponse<T, M>> }
+  ? {
+      [K in `list${Capitalize<S>}`]: (
+        query: any,
+        skip?: number,
+        limit?: number,
+        sort?: any
+      ) => Promise<ListQueryResponse<T, M>>;
+    }
   : never;
 type CountQuery<T extends string, M> = T extends `${infer S}`
   ? { [K in `${Uncapitalize<S>}Count`]: (query: any) => Promise<number> }
@@ -131,10 +137,21 @@ type UpdateMutation<T extends string, M, I> = T extends `${infer S}`
 type RemoveMutation<T extends string, M> = T extends `${infer S}`
   ? { [K in `remove${Capitalize<S>}`]: (id: string) => Promise<M> }
   : never;
-export type DefaultGqls<T extends string, M, I> = GetQuery<T, M> &
-  ListQuery<T, M> &
+type AddFilesMutation<T extends string, M> = T extends `${infer S}`
+  ? {
+      [K in keyof M as M[K] extends ProtoFile | ProtoFile[] ? `add${Capitalize<S>}Files` : never]: (
+        files: FileList,
+        id?: string
+      ) => Promise<ProtoFile[]>;
+    }
+  : never;
+export type DefaultGqls<T extends string, M, I, L> = GetQuery<T, M> &
+  ListQuery<T, L> &
   CountQuery<T, M> &
   ExistsQuery<T, M> &
   CreateMutation<T, M, I> &
   UpdateMutation<T, M, I> &
-  RemoveMutation<T, M>;
+  RemoveMutation<T, M> &
+  AddFilesMutation<T, M>;
+
+export type Submit = { disabled: boolean; loading: boolean };

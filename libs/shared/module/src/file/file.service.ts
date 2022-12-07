@@ -10,20 +10,17 @@ import * as sharp from "sharp";
 import * as fs from "fs";
 import * as File from "./file.model";
 import * as gql from "../gql";
-import { S3Service } from "./s3/s3.service";
-import { IpfsService } from "./ipfs/ipfs.service";
+import { srv as external } from "@external/module";
 import axios from "axios";
-import { StorageOptions } from "../options";
 import { Utils } from "@shared/util";
 
 @Injectable()
 export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
   localDir = `./data`;
   constructor(
-    @Inject("STORAGE_OPTIONS") private options: StorageOptions,
     @InjectModel(File.name) private readonly File: File.Mdl,
-    private readonly s3Service: S3Service,
-    private readonly ipfsService: IpfsService
+    private readonly s3Service: external.S3Service,
+    private readonly ipfsService: external.IpfsService
   ) {
     super(FileService.name, File);
   }
@@ -93,7 +90,11 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
   }
   async #addFile(fileStream: FileStream, purpose: string, group: string) {
     const localFile = await this.#saveLocalStorage(fileStream);
-    return await this.addFileFromLocal(localFile, purpose, group);
+    return await this.addFileFromLocal(
+      localFile,
+      purpose.length ? purpose : "default",
+      group.length ? group : "default"
+    );
   }
   async addFileFromLocal(localFile: LocalFile, purpose: string, group = "default", origin?: string) {
     const url = await this.s3Service.uploadFile({
@@ -168,7 +169,7 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
       : "unknown";
   }
   async migrate(file: File.Doc) {
-    const root = this.options.objectStorage?.root;
+    const root = this.s3Service.root;
     const localFile = await this.saveImageFromUri(file.url);
     await Utils.sleep(100);
     const cloudPath = file.url.split("/").slice(3).join("/").split("?")[0];

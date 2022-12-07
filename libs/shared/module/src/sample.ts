@@ -7,4 +7,5 @@ export * from "./thing/thing.sample";
 export * from "./token/token.sample";
 export * from "./wallet/wallet.sample";
 export * from "./product/product.sample";
+export * from "./currency/currency.sample";
 // export * from "./user/user.sample";
