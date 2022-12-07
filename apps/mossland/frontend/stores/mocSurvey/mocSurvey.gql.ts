@@ -11,6 +11,8 @@ import {
   Float,
   Int,
   InputOf,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 import { gql as platform } from "@platform/data-access";
@@ -76,7 +78,11 @@ export class MocSurvey extends BaseGql(MocSurveyInput) {
   status: cnst.SurveyStatus;
 }
 
-export const mocSurveyGraphQL = createGraphQL<"mocSurvey", MocSurvey, MocSurveyInput>(MocSurvey, MocSurveyInput);
+// ! 라이트 모델 지정 필요
+@ObjectType("LightMocSurvey", { _id: "id", gqlRef: "MocSurvey" })
+export class LightMocSurvey extends PickType(MocSurvey, ["responses"] as const) {}
+
+export const mocSurveyGraphQL = createGraphQL("mocSurvey" as const, MocSurvey, MocSurveyInput, LightMocSurvey);
 export const {
   getMocSurvey,
   listMocSurvey,
@@ -86,9 +92,11 @@ export const {
   updateMocSurvey,
   removeMocSurvey,
   mocSurveyFragment,
+  lightMocSurveyFragment,
   purifyMocSurvey,
   defaultMocSurvey,
 } = mocSurveyGraphQL;
+export type MocSurveySlice = SliceModel<"mocSurvey", MocSurvey, LightMocSurvey>;
 
 // * Generate MocSurvey Mutation
 export type GenerateMocSurveyMutation = { generateMocSurvey: MocSurvey };
@@ -100,7 +108,7 @@ export const generateMocSurveyMutation = graphql`
     }
   }
 `;
-export const generateMocSurvey = async (data: MocSurveyInput) =>
+export const generateMocSurvey = async (data: InputOf<MocSurveyInput>) =>
   (await mutate<GenerateMocSurveyMutation>(generateMocSurveyMutation, { data })).generateMocSurvey;
 
 // * Open MocSurvey Mutation

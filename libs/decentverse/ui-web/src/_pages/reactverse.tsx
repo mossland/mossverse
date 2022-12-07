@@ -3,7 +3,7 @@ import { store, gql } from "@decentverse/data-access";
 import { Stream, Game, Interface, Login, ReactverseLayout, Kicked, Pending } from "../index";
 import { io, Socket as Soc } from "socket.io-client";
 import { Utils, cnst } from "@shared/util";
-import { setLink } from "@shared/util-client";
+import { client } from "@shared/util-client";
 export interface ReactverseProps {
   uri: string;
   ws: string;
@@ -24,10 +24,10 @@ export const Reactverse = ({ uri, ws, config, networkType }: ReactverseProps) =>
   const setupConfiguration = store.world.use.setupConfiguration();
   const initWallet = store.shared.wallet.use.init();
   const self = store.user.use.self();
-
+  const me = store.shared.keyring.use.me();
   useEffect(() => {
     const socket = io(ws, { transports: ["websocket"] });
-    setLink(uri);
+    client.setLink(uri);
     setSocket(socket);
     config && setupConfiguration(config);
     initKeyring();
@@ -48,8 +48,8 @@ export const Reactverse = ({ uri, ws, config, networkType }: ReactverseProps) =>
 
   useEffect(() => {
     if (!self?.keyring || self.role === "guest") return;
-    initWallet(self.keyring.wallets);
-  }, [self?.keyring]);
+    initWallet(me?.wallets);
+  }, [me]);
 
   window.addEventListener("beforeunload", (ev) => {
     ev.preventDefault();

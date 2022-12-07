@@ -87,75 +87,6 @@ export type Configuration = {
   network: "mainnet" | "testnet";
 };
 
-export const defaultCharacter: gql.Character = {
-  id: "",
-  token: null,
-  thing: null,
-  name: "default nickname",
-  status: "active",
-  file: {
-    id: "",
-    url: "https://asset.ayias.io/decentverse/character/00/dcnt-1660132657788-char2.png",
-    imageSize: [0, 0],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    // url: "https://asset.ayias.io/decentverse/character/chinchin.png",
-  },
-  tileSize: [240, 330],
-  totalSize: [388, 581],
-  size: [120, 165],
-  right: {
-    idle: {
-      row: 4,
-      column: 1,
-      duration: 500,
-    },
-    walk: {
-      row: 5,
-      column: 4,
-      duration: 500,
-    },
-  },
-  left: {
-    idle: {
-      row: 6,
-      column: 1,
-      duration: 500,
-    },
-    walk: {
-      row: 7,
-      column: 4,
-      duration: 500,
-    },
-  },
-  up: {
-    idle: {
-      row: 2,
-      column: 1,
-      duration: 500,
-    },
-    walk: {
-      row: 3,
-      column: 4,
-      duration: 500,
-    },
-  },
-  down: {
-    idle: {
-      row: 0,
-      column: 1,
-      duration: 500,
-    },
-    walk: {
-      row: 1,
-      column: 4,
-      duration: 500,
-    },
-  },
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
-
 export const defaultRenderCharacter = {
   id: "",
   position: [0, 0],
@@ -165,7 +96,7 @@ export const defaultRenderCharacter = {
 };
 export const defaultOtherPlayer = {
   id: "default",
-  character: defaultCharacter,
+  character: gql.defaultCharacter,
   updatedAt: new Date().getTime(),
 };
 

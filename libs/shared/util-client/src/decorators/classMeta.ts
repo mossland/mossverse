@@ -19,7 +19,7 @@ export const getChildClassRefs = (metadatas: FieldMeta[]) => {
   ); // remove duplicates
 };
 
-export function ObjectType(refName: string, { _id, isAbstract }: ClassProps = {}) {
+export function ObjectType(refName: string, { _id, isAbstract, gqlRef = refName }: ClassProps = {}) {
   return function (target: any) {
     const metadataMap: Map<string, FieldMeta> = Reflect.getMetadata("fields", target.prototype) ?? new Map();
     for (const [field, metadata] of metadataMap)
@@ -33,13 +33,15 @@ export function ObjectType(refName: string, { _id, isAbstract }: ClassProps = {}
       modelRef: target,
       purify: makePurify(target),
       default: makeDefault(target),
-      gqlStr: makeFragmentGqlStr(refName, metadatas),
+      gqlRef,
+      gqlStr: makeFragmentGqlStr(refName, gqlRef, metadatas),
       childRefs: getChildClassRefs(metadatas),
+      hasFile: metadatas.some((metadata) => metadata.name === "File"),
     };
     Reflect.defineMetadata("class", classMeta, target.prototype);
   };
 }
-export function InputType(refName: string, { _id, isAbstract }: ClassProps = {}): ClassDecorator {
+export function InputType(refName: string, { _id, isAbstract, gqlRef = refName }: ClassProps = {}): ClassDecorator {
   return function (target: any) {
     const metadataMap: Map<string, FieldMeta> = Reflect.getMetadata("fields", target.prototype) ?? new Map();
     for (const [field, metadata] of metadataMap)
@@ -53,8 +55,10 @@ export function InputType(refName: string, { _id, isAbstract }: ClassProps = {})
       modelRef: target,
       purify: makePurify(target),
       default: makeDefault(target),
-      gqlStr: makeFragmentGqlStr(refName, metadatas),
+      gqlRef,
+      gqlStr: makeFragmentGqlStr(refName, gqlRef, metadatas),
       childRefs: getChildClassRefs(metadatas),
+      hasFile: metadatas.some((metadata) => metadata.name === "File"),
     };
     Reflect.defineMetadata("class", classMeta, target.prototype);
   };

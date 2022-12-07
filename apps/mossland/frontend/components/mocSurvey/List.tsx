@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import styled, { css } from "styled-components";
 import { Survey } from "@platform/ui-web";
-import { gql, utils, store } from "../../stores";
+import { store } from "../../stores";
 import { DetailMobile } from ".";
 import {
   Accordion,
@@ -12,8 +12,8 @@ import {
 } from "react-accessible-accordion";
 import { SurveyIcon } from "@shared/ui-web";
 import { useMocSurvey } from "./services/useMocSurvey";
-import { mocSurvey } from "../../stores/store";
-import { ListItem } from "./";
+import { Item } from "./";
+import { MocSurveyList } from "./MocSurveyList";
 
 export const List = () => {
   const mocSurveyService = useMocSurvey();
@@ -25,28 +25,22 @@ export const List = () => {
 
   return (
     <>
-      <SurveyListContainer className="only-pc">
+      <MocSurveyList className="only-pc">
         {mocSurveyService
           .activeMocSurveyList()
           .reverse()
           .map((sv, index) => (
-            <ListItem key={index} mocSurvey={sv} />
+            <Item key={index} mocSurvey={sv} />
           ))}
-      </SurveyListContainer>
-      <SurveyListContainer className="only-mobile">
+      </MocSurveyList>
+      <MocSurveyList className="only-mobile">
         <Accordion allowZeroExpanded>
           {mocSurveyService.activeMocSurveyList().map((sv, index) => (
             <div key={index}>
               <AccordionItem uuid={`item${index}`}>
                 <AccordionItemHeading>
                   <AccordionItemButton>
-                    <Survey.Button key={index} customStyle={itemStyle} onClick={() => mocSurveyService.openDetail(sv)}>
-                      <div className="title-container">
-                        <SurveyIcon />
-                        <Survey.Title customStyle={titleStyle}>{sv.title}</Survey.Title>
-                        <Survey.Period openAt={sv.openAt} closeAt={sv.closeAt} />
-                      </div>
-                    </Survey.Button>
+                    <Item mocSurvey={sv} />
                   </AccordionItemButton>
                 </AccordionItemHeading>
                 <AccordionItemPanel>{sv === mocSurveyService.mocSurvey && <DetailMobile />}</AccordionItemPanel>
@@ -54,7 +48,7 @@ export const List = () => {
             </div>
           ))}
         </Accordion>
-      </SurveyListContainer>
+      </MocSurveyList>
     </>
   );
 };

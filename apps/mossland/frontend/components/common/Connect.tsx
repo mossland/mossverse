@@ -5,28 +5,9 @@ import { toast } from "react-toastify";
 import styled from "styled-components";
 
 export const Connect = () => {
-  const whoAmI = store.platform.user.use.whoAmI();
   const networkList = store.shared.network.use.networkList();
-  const login = store.shared.keyring.use.login();
-  const signWalletConnect = store.shared.keyring.use.signWalletConnect();
-  const onClickLoginSelect = async (loginMethod: gql.shared.LoginMethod) => {
-    const network = networkList.find((network) => network.provider === loginMethod);
-    if (!network) return;
-    await login(loginMethod);
-    await whoAmI();
-    store.shared.keyring.setState({ isOpenModal: false }); // ! 추상화 필요
-  };
-  const onClickButtonToMobile = async (loginMethod: gql.shared.LoginMethod) => {
-    try {
-      await signWalletConnect(loginMethod);
-      await whoAmI();
-      store.shared.keyring.setState({ signStatus: "none", isOpenModal: false });
-    } catch (err) {
-      err instanceof Error &&
-        err.message.includes("User denied message signature.") &&
-        toast.error("User denied message signature.");
-    }
-  };
+  if (networkList === "loading") return <>loading...</>;
+
   return (
     <>
       <Container>
@@ -34,16 +15,10 @@ export const Connect = () => {
       </Container>
       <LoginSelectorContainer>
         <div className="only-mobile">
-          <LoginSelectorMobile
-            ethereum={async () => await onClickButtonToMobile("ethereum")}
-            klaytn={async () => await onClickButtonToMobile("klaytn")}
-          />
+          <LoginSelectorMobile networkList={networkList.sort((a, b) => (a.provider === "klaytn" ? 0 : 1))} />
         </div>
         <div className="only-pc">
-          <LoginSelector
-            ethereum={async () => await onClickLoginSelect("ethereum")}
-            klaytn={async () => await onClickLoginSelect("klaytn")}
-          />
+          <LoginSelector networkList={networkList.sort((a, b) => (a.provider === "klaytn" ? 0 : 1))} />
         </div>
       </LoginSelectorContainer>
     </>

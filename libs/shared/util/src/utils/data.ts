@@ -1,3 +1,6 @@
+import { uniqueNamesGenerator, Config, adjectives, colors, animals } from "unique-names-generator";
+export const getRandomNickname = () =>
+  uniqueNamesGenerator({ dictionaries: [adjectives, colors, animals], separator: " ", style: "capital" });
 export const randomPick = <T = any>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 export const randomPicks = <T = any>(arr: T[], count = 1, allowDuplicate?: boolean): T[] => {
   if (!allowDuplicate && arr.length <= count) return arr;
@@ -84,3 +87,13 @@ export const getBox = (
 export const moveCenter = (...points: [number, number][]): [number, number] => {
   return points.reduce((acc, cur) => [acc[0] + cur[0], acc[1] + cur[1]]);
 };
+
+export const objectify = (obj: any) => {
+  const val: any = {};
+  Object.keys(obj).forEach((key) => {
+    if (typeof obj[key] !== "function") val[key] = obj[key];
+  });
+  return val;
+};
+
+export const objPath = <T>(o: T, p: string) => p.split(".").reduce((a: any, v: string) => a && a[v], o);

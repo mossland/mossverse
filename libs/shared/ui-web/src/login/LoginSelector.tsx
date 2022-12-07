@@ -1,16 +1,14 @@
 // ! This File Needs to be Refactor
 import styled from "styled-components";
-import { store } from "@shared/data-access";
+import { gql, store } from "@shared/data-access";
 import { ConnectButton } from "./index";
 import { KlaytnIcon, LuniverseIcon, EthereumIcon, ModalContainer } from "../common";
 
 export type LoginSelectorProps = {
-  klaytn?: () => Promise<void>;
-  ethereum?: () => Promise<void>;
-  luniverse?: () => Promise<void>;
+  networkList: gql.LightNetwork[];
 };
 
-export const LoginSelector = ({ klaytn, ethereum, luniverse }: LoginSelectorProps) => {
+export const LoginSelector = ({ networkList }: LoginSelectorProps) => {
   const isOpenModal = store.keyring.use.isOpenModal();
 
   if (!isOpenModal) return null;
@@ -22,32 +20,24 @@ export const LoginSelector = ({ klaytn, ethereum, luniverse }: LoginSelectorProp
       title="Select Network"
     >
       <LoginSelectorContainer>
-        {klaytn && (
-          <ConnectButton
-            title={"Klaytn"}
-            fontColor={"white"}
-            backgroundColor={"#69583F"}
-            icon={<KlaytnIcon />}
-            onClick={klaytn}
-          />
-        )}
-        {ethereum && (
-          <ConnectButton
-            title={"Ethereum"}
-            fontColor={"white"}
-            backgroundColor={"#343434"}
-            icon={<EthereumIcon />}
-            onClick={ethereum}
-          />
-        )}
-        {luniverse && (
-          <ConnectButton
-            title={"Luniverse"}
-            fontColor={"white"}
-            backgroundColor={"#1A97DB"}
-            icon={<LuniverseIcon />}
-            onClick={luniverse}
-          />
+        {networkList.map((network) =>
+          network.provider === "klaytn" ? (
+            <ConnectButton
+              title={"Klaytn"}
+              fontColor={"white"}
+              backgroundColor={"#69583F"}
+              icon={<KlaytnIcon />}
+              onClick={async () => await store.keyring.do.signinWithWallet("kaikas", network)}
+            />
+          ) : network.provider === "ethereum" ? (
+            <ConnectButton
+              title={"Ethereum"}
+              fontColor={"white"}
+              backgroundColor={"#343434"}
+              icon={<EthereumIcon />}
+              onClick={async () => await store.keyring.do.signinWithWallet("metamask", network)}
+            />
+          ) : null
         )}
       </LoginSelectorContainer>
     </ModalContainer>

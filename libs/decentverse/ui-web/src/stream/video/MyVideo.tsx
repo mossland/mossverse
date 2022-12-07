@@ -69,16 +69,9 @@ export const MyVideo = ({ socket, roomId }: MyVideoProps) => {
     }
   }, 500);
   const getUserMedia = async () => {
-    const op: MediaStreamConstraints = {
-      video: {
-        width: isMobile ? 130 : 200,
-        height: isMobile ? 200 : 130,
-        facingMode: "user",
-        groupId: videoTrack ? videoTrack.id : undefined,
-      },
-      audio: {
-        groupId: audioTrack ? audioTrack.id : undefined,
-      },
+    const op = {
+      video: { width: isMobile ? 130 : 200, height: isMobile ? 200 : 130 },
+      audio: true,
     };
     const stream = await navigator.mediaDevices.getUserMedia(op);
 

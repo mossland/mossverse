@@ -36,6 +36,7 @@ export interface IKIP37Interface extends utils.Interface {
     "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
+    "totalSupply(uint256)": FunctionFragment;
   };
 
   getFunction(
@@ -47,6 +48,7 @@ export interface IKIP37Interface extends utils.Interface {
       | "safeTransferFrom"
       | "setApprovalForAll"
       | "supportsInterface"
+      | "totalSupply"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -89,6 +91,10 @@ export interface IKIP37Interface extends utils.Interface {
     functionFragment: "supportsInterface",
     values: [PromiseOrValue<BytesLike>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "totalSupply",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
 
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
@@ -113,6 +119,10 @@ export interface IKIP37Interface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupply",
     data: BytesLike
   ): Result;
 
@@ -250,6 +260,11 @@ export interface IKIP37 extends BaseContract {
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    totalSupply(
+      _id: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
   };
 
   balanceOf(
@@ -299,6 +314,11 @@ export interface IKIP37 extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  totalSupply(
+    _id: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   callStatic: {
     balanceOf(
       owner: PromiseOrValue<string>,
@@ -346,6 +366,11 @@ export interface IKIP37 extends BaseContract {
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    totalSupply(
+      _id: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   filters: {
@@ -444,6 +469,11 @@ export interface IKIP37 extends BaseContract {
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    totalSupply(
+      _id: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -491,6 +521,11 @@ export interface IKIP37 extends BaseContract {
 
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    totalSupply(
+      _id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

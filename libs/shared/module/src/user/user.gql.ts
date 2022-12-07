@@ -2,9 +2,8 @@ import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
 import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
 import * as gql from "../gql";
-import { modules } from "@shared/module";
 import { ApiProperty } from "@nestjs/swagger";
-import { cnst } from "@shared/util";
+import { cnst, Utils } from "@shared/util";
 
 // * 1. 보안필드를 제외한 모든 필드
 @ObjectType({ isAbstract: true })
@@ -12,22 +11,34 @@ import { cnst } from "@shared/util";
 @Schema()
 class Base {
   @Field(() => String, { nullable: true })
-  @Prop({ type: String, required: false, default: "Default Nickname" })
+  @Prop({ type: String, required: false, default: Utils.getRandomNickname })
   @ApiProperty({ example: "Nickname", description: "Nickname of user" })
   nickname: string;
+
+  @Field(() => gql.File, { nullable: true })
+  @Prop({ type: ObjectId, required: false })
+  image?: Id;
+
+  //! Temporary Field
+  @Field(() => String, { nullable: true })
+  @Prop({ type: String, required: false })
+  nftImage?: string;
 }
 
 // * 2. 다른 필드를 참조하는 값 Input형식으로 덮어씌우기
 @InputType({ isAbstract: true })
-class InputOverwrite {}
+class InputOverwrite {
+  @Field(() => ID, { nullable: true })
+  image?: Id;
+}
 
 // * 3. 보안필드, default 필드 생성 필수
 @ObjectType({ isAbstract: true })
 @InputType({ isAbstract: true })
 @Schema()
 class Tail extends Base {
-  @Field(() => gql.Keyring, { nullable: true })
-  @Prop({ type: ObjectId, ref: "keyring", required: false })
+  @Field(() => ID)
+  @Prop({ type: ObjectId, ref: "keyring", immutable: true, required: false })
   @ApiProperty({ example: "630e2588121191ca4b2e3ea9", description: "Keyring ID of user" })
   keyring: Id;
 

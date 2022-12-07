@@ -1,49 +1,56 @@
 import React, { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { ToolOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Modal, Button, Table, Space, Input, Radio, Col, Row, Select, List, Card, Popconfirm } from "antd";
+import { Modal, Button, Table, Space, Input, Radio, Col, Row, Select, List, Card, Popconfirm, Skeleton } from "antd";
 import { gql, store } from "@shared/data-access";
 import { Field, Img } from "../index";
 import { Utils } from "@shared/util";
+import { SliceModel } from "@shared/util-client";
 
-export const Contracts = () => {
-  const initContract = store.contract.use.initContract();
-  const contractList = store.contract.use.contractList();
-  const newContract = store.contract.use.newContract();
+interface ContractsProps {
+  networkSlice: gql.NetworkSlice;
+  contractSlice: gql.ContractSlice;
+}
+
+export const Contracts = ({ networkSlice, contractSlice }: ContractsProps) => {
+  const contractList = contractSlice.use.contractList();
   useEffect(() => {
-    initContract();
+    contractSlice.do.initContract();
   }, []);
 
   return (
     <div>
       <Header>
         <h2>Contracts</h2>
-        <Button onClick={newContract} icon={<PlusOutlined />}>
+        <Button onClick={() => contractSlice.do.newContract()} icon={<PlusOutlined />}>
           Add
         </Button>
       </Header>
-      <List
-        grid={{ gutter: 16, column: 5 }}
-        dataSource={contractList}
-        renderItem={(contract) => <Contract key={contract.id} contract={contract} />}
-      ></List>
-      <ContractEdit />
+      {contractList === "loading" ? (
+        <Skeleton />
+      ) : (
+        <List
+          grid={{ gutter: 16, column: 5 }}
+          dataSource={contractList}
+          renderItem={(contract) => <Contract key={contract.id} contract={contract} contractSlice={contractSlice} />}
+        ></List>
+      )}
+      <ContractEdit networkSlice={networkSlice} contractSlice={contractSlice} />
     </div>
   );
 };
 
 interface ContractProps {
-  contract: gql.Contract;
+  contract: gql.LightContract;
+  contractSlice: gql.ContractSlice;
 }
-export const Contract = React.memo(({ contract }: ContractProps) => {
-  const removeContract = store.contract.use.removeContract();
-  const editContract = store.contract.use.editContract();
+export const Contract = React.memo(({ contract, contractSlice }: ContractProps) => {
   return (
     <Card
       hoverable
       actions={[
-        <EditOutlined key="edit" onClick={() => editContract(contract)} />,
-        <Popconfirm title="Are you sure to remove?" onConfirm={() => removeContract(contract.id)}>
+        <EditOutlined key="edit" onClick={() => contractSlice.do.editContract(contract.id)} />,
+        <Popconfirm title="Are you sure to remove?" onConfirm={() => contractSlice.do.removeContract(contract.id)}>
           <DeleteOutlined key="remove" />
         </Popconfirm>,
       ]}
@@ -52,50 +59,58 @@ export const Contract = React.memo(({ contract }: ContractProps) => {
     </Card>
   );
 });
-export const ContractEdit = () => {
-  const contractModal = store.contract.use.contractModal();
-  const id = store.contract.use.id();
-  const networks = store.network.use.networkList();
-  const address = store.contract.use.address();
-  const displayName = store.contract.use.displayName();
-  const network = store.contract.use.network();
-  const purifyContract = store.contract.use.purifyContract();
-  const createContract = store.contract.use.createContract();
-  const updateContract = store.contract.use.updateContract();
-  const resetContract = store.contract.use.resetContract();
+interface ContractEditProps {
+  networkSlice: gql.NetworkSlice;
+  contractSlice: gql.ContractSlice;
+}
+export const ContractEdit = ({ contractSlice, networkSlice }: ContractEditProps) => {
+  const contractModal = contractSlice.use.contractModal();
+  const networkList = networkSlice.use.networkList();
+  const contractForm = contractSlice.use.contractForm();
+  const contractSumbit = contractSlice.use.contractSubmit();
+  useEffect(() => {
+    networkSlice.do.initNetwork();
+  }, []);
+  useEffect(() => {
+    contractSlice.do.checkContractSubmitable();
+  }, [contractForm]);
   return (
     <Modal
-      title={id ? "New Contract" : `Contract - ${displayName ?? address}`}
+      title={contractForm.id ? "New Contract" : `Contract - ${contractForm.displayName ?? contractForm.address}`}
       open={!!contractModal}
-      onOk={() => (id ? updateContract() : createContract())}
-      onCancel={() => resetContract()}
-      okButtonProps={{ disabled: !purifyContract() }}
+      onOk={contractSlice.do.submitContract}
+      onCancel={() => contractSlice.do.resetContract()}
+      okButtonProps={contractSumbit}
     >
       <Field.Container>
-        <Select
-          value={network?.name}
-          style={{ width: "100%" }}
-          onChange={(networkId) =>
-            store.contract.setState({ network: networks.find((network) => network.id === networkId) })
-          }
-          disabled={!!id}
-        >
-          {networks.map((network) => (
-            <Select.Option key={network.id} value={network.id}>
-              {network.name}/{network.provider}/{network.type}
-            </Select.Option>
-          ))}
-        </Select>
+        {networkList === "loading" ? (
+          <Skeleton.Input />
+        ) : (
+          <Select
+            value={contractForm.network?.name}
+            style={{ width: "100%" }}
+            onChange={(networkId) =>
+              contractSlice.do.setNetworkOnContract(networkList.find((network) => network.id === networkId))
+            }
+            disabled={!!contractForm.id}
+          >
+            {networkList.map((network) => (
+              <Select.Option key={network.id} value={network.id}>
+                {network.name}/{network.provider}/{network.type}
+              </Select.Option>
+            ))}
+          </Select>
+        )}
         <Field.Text
           label="Address"
-          value={address}
-          onChange={(address) => store.contract.setState({ address })}
-          disabled={!!id}
+          value={contractForm.address}
+          onChange={contractSlice.do.setAddressOnContract}
+          disabled={!!contractForm.id}
         />
         <Field.Text
           label="Name"
-          value={displayName}
-          onChange={(displayName) => store.contract.setState({ displayName })}
+          value={contractForm.displayName}
+          onChange={contractSlice.do.setDisplayNameOnContract}
         />
       </Field.Container>
     </Modal>

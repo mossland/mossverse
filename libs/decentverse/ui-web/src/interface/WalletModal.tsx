@@ -92,6 +92,8 @@ export const WalletModal = () => {
     return "None";
   };
 
+  if (walletList === "loading") return <></>;
+
   return (
     <ModalContainer
       showModal={!!walletModal}

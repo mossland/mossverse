@@ -4,7 +4,6 @@ import styled from "styled-components";
 
 export const AdminInfo = () => {
   const me = store.admin.use.me();
-  const signout = store.admin.use.signout();
   if (!me) throw new Error("Null Admin");
   return (
     <AdminInfoContainer>
@@ -12,7 +11,7 @@ export const AdminInfo = () => {
         <div>{me.email}</div>
       </Card>
       <div style={{ textAlign: "right" }}>
-        <Button type="link" onClick={signout}>
+        <Button type="link" onClick={store.admin.do.signout}>
           log out
         </Button>
       </div>

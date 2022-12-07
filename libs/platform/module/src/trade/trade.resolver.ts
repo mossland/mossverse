@@ -18,14 +18,8 @@ export class TradeResolver extends BaseResolver(gql.Trade, gql.TradeInput, Allow
     @Args({ name: "executedInputs", type: () => [gql.ExchangeInput] }) executedInputs: gql.ExchangeInput[],
     @Args({ name: "desiredOutputs", type: () => [gql.ExchangeInput] }) desiredOutputs: gql.ExchangeInput[],
     @Args({ name: "reverse", type: () => Boolean }) reverse: boolean,
-    @Auth() keyringId: string
+    @Auth() account: Account
   ) {
-    return await this.tradeService.makeTrade(
-      new Id(tradeId),
-      executedInputs,
-      desiredOutputs,
-      reverse,
-      new Id(keyringId)
-    );
+    return await this.tradeService.makeTrade(new Id(tradeId), executedInputs, desiredOutputs, reverse, account.keyring);
   }
 }

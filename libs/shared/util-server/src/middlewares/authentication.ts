@@ -10,9 +10,14 @@ import { GqlExecutionContext } from "@nestjs/graphql";
 import { Observable } from "rxjs";
 import { Account } from "./authorization";
 
-export const Auth = createParamDecorator((data, context: ExecutionContext) => {
+export const RequiredAuth = createParamDecorator((data, context: ExecutionContext) => {
   const account: Account | null = GqlExecutionContext.create(context).getContext().account;
   if (!account) throw new Error("No or Invalid Account");
+  return account;
+});
+
+export const Auth = createParamDecorator((data, context: ExecutionContext) => {
+  const account: Account | null = GqlExecutionContext.create(context).getContext().account;
   return account;
 });
 

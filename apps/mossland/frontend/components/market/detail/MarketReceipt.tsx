@@ -9,7 +9,7 @@ import { Market } from "@platform/ui-web";
 // };
 
 export const MarketReceipt = () => {
-  const service = Market.useMarket();
+  // const service = Market.useMarket();
 
   // receipt={service.receipt}
   const exchangeExporter = (i: gql.platform.Exchange, className: "inputs" | "outputs") => {

@@ -1,3 +1,4 @@
+import { environment } from "../_environments/environment";
 import { SurveyService } from "./survey.service";
 import { TestSystem } from "@shared/test-server";
 import { SurveyModule } from "./survey.module";
@@ -6,7 +7,7 @@ import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { Utils } from "@shared/util";
 describe("Survey Service", () => {
   const system = new TestSystem();
@@ -25,23 +26,21 @@ describe("Survey Service", () => {
   let testWallets: db.shared.Wallet.Doc[];
 
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     surveyService = app.get<SurveyService>(SurveyService);
     contractService = app.get<srv.shared.ContractService>(srv.shared.ContractService);
     networkService = app.get<srv.shared.NetworkService>(srv.shared.NetworkService);
     walletService = app.get<srv.shared.WalletService>(srv.shared.WalletService);
     tokenService = app.get<srv.shared.TokenService>(srv.shared.TokenService);
     network = await networkService.create(sample.shared.networkInput("klaytn"));
-    wallet = await walletService.myWallet(network._id, system.env.network.klaytn.root.address);
-    erc20contract = await contractService.create(
-      sample.shared.contractInput(network._id, system.env.network.klaytn.erc20)
-    );
+    wallet = await walletService.myWallet(network._id, environment.ethereum.root.address);
+    erc20contract = await contractService.create(sample.shared.contractInput(network._id, environment.ethereum.erc20));
     token = await tokenService.create({ contract: erc20contract.id });
     hasTokenWallet = await sample.shared.getHasTokenWallet(app, network._id, token._id);
     testWallets = await Promise.all(
-      system.env.network.klaytn.testWallets.map(async (w) => await walletService.myWallet(network._id, w.address))
+      environment.ethereum.testWallets.map(async (w) => await walletService.myWallet(network._id, w.address))
     );
-  });
+  }, 300000);
   afterAll(async () => await system.terminate());
   let survey: db.Survey.Doc;
   let input: gql.SurveyInput;

@@ -3,12 +3,12 @@ import { MongooseModule } from "@nestjs/mongoose";
 import * as Keyring from "./keyring.model";
 import { KeyringService } from "./keyring.service";
 import { KeyringResolver } from "./keyring.resolver";
-import { options } from "@shared/module";
+import { option } from "@shared/module";
 
 @Global()
 @Module({})
 export class KeyringModule {
-  static register(options: options.SecurityOptions): DynamicModule {
+  static register(options: option.SecurityOptions): DynamicModule {
     return {
       module: KeyringModule,
       imports: [MongooseModule.forFeatureAsync([{ name: Keyring.name, useFactory: Keyring.middleware(options) }])],

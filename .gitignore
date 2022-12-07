@@ -62,14 +62,11 @@ schema.gql
 **/environment.**.ts
 **/.env
 **/.env.*
-**/env.ts
+**/env.**.ts
 # Kubernetes
 **/*secrets.yaml
 **/kubeconfig.yaml
 **/secrets.*
-**/kustomization-*.yaml
-**/proxy.yaml
-**/getRegistry.sh
 
 # Next.js
 .next

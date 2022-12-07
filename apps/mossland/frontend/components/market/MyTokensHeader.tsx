@@ -6,26 +6,29 @@ import { BiChevronLeft } from "react-icons/bi";
 import { CheckIcon } from "@shared/ui-web";
 
 export const MyTokensHeader = () => {
+  const router = store.shared.ui.use.router();
   const self = store.platform.user.use.self();
   const myItems = store.platform.user.use.myItems();
   const listings = store.platform.listing.use.listingList();
-  const myTokensFilter = store.platform.listing.use.myTokensFilter();
-  const onClickBackButton = () => store.platform.listing.setState({ filter: "all" });
+  const myTokensFilter = store.mocMarket.use.myTokensFilter();
+  const onClickBackButton = () => router.back();
 
-  const getFilter = (listing: gql.platform.Listing) => {
-    return self ? listing.user && listing.user.id === self.id : false;
-  };
+  // const getFilter = (listing: gql.platform.LightListing) => {
+  //   return self ? listing.user && listing.user.id === self.id : false;
+  // };
 
-  const onSaleCount = listings.filter((listing) => getFilter(listing)).length;
-  const allCount = onSaleCount + myItems.length;
+  if (listings === "loading" || !self) return null;
+  const onSaleCount = listings.length;
+  const allCount = listings.length;
 
+  console.log(listings.filter((listing) => listing.filterMyListing(self)).length);
   return (
     <StyledMyTokensHeader>
       <div className="header-top">
         <div className="header header-item">
-          <div className="back-button" onClick={onClickBackButton}>
+          <button className="back-button" onClick={onClickBackButton}>
             <BiChevronLeft />
-          </div>
+          </button>
           <h2>MyTokens</h2>
         </div>
         <div className="header-item">
@@ -35,14 +38,14 @@ export const MyTokensHeader = () => {
       <div className="buttons">
         <div
           className={`button ${myTokensFilter === "all" && "active"}`}
-          onClick={() => store.platform.listing.setState({ myTokensFilter: "all" })}
+          onClick={() => store.mocMarket.set({ myTokensFilter: "all" })}
         >
           {myTokensFilter === "all" && <CheckIcon />}
           All({allCount})
         </div>
         <div
           className={`button selling-button ${myTokensFilter === "onSale" && "active"}`}
-          onClick={() => store.platform.listing.setState({ myTokensFilter: "onSale" })}
+          onClick={() => store.mocMarket.set({ myTokensFilter: "onSale" })}
         >
           {myTokensFilter === "onSale" && <CheckIcon />}
           On Sale({onSaleCount})

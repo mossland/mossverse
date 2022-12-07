@@ -49,6 +49,7 @@ export class Admin implements CanActivate {
 export class SuperAdmin implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const { account } = GqlExecutionContext.create(context).getContext();
+    console.log(account);
     return Auth.allow(account, ["superAdmin"]);
   }
 }

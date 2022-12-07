@@ -8,13 +8,11 @@ import { Row, Col } from "antd";
 import { EmojiList } from "./";
 
 export const EmojiSelecter = () => {
-  const runEmoji = store.emoji.use.runEmoji();
   const isShowEmojiSelecter = store.emoji.use.isShowEmojiSelecter();
-  const initEmoji = store.emoji.use.initEmoji();
   const emojiList = store.emoji.use.emojiList();
 
   useEffect(() => {
-    initEmoji();
+    store.emoji.do.initEmoji();
   }, []);
 
   return (

@@ -1,3 +1,4 @@
+import { environment } from "../_environments/environment";
 import { KeyringService } from "./keyring.service";
 import { TestSystem } from "@shared/test-server";
 import { KeyringModule } from "./keyring.module";
@@ -6,7 +7,7 @@ import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import * as modules from "../modules";
+import { registerModules } from "../module";
 describe("Keyring Service", () => {
   const system = new TestSystem();
   let keyringService: KeyringService;
@@ -14,17 +15,15 @@ describe("Keyring Service", () => {
   let walletService: srv.WalletService;
   let network: db.Network.Doc;
   let testWallets: db.Wallet.Doc[];
-  let otp: string;
   beforeAll(async () => {
-    const app = await system.init(modules.registerModules);
+    const app = await system.init(registerModules(environment));
     keyringService = app.get<KeyringService>(KeyringService);
     networkService = app.get<srv.NetworkService>(srv.NetworkService);
     walletService = app.get<srv.WalletService>(srv.WalletService);
     network = await networkService.create(sample.networkInput("klaytn"));
     testWallets = await Promise.all(
-      system.env.network.klaytn.testWallets.map(async (w) => await walletService.myWallet(network._id, w.address))
+      environment.klaytn.testWallets.map(async (w) => await walletService.myWallet(network._id, w.address))
     );
-    otp = "";
   });
   afterAll(async () => await system.terminate());
   let keyring: db.Keyring.Doc;
@@ -59,15 +58,6 @@ describe("Keyring Service", () => {
     await keyring.refresh();
     expect(keyring.wallets.some((_id) => _id.equals(testWallets[1]._id))).toBeFalsy();
     expect(keyring.wallets.some((_id) => _id.equals(testWallets[1]._id))).toBeFalsy();
-  });
-
-  it("generate otp", async () => {
-    otp = await keyringService.generateOtp(anotherKeyring._id);
-    expect(otp).toBeDefined();
-  });
-  it("sign in otp", async () => {
-    const token = await keyringService.signinWithOtp(otp);
-    expect(token).toBeDefined();
   });
   it("Prevent Empty Wallets When Remove Wallet", async () => {
     await expect(

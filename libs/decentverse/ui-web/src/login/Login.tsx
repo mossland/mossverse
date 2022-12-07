@@ -19,6 +19,7 @@ export const Login = ({ style, logo, backgroundImage, networkType }: LoginProps)
   const guest = store.user.use.guest();
   const login = store.shared.keyring.use.login();
   const loginMethod = store.shared.keyring.use.loginMethod();
+  const networks = store.shared.network.use.networkList();
   const network = store.shared.network.use.network();
   const signWalletConnect = store.shared.keyring.use.signWalletConnect();
   const changeLoginMethod = (loginMethod: gql.shared.LoginMethod) => store.shared.keyring.setState({ loginMethod });
@@ -26,7 +27,7 @@ export const Login = ({ style, logo, backgroundImage, networkType }: LoginProps)
   const isShowVideoAudioSetting = store.user.use.isShowVideoAudioSetting();
 
   useEffect(() => {
-    initNetwork(networkType);
+    initNetwork({ query: { type: networkType } });
   }, []);
 
   const onClickButtonToMobile = async (loginMethod: gql.shared.LoginMethod) => {

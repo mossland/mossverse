@@ -3,7 +3,6 @@ import { InjectModel } from "@nestjs/mongoose";
 import { AddrLoadService, Id } from "@shared/util-server";
 import * as Wallet from "./wallet.model";
 import * as gql from "../gql";
-import * as srv from "../srv";
 import * as db from "../db";
 import { KeyringService } from "../keyring/keyring.service";
 import { TokenService } from "../token/token.service";

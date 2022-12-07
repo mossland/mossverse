@@ -1,22 +1,21 @@
+import { environment } from "../_environments/environment";
 import { FileService } from "./file.service";
 import { TestSystem } from "@shared/test-server";
-import { FileModule } from "./file.module";
 
 import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { S3Service } from "./s3/s3.service";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 
 describe("File Service", () => {
   const system = new TestSystem();
   let fileService: FileService;
-  let s3Service: S3Service;
+  let s3Service: srv.external.S3Service;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     fileService = app.get<FileService>(FileService);
-    s3Service = app.get<S3Service>(S3Service);
+    s3Service = app.get<srv.external.S3Service>(srv.external.S3Service);
   });
   afterAll(async () => await system.terminate());
   let file: db.File.Doc;
@@ -24,7 +23,6 @@ describe("File Service", () => {
   it("Create File", async () => {
     input = sample.fileStream();
     [file] = await fileService.addFiles([input], "test", "test");
-
     expect(file.status).toEqual("active");
     const filenames = await s3Service.getFileList();
     expect(filenames.some((filename) => filename.includes(file.filename))).toBeTruthy();
@@ -58,7 +56,7 @@ describe("File Service", () => {
     const uri = "ipfs://QmarGRwVKPaCe2s5QSSTMEdbYDwKxFz6bAn58YZPPcWc7k/1";
     const file = await fileService.addFileFromUri(uri, "test", "test");
     expect(file).toHaveProperty("_id");
-  });
+  }, 15000);
   it("Create File from Encoded", async () => {
     const uri =
       "data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJ4TWluWU1pbiBtZWV0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTE4IDloMXYxaDF2MWgtMXYxaDF2MmgtMXYyaC0ydjFoLTF2LTFoLTF2MWgtMXYxaDJ2MWgydjFoMXYxaDF2MWgxdjNoNFYwSDB2MjVoNHYtM2gxdi0xaDF2LTFoMXYtMWgydi0xaDJ2LTJoLTF2MUg5di0ySDh2LTFIN3YtMWgxdi0xSDd2LTFoMVY5aDFWOEg4VjdoMlY1aDF2MWgyVjRoMXYxaDJWNGgxdjJoMVptMSAwVjhoMXYxWk05IDRoMXYxSDlaIiBzdHlsZT0iZmlsbDojZjZjOTQ2Ii8+PHBhdGggZD0iTTggMTF2MWgxdi0xWm0xIDJIOHYxaDFabTEgMnYtMUg5djFabTktMXYtMWgtMXYxWiIgc3R5bGU9ImZpbGw6I2Y2Yzk0NiIvPjxwYXRoIGQ9Ik00IDI1aDF2LTNINFptMS0zaDF2LTFINVptMS0xaDF2LTFINlptNS0zSDl2MUg3djFoMnYyaDF2LTJoMVptLTIgNnYtMUg3djFaIiBzdHlsZT0iZmlsbDojYmMwMDAwIi8+PHBhdGggZD0iTTExIDIwdjJoLTF2MWgxdjJoMXYtNVptMyAzaDF2LTFoLTF2LTJoLTF2NWgxWiIgc3R5bGU9ImZpbGw6I2JjMDAwMCIvPjxwYXRoIGQ9Ik0xNCAyMGgxdjJoMXYtMmgydi0xaC0ydi0xaC0yWm00IDR2LTFoLTJ2MVptMC0zaDF2LTFoLTFabTIgMXYtMWgtMXYxWm0wIDNoMXYtM2gtMVoiIHN0eWxlPSJmaWxsOiNiYzAwMDAiLz48cGF0aCBkPSJNNSAyNWgxdi0zSDVabTItNEg2djFoMVptMCAwaDJ2LTFIN1ptMCAzdjFoMnYtMVptMy0yaDF2LTJoLTFabTUtMmgtMXYyaDFabTMgMGgtMnYxaDJabTAgNXYtMWgtMnYxWm0xLTRoLTF2MWgxWm0wIDRoMXYtM2gtMVoiIHN0eWxlPSJmaWxsOiNlNTAyMDIiLz48cGF0aCBkPSJNNyAyNXYtMmgydjJoMnYtMmgtMXYtMUg5di0xSDd2MUg2djNabTktM2gtMXYxaC0xdjJoMnYtMmgydjJoMXYtM2gtMXYtMWgtMloiIHN0eWxlPSJmaWxsOnJlZCIvPjxwYXRoIGQ9Ik03IDExdjFoMXYtMVptMy0zVjdIOXYxWm0wIDN2LTFIOXYxWm0yIDN2LTFIOXYxWm0tMiAydi0xSDl2MVptMS0xMFY1aC0xdjFabTEgM1Y4aC0ydjFabS0xLTJoMVY2aC0xWm0wIDl2MWgxdi0xWm0yIDB2LTJoLTF2MlptMS0xdjFoMXYtMVptMi05aDFWNWgtMnYzaDFabTIgOHYtMWgtMnYxWm0xLTVoLTJ2MWgyWm0tMSA1djFoMXYtMVptMi02aC0xdjFoMVoiIHN0eWxlPSJmaWxsOiNlNWEzMGYiLz48cGF0aCBkPSJNNyAxM3YxaDF2LTFabTkgMnYxaDF2LTFaIiBzdHlsZT0iZmlsbDojZGY5ZTEwIi8+PHBhdGggZD0iTTggN3YxaDFWN1ptMSA0di0xSDh2MVptMC0yaDFWOEg5Wm0yIDN2LTFIOXYxWm0tMiA1aDF2LTFIOVptMi04aC0xdjFoMVptLTEgN2gxdi0yaC0xWm0yLThoMVY3aDFWNGgtMXYyaC0xWm0xIDhoMXYtMWgtMVptMSAxaDF2LTFoLTFabTItM2gtMXYyaDFabTEtNlY3aDFWNmgtMnYyWm0tMSA4djFoMXYtMVptMy01aC0ydjFoMlptLTIgM3YxaDF2LTFabTMtMXYtMWgtMXYxWiIgc3R5bGU9ImZpbGw6I2U0ZGY0NyIvPjxwYXRoIGQ9Ik04IDl2MWgyVjlabTMgNHYtMUg4djFabS0xLTd2MmgyVjdoLTFWNlptMCA0djFoMXYtMVptMSA0djJoMXYtMlptMy03aC0xdjFoMlY1aC0xWm00IDJWN2gtMXYxaC0xdjFabS0xIDZ2LTFoLTF2MVptMy01aC0zdjFoM1ptLTEgMmgtMnYxaDJabS0xIDNoLTF2MWgxWiIgc3R5bGU9ImZpbGw6I2QzNzEwZSIvPjxwYXRoIGQ9Ik05IDE1di0xSDh2MVptOSAwdjFoMXYtMVoiIHN0eWxlPSJmaWxsOiNkZWQ3NDUiLz48cGF0aCBkPSJNOSA1aDFWNEg5WiIgc3R5bGU9ImZpbGw6I2RmOWQwZiIvPjxwYXRoIGQ9Ik0xMiA5aC0xdjRoMVptMC0xdjFoNFY4Wm0xIDZ2LTFoLTF2MVptMiAwaC0ydjFoMlptMSAwdi0xaC0xdjFabTAtMWgxVjloLTFaIiBzdHlsZT0iZmlsbDojNTMyMDBiIi8+PHBhdGggZD0iTTEyIDE3aC0xdjNoMVptMS0xdjRoMXYtNFoiIHN0eWxlPSJmaWxsOiMwYzBjMGMiLz48cGF0aCBkPSJNMTMgOWgtMXYxaDFabS0xIDJ2MWgxdi0xWm0yLTFoLTF2MWgxWm0tMSAzaDF2LTFoLTFabTItNGgtMXYxaDFabS0xIDJ2MWgxdi0xWm0xIDJoLTF2MWgxWm0wLTJoMXYtMWgtMVptMCAxdjFoMXYtMVoiIHN0eWxlPSJmaWxsOiM4YjU0MTAiLz48cGF0aCBkPSJNMTMgMTF2LTFoLTF2MVptLTEgMXYxaDF2LTFabTItM2gtMXYxaDFabTAgM3YtMWgtMXYxWm0tMSAyaDF2LTFoLTFabTEtNHYxaDF2LTFabTAgM2gxdi0xaC0xWm0xLTR2MWgxVjlabTEgM3YtMWgtMXYxWiIgc3R5bGU9ImZpbGw6IzdmNGQxMCIvPjxwYXRoIGQ9Ik0xMiAxOWgxdi0zaC0xWiIgc3R5bGU9ImZpbGw6IzQxNzIxNCIvPjxwYXRoIGQ9Ik0xMiAxOXYxaDF2LTFaIiBzdHlsZT0iZmlsbDojMjEzZDA4Ii8+PHBhdGggZD0iTTEyIDIwdjFoMXYtMVoiIHN0eWxlPSJmaWxsOiNlYmViZWIiLz48cGF0aCBkPSJNMTIgMjVoMXYtNGgtMVoiIHN0eWxlPSJmaWxsOiNmZmYiLz48cGF0aCBkPSJNMTYgNHYxaDFWNFoiIHN0eWxlPSJmaWxsOiNkOWQ0NDQiLz48cGF0aCBkPSJNMTkgMTN2MWgxdi0xWiIgc3R5bGU9ImZpbGw6I2NlNmUwZiIvPjwvc3ZnPg==";

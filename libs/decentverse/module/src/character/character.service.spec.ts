@@ -1,8 +1,9 @@
+import { environment } from "../_environments/environment";
 import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { CharacterService } from "./character.service";
 import { TestSystem } from "@shared/test-server";
 import { CharacterModule } from "./character.module";
@@ -15,7 +16,7 @@ describe("Character Service", () => {
   let user: db.User.Doc;
   let token: db.shared.Token.Doc;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     characterService = app.get<CharacterService>(CharacterService);
     keyring = await sample.shared.createKeyring(app);
     user = await sample.createUser(app, keyring._id);

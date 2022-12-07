@@ -8,7 +8,7 @@ import { useSurvey } from "./services/useSurvey";
 
 export const DetailHeader = () => {
   const surveyService = useSurvey();
-  if (!surveyService.survey) return <></>;
+  if (!surveyService.survey || surveyService.survey === "loading") return <></>;
   return (
     <StyledDetailHeader>
       <Wrapper className="title-container">

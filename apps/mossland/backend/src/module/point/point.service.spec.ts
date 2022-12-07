@@ -5,7 +5,7 @@ import { PointModule } from "./point.module";
 import * as sample from "../sample";
 import * as db from "../db";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { v4 as uuidv4 } from "uuid";
 import * as srv from "../srv";
 
@@ -18,7 +18,7 @@ describe("Point Service", () => {
   let point: db.shared.Thing.Doc;
   let user: db.lib.User.Doc;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     pointService = app.get<PointService>(PointService);
     network = await sample.shared.createNetwork(app, "klaytn");
     networkService = app.get<srv.shared.NetworkService>(srv.shared.NetworkService);

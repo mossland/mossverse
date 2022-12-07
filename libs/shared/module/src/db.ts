@@ -8,3 +8,4 @@ export * as Network from "./network/network.model";
 export * as Wallet from "./wallet/wallet.model";
 export * as Product from "./product/product.model";
 export * as User from "./user/user.model";
+export * as Currency from "./currency/currency.model";

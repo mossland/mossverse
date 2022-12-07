@@ -8,12 +8,7 @@ interface Props {
 }
 
 export const AdminAuth = ({ uri }: Props) => {
-  // const initAuth = store.admin.use.initAuth();
   const viewMode = store.admin.use.viewMode();
-  // useEffect(() => {
-  //   initAuth(uri);
-  // }, []);
-
   return (
     <AdminAuthContainer>
       <div>

@@ -1,8 +1,9 @@
+import { environment } from "../_environments/environment";
 import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { DialogService } from "./dialog.service";
 import { TestSystem } from "@shared/test-server";
 import { DialogModule } from "./dialog.module";
@@ -11,7 +12,7 @@ describe("Dialog Service", () => {
   const system = new TestSystem();
   let dialogService: DialogService;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     dialogService = app.get<DialogService>(DialogService);
   });
   afterAll(async () => await system.terminate());

@@ -1,23 +1,17 @@
-import create from "zustand";
+import { StateCreator } from "zustand";
 import * as gql from "../gql";
-import { createActions, createState, DefaultActions, DefaultState, generateStore } from "@shared/util-client";
+import { createActions, createState, DefaultActions, DefaultState, makeStore, SetGet } from "@shared/util-client";
 import { assetGraphQL } from "../gql";
 
-type State = DefaultState<"asset", gql.Asset> & {
-  //
+const state = {
+  ...createState(assetGraphQL),
 };
-const initialState: State = {
-  ...createState<"asset", gql.Asset, gql.AssetInput>(assetGraphQL),
-};
-type Actions = DefaultActions<"asset", gql.Asset, gql.AssetInput> & {
-  addAssetFiles: (fileList: FileList, type: gql.LayerType, assetId?: string) => Promise<void>;
-};
-const store = create<State & Actions>((set, get) => ({
-  ...initialState,
-  ...createActions<"asset", gql.Asset, gql.AssetInput>(assetGraphQL, { get, set }),
-  addAssetFiles: async (fileList, type, assetId) => {
+const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
+  ...createActions(assetGraphQL, { get, set }),
+  addAssetFiles: async (fileList: FileList, type: "top" | "bottom" | "lighting", assetId?: string) => {
+    const { assetForm } = get();
     const [file] = await gql.addAssetFiles(fileList, assetId);
-    set({ [type]: file });
+    set({ assetForm: { ...assetForm, [type]: file } });
   },
-}));
-export const asset = generateStore(store);
+});
+export const asset = makeStore(assetGraphQL.refName, state, actions);

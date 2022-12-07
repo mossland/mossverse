@@ -18,7 +18,12 @@ export interface CallRoomsProp {
   player?: MutableRefObject<gql.RenderCharacter>;
   socket?: Socket;
 }
-export const CallRooms = ({ interaction, player, socket, callRooms = store.map.use.callRooms() }: CallRoomsProp) => {
+export const CallRooms = ({
+  interaction,
+  player,
+  socket,
+  callRooms = store.map((state) => state.mapForm.callRooms),
+}: CallRoomsProp) => {
   const joinCallRoom = store.callRoom.use.joinCallRoom();
   const leaveCallRoom = store.callRoom.use.leaveCallRoom();
   const receiveChat = store.gossip.use.receiveChat();
@@ -94,7 +99,7 @@ export const CallRoomPreview = ({ mouse }: CallRoomPreviewProps) => {
   const mesh = useRef<Mesh>(null);
   const plane = useRef<PlaneGeometry>(null);
   const point = useRef<[number, number] | null>();
-  const callRooms = store.map.use.callRooms();
+  const callRooms = store.map((state) => state.mapForm.callRooms);
   const updateMap = store.map.use.updateMap();
   const get = store.callRoom.use.get();
   const maxNum = store.callRoom.use.maxNum();
@@ -133,9 +138,7 @@ export const CallRoomPreview = ({ mouse }: CallRoomPreviewProps) => {
         Math.abs(Math.floor(e.point.x - point.current[0])),
         Math.abs(Math.floor(e.point.y - point.current[1])),
       ] as [number, number];
-      store.map.setState({
-        callRooms: [...callRooms, { ...get(), center, wh, id: "", maxNum: maxNum ? maxNum : 10, roomType }],
-      });
+      store.map.do.addCallRoomsOnMap({ ...get(), center, wh, id: "", maxNum: maxNum ? maxNum : 10, roomType });
       plane.current?.copy(new PlaneGeometry(5, 5));
       point.current = null;
       await updateMap();
@@ -150,24 +153,24 @@ export const CallRoomPreview = ({ mouse }: CallRoomPreviewProps) => {
 };
 
 export const CallRoomList = () => {
-  const callRooms = store.map.use.callRooms();
+  const callRooms = store.map((state) => state.mapForm.callRooms);
   const pointer = store.map.use.pointer();
   const update = store.map.use.updateMap();
   if (!callRooms) return <></>;
   const targets = callRooms.filter((callRoom) => Utils.isIn(pointer, callRoom));
   const handleRemove = async (callRoom: gql.CallRoom) => {
-    store.map.setState({ callRooms: callRooms.filter((l) => l !== callRoom) });
+    store.map.do.setCallRoomsOnMap(callRooms.filter((l) => l !== callRoom));
     await update();
   };
 
   const handleModify = (callRoom: gql.CallRoom): ((maxNum: number, roomType: cnst.RoomType) => void) => {
     return async (maxNum: number, roomType: cnst.RoomType) => {
-      store.map.setState({
-        callRooms: callRooms.map((c) => {
+      store.map.do.setCallRoomsOnMap(
+        callRooms.map((c) => {
           if (c !== callRoom) return c;
           return { ...c, maxNum, roomType };
-        }),
-      });
+        })
+      );
       await update();
     };
   };

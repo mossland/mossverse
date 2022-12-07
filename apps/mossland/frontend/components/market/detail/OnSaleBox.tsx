@@ -4,18 +4,22 @@ import { DatePicker } from "antd";
 import moment from "moment";
 import { gql, utils, store } from "../../../stores";
 import { Market } from "@platform/ui-web";
+interface OnSaleProps {
+  listingSlice: gql.platform.ListingSlice;
+}
+export const OnSaleBox = ({ listingSlice }: OnSaleProps) => {
+  // const service = Market.useMarket();
+  const self = store.platform.user.use.self();
+  const listing = listingSlice.use.listing();
 
-export const OnSaleBox = () => {
-  const service = Market.useMarket();
-
-  if (!service.listing) return <></>;
+  if (!listing || listing === "loading" || listing.user !== self) return null;
   return (
     <OnSaleBoxContainer>
       <div className="form-box">
         <div className="label">Price</div>
         <div className="price-input">
           {/* <img src="/images/mm_coin.png" /> */}
-          {service.listing.priceTags
+          {listing.priceTags
             .filter((tag) => tag.thing && tag.thing.type === "root")
             .map((tag, index) => {
               if (!tag.thing) return;
@@ -30,9 +34,9 @@ export const OnSaleBox = () => {
       </div>
       <div className="form-box">
         <div className="label">Until</div>
-        <DatePicker disabled value={moment(service.listing.closeAt)} />
+        <DatePicker disabled value={moment(listing.closeAt)} />
       </div>
-      <div onClick={service.onCancel} className="button button--cancel">
+      <div onClick={() => listingSlice.do.resetListing()} className="button button--cancel">
         Cancel
       </div>
     </OnSaleBoxContainer>

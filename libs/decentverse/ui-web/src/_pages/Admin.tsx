@@ -45,14 +45,23 @@ export const Admin = ({ uri, networkType }: MapEditorProps) => {
       <div>
         {adminMenu === "mapEditor" && <MapEditor />}
         {adminMenu === "emoji" && <Emojis />}
-        {adminMenu === "character" && <Characters />}
-        {adminMenu === "admin" && <Admins />}
-        {adminMenu === "contract" && <Contracts />}
-        {adminMenu === "network" && <Networks networkType={networkType} />}
-        {adminMenu === "thing" && <Things />}
-        {adminMenu === "token" && <Tokens />}
-        {adminMenu === "wallet" && <Wallets />}
-        {adminMenu === "asset" && <Assets />}
+        {adminMenu === "character" && <Characters characterSlice={store.character.slice.character} />}
+        {adminMenu === "admin" && <Admins adminSlice={store.shared.admin.slice.admin} />}
+        {adminMenu === "contract" && (
+          <Contracts
+            networkSlice={store.shared.network.slice.network}
+            contractSlice={store.shared.contract.slice.contract}
+          />
+        )}
+        {adminMenu === "network" && (
+          <Networks networkSlice={store.shared.network.slice.network} networkType={networkType} />
+        )}
+        {adminMenu === "thing" && <Things thingSlice={store.shared.thing.slice.thing} />}
+        {adminMenu === "token" && (
+          <Tokens contractSlice={store.shared.contract.slice.contract} tokenSlice={store.shared.token.slice.token} />
+        )}
+        {adminMenu === "wallet" && <Wallets walletSlice={store.shared.wallet.slice.wallet} />}
+        {adminMenu === "asset" && <Assets assetSlice={store.asset.slice.asset} />}
       </div>
     </AdminLayout>
   );

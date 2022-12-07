@@ -11,8 +11,8 @@ import { cnst } from "@shared/util";
 @Schema()
 class Base {
   @Field(() => ID, { nullable: true })
-  @Prop({ type: ObjectId, required: false })
-  prevUser?: Id;
+  @Prop({ type: ObjectId, required: false, index: true })
+  user?: Id;
 }
 
 // * 2. 다른 필드를 참조하는 값 Input형식으로 덮어씌우기
@@ -36,11 +36,11 @@ class Tail extends Base {
   @Prop({ type: MongoSchema.Types.Mixed, default: {} })
   discord: Record<string, any>;
 
-  @Field(() => String)
-  @Prop({ type: String, required: false, validate: validate.email, default: "", index: true })
+  @Field(() => String, { nullable: true })
+  @Prop({ type: String, required: false, validate: validate.email, index: true })
   accountId: string;
 
-  @Prop({ type: String, required: false, select: false, default: "", index: true })
+  @Prop({ type: String, required: false, select: false, index: true })
   password?: string;
 
   @Field(() => Boolean)

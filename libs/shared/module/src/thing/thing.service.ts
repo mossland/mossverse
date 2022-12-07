@@ -6,13 +6,14 @@ import { LoadService } from "@shared/util-server";
 import { Utils } from "@shared/util";
 import * as db from "../db";
 import * as gql from "../gql";
-import * as srv from "../srv";
+import { FileService } from "../file/file.service";
+
 @Injectable()
 export class ThingService extends LoadService<Thing.Mdl, Thing.Doc, Thing.Input> {
   constructor(
     @InjectModel(Thing.name)
     private readonly Thing: Thing.Mdl,
-    private readonly fileService: srv.FileService
+    private readonly fileService: FileService
   ) {
     super(ThingService.name, Thing);
   }

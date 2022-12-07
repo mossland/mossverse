@@ -3,12 +3,12 @@ import { MongooseModule } from "@nestjs/mongoose";
 import * as Admin from "./admin.model";
 import { AdminService } from "./admin.service";
 import { AdminResolver } from "./admin.resolver";
-import { options } from "@shared/module";
+import { option } from "@shared/module";
 
 @Global()
 @Module({})
 export class AdminModule {
-  static register(options: options.SecurityOptions): DynamicModule {
+  static register(options: option.SecurityOptions): DynamicModule {
     return {
       module: AdminModule,
       imports: [MongooseModule.forFeatureAsync([{ name: Admin.name, useFactory: Admin.middleware(options) }])],

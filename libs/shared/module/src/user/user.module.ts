@@ -12,7 +12,7 @@ export class UserModule {
       module: UserModule,
       imports: [MongooseModule.forFeatureAsync([{ name: User.name, useFactory: User.middleware() }])],
       providers: [UserService, UserResolver],
-      exports: isRoot ? [UserService] : [],
+      exports: isRoot ? [UserService] : [UserService],
     };
   }
 }

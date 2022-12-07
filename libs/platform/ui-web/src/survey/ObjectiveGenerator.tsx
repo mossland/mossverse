@@ -31,7 +31,6 @@ export const ObjectiveGenerator = ({ selections, addItem, updateItem, removeItem
           />
         ))
       )}
-      // ! This is the line that is causing the error
       <Survey.Button className="add-answer-button" onClick={() => addItem(0)}>
         + Add New Answer
       </Survey.Button>

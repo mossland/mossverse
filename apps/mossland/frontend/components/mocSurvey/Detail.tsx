@@ -6,7 +6,6 @@ import { useMocSurvey } from "./services/useMocSurvey";
 
 export const Detail = () => {
   const mocSurverService = useMocSurvey();
-
   if (mocSurverService.isWriteMode) {
     return (
       <SurveyDetailContainer className="only-pc">

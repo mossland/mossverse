@@ -55,7 +55,7 @@ interface MdlStats extends dbConfig.DefaultMdlStats<Doc, Raw> {
 schema.statics.generate = async function (networkId: Id, address: string) {
   const doc =
     (await this.findOne({ network: networkId, address: address.toLowerCase(), status: "active" })) ??
-    (await new this({ network: networkId, address }).save());
+    (await new this({ network: networkId, address: address.toLowerCase() }).save());
   return doc;
 };
 schema.statics.generateMany = async function (networkId: Id, addresses: string[]) {

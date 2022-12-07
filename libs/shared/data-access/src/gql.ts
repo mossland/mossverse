@@ -6,6 +6,7 @@ export * from "./wallet/wallet.gql";
 export * from "./contract/contract.gql";
 export * from "./keyring/keyring.gql";
 export * from "./product/product.gql";
+export * from "./currency/currency.gql";
 export * from "./token/token.gql";
 export * from "./user/user.gql";
 export * from "./_scalar";

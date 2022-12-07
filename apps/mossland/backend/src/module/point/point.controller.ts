@@ -24,7 +24,6 @@ export class PointController {
     type: Number,
   })
   async getPoint(@Req() req: Request, @Res() res: Response, @Param() { userId }) {
-    console.log("get");
     const account = this.securityService.verifyToken(req.headers.authorization);
     if (!account) throw new HttpException("Unauthorized", HttpStatus.UNAUTHORIZED);
     if (!["admin", "superAdmin"].includes(account.role) || account.status !== "active")
@@ -47,9 +46,7 @@ export class PointController {
     if (!account) throw new HttpException("Unauthorized", HttpStatus.UNAUTHORIZED);
     if (!["admin", "superAdmin"].includes(account.role) || account.status !== "active")
       throw new HttpException("Not Authorized Admin", HttpStatus.UNAUTHORIZED);
-    console.log(5);
     const exchange: gql.platform.ExchangeInput = { type: "thing", num: body.num, hash: body.hash };
-    console.log(6);
     return res.json(await this.pointService.updatePoint(new Id(userId), exchange));
   }
 }

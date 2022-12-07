@@ -1,6 +1,7 @@
+import { environment } from "../_environments/environment";
 import { TestSystem } from "@shared/test-server";
 
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import * as srv from "../srv";
 import * as gql from "../gql";
 import * as sample from "../sample";
@@ -14,7 +15,7 @@ describe("Asset Service", () => {
   let file: db.shared.File.Doc;
   let map: db.Map.Doc;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     assetService = app.get<AssetService>(AssetService);
     file = await sample.shared.createFile(app);
     map = await sample.createMap(app, file._id);

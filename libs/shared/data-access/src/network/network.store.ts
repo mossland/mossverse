@@ -1,19 +1,12 @@
-import create from "zustand";
+import { StateCreator } from "zustand";
 import * as gql from "../gql";
-import { createActions, createState, DefaultActions, DefaultState, generateStore } from "@shared/util-client";
+import { createActions, createState, DefaultActions, DefaultState, makeStore, SetGet } from "@shared/util-client";
 import { networkGraphQL, Network, NetworkInput } from "./network.gql";
 
-type State = DefaultState<"network", gql.Network> & {
-  //
+const state = {
+  ...createState(networkGraphQL),
 };
-const initialState: State = {
-  ...createState<"network", gql.Network, gql.NetworkInput>(networkGraphQL),
-};
-type Actions = DefaultActions<"network", gql.Network, gql.NetworkInput> & {
-  //
-};
-const store = create<State & Actions>((set, get) => ({
-  ...initialState,
-  ...createActions<"network", gql.Network, gql.NetworkInput>(networkGraphQL, { get, set }),
-}));
-export const network = generateStore(store);
+const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
+  ...createActions(networkGraphQL, { get, set }),
+});
+export const network = makeStore(networkGraphQL.refName, state, actions);

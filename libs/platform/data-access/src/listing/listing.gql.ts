@@ -11,27 +11,29 @@ import {
   BaseGql,
   Int,
   InputOf,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 import { User } from "../user/user.gql";
 import { PriceTag, PriceTagInput, ShipInfoInput } from "../_scalar";
-
-@InputType("ListingInput")
+import { gql } from "@platform/data-access";
+InputType("ListingInput");
 export class ListingInput {
   @Field(() => User)
   user: User;
 
   @Field(() => shared.Wallet, { nullable: true })
-  wallet: shared.Wallet | null;
+  wallet: shared.Wallet | shared.LightWallet | null;
 
   @Field(() => shared.Token, { nullable: true })
-  token: shared.Token | null;
+  token: shared.Token | shared.LightToken | null;
 
   @Field(() => shared.Thing, { nullable: true })
-  thing: shared.Thing | null;
+  thing: shared.Thing | shared.LightThing | null;
 
   @Field(() => shared.Product, { nullable: true })
-  product: shared.Product | null;
+  product: shared.Product | shared.LightProduct | null;
 
   @Field(() => Int)
   limit: number;
@@ -47,9 +49,34 @@ export class ListingInput {
 export class Listing extends BaseGql(ListingInput) {
   @Field(() => String)
   status: cnst.ListingStatus;
+
+  getListingName() {
+    if (this.token?.meta?.name) return this.token.meta.name;
+    if (this.thing?.name) return this.thing.name;
+    if (this.product?.name) return this.product.name;
+    return "";
+  }
+
+  getListingImage() {
+    if (this.token?.image?.url) return this.token.image.url;
+    if (this.thing?.image?.url) return this.thing.image.url;
+    if (this.product?.image?.url) return this.product.image.url;
+    return "";
+  }
+
+  filterMyListing(self: gql.User) {
+    console.log(this);
+    return this.user.id === self.id;
+  }
 }
 
-export const listingGraphQL = createGraphQL<"listing", Listing, ListingInput>(Listing, ListingInput);
+@ObjectType("LightListing", { _id: "id", gqlRef: "Listing" })
+export class LightListing extends PickType(Listing, ["status", "priceTags", "token", "thing", "user"] as const) {
+  // @Field(() => shared.LightToken)
+  // override token: shared.LightToken | null;
+}
+
+export const listingGraphQL = createGraphQL("listing" as const, Listing, ListingInput, LightListing);
 export const {
   getListing,
   listListing,
@@ -62,6 +89,7 @@ export const {
   purifyListing,
   defaultListing,
 } = listingGraphQL;
+export type ListingSlice = SliceModel<"listing", Listing, LightListing>;
 
 // * Close Listing Mutation
 export type CloseListingMutation = { closeListing: Listing };
@@ -96,5 +124,5 @@ export const generateListingMutation = graphql`
     }
   }
 `;
-export const generateListing = async (data: ListingInput) =>
+export const generateListing = async (data: InputOf<ListingInput>) =>
   (await mutate<GenerateListingMutation>(generateListingMutation, { data })).generateListing;

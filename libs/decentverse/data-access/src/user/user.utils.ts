@@ -2,17 +2,17 @@ import * as gql from "../gql";
 
 // export const getMyItems = (wallets: gql.shared.Wallet[], thingItems: gql.shared.ThingItem[]): gql.MyItem[] => {
 export const getMyItems = (user: gql.User): gql.MyItem[] => {
-  if (!user.keyring) return [];
-  const tokenItems: gql.shared.TokenItem[] = user.keyring.wallets.reduce(
-    (pre, cur) => [...pre, ...cur.items],
-    [] as gql.shared.TokenItem[]
-  );
-  return [
-    ...user.items
-      .filter((item) => item.thing.type !== "root")
-      .map((item): gql.MyItem => ({ thing: item.thing, type: "thing", token: null, user, num: item.num })),
-    ...tokenItems.map((item): gql.MyItem => ({ token: item.token, type: "token", thing: null, user, num: item.num })),
-  ];
+  return [];
+  // const tokenItems: gql.shared.TokenItem[] = user.keyring.wallets.reduce(
+  //   (pre, cur) => [...pre, ...cur.items],
+  //   [] as gql.shared.TokenItem[]
+  // );
+  // return [
+  //   ...user.items
+  //     .filter((item) => item.thing.type !== "root")
+  //     .map((item): gql.MyItem => ({ thing: item.thing, type: "thing", token: null, user, num: item.num })),
+  //   ...tokenItems.map((item): gql.MyItem => ({ token: item.token, type: "token", thing: null, user, num: item.num })),
+  // ];
   // [tokenItems,thingItems].map((item):gql.MyItem=>({thing:item.thing, token:item.token}));
 };
 
