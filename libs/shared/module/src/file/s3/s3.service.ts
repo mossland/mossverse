@@ -2,7 +2,7 @@ import * as aws from "aws-sdk";
 import * as fs from "fs";
 import { Inject, Injectable } from "@nestjs/common";
 import * as dto from "./s3.dto";
-import { ObjectStorageOptions } from "../../options";
+import { ObjectStorageOptions } from "../../option";
 import { LogService } from "@shared/util-server";
 
 @Injectable()

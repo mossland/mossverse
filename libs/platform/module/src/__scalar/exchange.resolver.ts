@@ -6,7 +6,9 @@ import * as srv from "../srv";
 export class ExchangeResolver {
   constructor(
     private readonly tokenService: srv.shared.TokenService,
-    private readonly thingService: srv.shared.ThingService
+    private readonly thingService: srv.shared.ThingService,
+    private readonly productService: srv.shared.ProductService,
+    private readonly currencyService: srv.shared.CurrencyService
   ) {}
 
   @ResolveField(() => gql.shared.Token)
@@ -17,8 +19,12 @@ export class ExchangeResolver {
   async thing(@Parent() exchange: gql.Exchange) {
     return await this.thingService.load(exchange.thing);
   }
-  @ResolveField(() => gql.shared.Thing)
+  @ResolveField(() => gql.shared.Product)
   async product(@Parent() exchange: gql.Exchange) {
-    return await this.thingService.load(exchange.product);
+    return await this.productService.load(exchange.product);
+  }
+  @ResolveField(() => gql.shared.Currency)
+  async currency(@Parent() exchange: gql.Exchange) {
+    return await this.currencyService.load(exchange.currency);
   }
 }

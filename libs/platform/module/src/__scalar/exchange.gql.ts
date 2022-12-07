@@ -11,23 +11,27 @@ import { ApiProperty } from "@nestjs/swagger";
 @Schema()
 export class Exchange extends BaseArrayField {
   @Field(() => String)
-  @Prop({ type: String, enum: cnst.exchangeTypes, required: true, index: true })
+  @Prop({ type: String, enum: cnst.exchangeTypes, required: true })
   type: cnst.ExchangeType;
 
   @Field(() => gql.shared.Token, { nullable: true })
-  @Prop({ type: ObjectId, ref: "token", index: true })
+  @Prop({ type: ObjectId, ref: "token" })
   token?: Id;
 
   @Field(() => gql.shared.Thing, { nullable: true })
-  @Prop({ type: ObjectId, ref: "thing", index: true })
+  @Prop({ type: ObjectId, ref: "thing" })
   thing?: Id;
 
   @Field(() => gql.shared.Product, { nullable: true })
-  @Prop({ type: ObjectId, ref: "product", index: true })
+  @Prop({ type: ObjectId, ref: "product" })
   product?: Id;
 
+  @Field(() => gql.shared.Currency, { nullable: true })
+  @Prop({ type: ObjectId, ref: "currency" })
+  currency?: Id;
+
   @Field(() => String, { nullable: true })
-  @Prop({ type: String, required: true, default: () => uuidv4(), index: true })
+  @Prop({ type: String, required: true, default: () => uuidv4(), unique: true, index: true })
   @ApiProperty({ example: "1242-abcd-defg-1213", description: "Unique ID of Change" })
   hash?: string;
 
@@ -39,6 +43,10 @@ export class Exchange extends BaseArrayField {
   @Prop({ type: Number, required: true, index: true })
   @ApiProperty({ example: -1, description: "Update Number of Item" })
   num: number;
+
+  @Field(() => Float, { nullable: true })
+  @Prop({ type: Number, required: false })
+  originalNum?: number;
 }
 @InputType({ isAbstract: true })
 class InputOverwrite {
@@ -48,6 +56,8 @@ class InputOverwrite {
   thing?: Id;
   @Field(() => ID, { nullable: true })
   product?: Id;
+  @Field(() => ID, { nullable: true })
+  currency?: Id;
   @Field(() => ID, { nullable: true })
   wallet?: Id;
 }
