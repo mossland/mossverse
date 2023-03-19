@@ -7,7 +7,6 @@ console.log();
 // import { AreaBox, InteractionIcon } from "..";
 // import { isMobile } from "react-device-detect";
 // import { Utils } from "@shared/util";
-// import { CSSProperties } from "styled-components";
 // import { Button, Card, Select, Space, Switch } from "antd";
 // import { DeleteOutlined } from "@ant-design/icons";
 // import { Field } from "@shared/ui-web";

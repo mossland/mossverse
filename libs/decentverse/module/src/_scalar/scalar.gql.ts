@@ -1,23 +1,17 @@
-import { Field, ObjectType, Int, InputType, ID } from "@nestjs/graphql";
+import { Field, ObjectType, Int, InputType, ID, IntersectionType, Float } from "@nestjs/graphql";
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
+import { File } from "@shared/module/gql";
+// import { File } from "./../../../../shared/module/src/file/file.gql";
 import { cnst } from "@shared/util";
 import { ObjectId, Id, BaseArrayField } from "@shared/util-server";
-import * as gql from "../gql";
+// import { gql as shared } from "@shared/module";
 
 export const filePurposes = ["asset", "character", "map", "item", "emoji"] as const;
-export type FilePurpose = typeof filePurposes[number];
 
-export const webviewPurposes = ["default", "youtube", "image", "twitter"] as const;
-export type WebviewPurpose = typeof webviewPurposes[number];
-
-@InputType({ isAbstract: true })
 @ObjectType()
+@InputType({ isAbstract: true })
 @Schema()
-export class Collision extends BaseArrayField {
-  @Field(() => String, { nullable: true })
-  @Prop({ type: String, required: false })
-  message?: string;
-
+export class Billboard extends BaseArrayField {
   @Field(() => [Int])
   @Prop([Number])
   center: number[];
@@ -25,30 +19,14 @@ export class Collision extends BaseArrayField {
   @Field(() => [Int])
   @Prop([Number])
   wh: number[];
-}
-@InputType()
-export class CollisionInput extends Collision {}
-export const CollisionSchema = SchemaFactory.createForClass(Collision);
 
-@InputType({ isAbstract: true })
-@ObjectType()
-@Schema()
-export class Webview extends BaseArrayField {
-  @Field(() => String, { nullable: true })
-  @Prop({ type: String, required: false })
-  message?: string;
+  @Field(() => [File])
+  @Prop([{ type: ObjectId, ref: "file", required: true }])
+  images: Id[];
 
-  @Field(() => String, { nullable: true })
-  @Prop({ type: String, required: false })
-  errorMessage?: string;
-
-  @Field(() => [Int])
-  @Prop([Number])
-  center: number[];
-
-  @Field(() => [Int])
-  @Prop([Number])
-  wh: number[];
+  @Field(() => File)
+  @Prop({ type: ObjectId, ref: "file", required: false })
+  video?: Id;
 
   @Field(() => String)
   @Prop({ type: String })
@@ -57,78 +35,18 @@ export class Webview extends BaseArrayField {
   @Field(() => [Int])
   @Prop([Number])
   size: number[];
-
-  @Field(() => String)
-  @Prop({ type: String, required: true, default: "default", enum: webviewPurposes })
-  purpose: WebviewPurpose;
-
-  @Field(() => Boolean)
-  @Prop({ type: Boolean, required: true, default: true })
-  isEmbed: boolean;
 }
-@InputType()
-export class WebviewInput extends Webview {}
-export const WebviewSchema = SchemaFactory.createForClass(Webview);
-
 @InputType({ isAbstract: true })
-@ObjectType()
-@Schema()
-export class CallRoom extends BaseArrayField {
-  @Field(() => String, { nullable: true })
-  @Prop({ type: String, required: false })
-  message?: string;
+class BillboardInput_ {
+  @Field(() => [ID])
+  images: Id[];
 
-  @Field(() => String, { nullable: true })
-  @Prop({ type: String, required: false })
-  errorMessage?: string;
-
-  @Field(() => [Int])
-  @Prop([Number])
-  center: number[];
-
-  @Field(() => [Int])
-  @Prop([Number])
-  wh: number[];
-
-  @Field(() => Int)
-  @Prop({ type: Number, required: true, default: 100 })
-  maxNum: number;
-
-  @Field(() => String)
-  @Prop({ type: String, default: "call", enum: cnst.roomTypes })
-  roomType: cnst.RoomType;
+  @Field(() => ID)
+  video: Id;
 }
 @InputType()
-export class CallRoomInput extends CallRoom {}
-export const CallRoomSchema = SchemaFactory.createForClass(CallRoom);
-
-@InputType({ isAbstract: true })
-@ObjectType()
-@Schema()
-export class Live extends BaseArrayField {
-  @Field(() => String, { nullable: true })
-  @Prop({ type: String, required: false })
-  message?: string;
-
-  @Field(() => String, { nullable: true })
-  @Prop({ type: String, required: false })
-  errorMessage?: string;
-
-  @Field(() => [Int])
-  @Prop([Number])
-  center: number[];
-
-  @Field(() => [Int])
-  @Prop([Number])
-  wh: number[];
-
-  @Field(() => String)
-  @Prop({ type: String })
-  src: string;
-}
-@InputType()
-export class LiveInput extends Live {}
-export const LiveSchema = SchemaFactory.createForClass(Live);
+export class BillboardInput extends IntersectionType(BillboardInput_, Billboard, InputType) {}
+export const BillboardSchema = SchemaFactory.createForClass(Billboard);
 
 @InputType({ isAbstract: true })
 @ObjectType()
@@ -185,3 +103,19 @@ export class SpriteInput extends Sprite {
   walk: SpriteDefInput;
 }
 export const SpriteSchema = SchemaFactory.createForClass(Sprite);
+
+@InputType({ isAbstract: true })
+@ObjectType()
+@Schema()
+export class MapPosition {
+  @Field(() => String)
+  @Prop({ type: String, required: true })
+  key: string;
+
+  @Field(() => [Float])
+  @Prop({ type: [Number], required: true, default: [0, 0] })
+  position: number[];
+}
+@InputType()
+export class MapPositionInput extends MapPosition {}
+export const MapPositionSchema = SchemaFactory.createForClass(MapPosition);

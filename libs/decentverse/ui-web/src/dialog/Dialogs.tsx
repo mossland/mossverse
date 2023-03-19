@@ -2,7 +2,6 @@ console.log();
 // import { Button, Card } from "antd";
 // import { dialogStore, types } from "../../stores";
 // import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-// import styled from "styled-components";
 // import React, { useEffect, useState, useCallback, useMemo } from "react";
 // import { QuestionNode, SpeakNode } from "./index";
 

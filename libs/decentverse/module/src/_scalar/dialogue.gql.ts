@@ -1,7 +1,8 @@
 import { Field, ObjectType, Int, InputType, ID, IntersectionType } from "@nestjs/graphql";
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import { BaseArrayField, Id, ObjectId } from "@shared/util-server";
-import * as gql from "../gql";
+import { Dialog } from "../dialog/dialog.gql";
+
 @ObjectType()
 @InputType({ isAbstract: true })
 @Schema()
@@ -14,7 +15,7 @@ export class Dialogue extends BaseArrayField {
   @Prop([Number])
   wh: number[];
 
-  @Field(() => gql.Dialog)
+  @Field(() => Dialog)
   @Prop({ type: ObjectId, required: true })
   dialog: Id;
 }

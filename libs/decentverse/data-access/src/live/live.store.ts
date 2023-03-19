@@ -1,30 +1,23 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-import create from "zustand";
+import { SetGet, State } from "@shared/util-client";
+import type { RootState } from "../store";
 import * as gql from "../gql";
-import { DefaultOf, generateStore, Nullable } from "@shared/util-client";
+import * as slice from "../slice";
 
-type State = DefaultOf<gql.Live> & {
+// ? Store는 다른 store 내 상태와 상호작용을 정의합니다. 재사용성이 필요하지 않은 단일 기능을 구현할 때 사용합니다.
+// * 1. State에 대한 내용을 정의하세요.
+const state = ({ set, get, pick }: SetGet<slice.LiveSliceState>) => ({
+  ...slice.makeLiveSlice({ set, get, pick }),
+});
+
+// * 2. Action을 내용을 정의하세요. Action은 모두 void 함수여야 합니다.
+// * 다른 action을 참조 시 get() as <Model>State 또는 RootState 를 사용하세요.
+const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
   //
-};
+});
 
-const initialState: State = {
-  ...gql.defaultLive,
-};
-
-type Action = {
-  get: () => gql.Live;
-};
-const store = create<State & Action>((set, get) => ({
-  ...initialState,
-  get: () => ({
-    // 임시 기능
-    id: "",
-    message: "message",
-    errorMessage: "error",
-    center: [0, 0],
-    wh: [0, 0],
-    src: get().src ?? "",
-  }),
-}));
-
-export const live = generateStore(store);
+export type LiveState = State<typeof state, typeof actions>;
+// * 3. ChildSlice를 추가하세요. Suffix 규칙은 일반적으로 "InModel" as const 로 작성합니다.
+export const addLiveToStore = ({ set, get, pick }: SetGet<LiveState>) => ({
+  ...state({ set, get, pick }),
+  ...actions({ set, get, pick }),
+});

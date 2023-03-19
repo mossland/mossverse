@@ -1,7 +1,8 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId } from "@shared/util-server";
 import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
-import * as gql from "../gql";
+import { gql as shared } from "@shared/module";
+import { Dialogue, DialogueInput, DialogueSchema } from "../_scalar/dialogue.gql";
 
 @ObjectType({ isAbstract: true })
 @InputType({ isAbstract: true })
@@ -11,50 +12,56 @@ class Base {
   @Prop({ type: String, required: true, unique: true, index: true })
   name: string;
 
-  @Field(() => gql.shared.File, { nullable: true })
+  @Field(() => shared.File, { nullable: true })
   @Prop({ type: ObjectId, ref: "file", required: false })
   top?: Id;
 
-  @Field(() => gql.shared.File, { nullable: true })
+  @Field(() => shared.File, { nullable: true })
+  @Prop({ type: ObjectId, ref: "file", required: false })
+  wall?: Id;
+
+  @Field(() => shared.File, { nullable: true })
   @Prop({ type: ObjectId, ref: "file", required: false })
   bottom?: Id;
 
-  @Field(() => gql.shared.File, { nullable: true })
+  @Field(() => shared.File, { nullable: true })
   @Prop({ type: ObjectId, ref: "file", required: false })
   lighting?: Id;
 
-  @Field(() => [gql.Collision])
-  @Prop([{ type: gql.CollisionSchema }])
-  collisions: gql.Collision[];
+  // @Field(() => [Collision])
+  // @Prop([{ type: CollisionSchema }])
+  // collisions: Collision[];
 
-  @Field(() => [gql.Webview])
-  @Prop([{ type: gql.WebviewSchema }])
-  webviews: gql.Webview[];
+  // @Field(() => [Webview])
+  // @Prop([{ type: WebviewSchema }])
+  // webviews: Webview[];
 
-  @Field(() => [gql.Dialogue])
-  @Prop([{ type: gql.DialogueSchema }])
-  dialogues: gql.Dialogue[];
+  // @Field(() => [Dialogue])
+  // @Prop([{ type: DialogueSchema }])
+  // dialogues: Dialogue[];
 
-  @Field(() => [gql.Live])
-  @Prop([{ type: gql.LiveSchema }])
-  lives: gql.Live[];
+  // @Field(() => [Live])
+  // @Prop([{ type: LiveSchema }])
+  // lives: Live[];
 }
 @InputType({ isAbstract: true })
 class InputOverwrite {
   @Field(() => ID, { nullable: true })
   top?: Id;
   @Field(() => ID, { nullable: true })
+  wall?: Id;
+  @Field(() => ID, { nullable: true })
   bottom?: Id;
   @Field(() => ID, { nullable: true })
   lighting?: Id;
-  @Field(() => [gql.CollisionInput])
-  collisions: gql.CollisionInput[];
-  @Field(() => [gql.WebviewInput])
-  webviews: gql.WebviewInput[];
-  @Field(() => [gql.DialogueInput])
-  dialogues: gql.DialogueInput[];
-  @Field(() => [gql.LiveInput])
-  lives: gql.LiveInput[];
+  // @Field(() => [CollisionInput])
+  // collisions: CollisionInput[];
+  // @Field(() => [WebviewInput])
+  // webviews: WebviewInput[];
+  // @Field(() => [DialogueInput])
+  // dialogues: DialogueInput[];
+  // @Field(() => [LiveInput])
+  // lives: LiveInput[];
 }
 @ObjectType({ isAbstract: true })
 @InputType({ isAbstract: true })
@@ -74,3 +81,12 @@ export class AssetInput extends IntersectionType(InputOverwrite, Base, InputType
 export class Asset extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class AssetSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class AssetSummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalAsset: number;
+}

@@ -13,7 +13,7 @@ export class RtModule {
         {
           provide: "REDIS_CLIENT",
           useFactory: async () => {
-            const client = createClient(options);
+            const client = createClient({ url: `redis://${options.host}:${options.port}` });
             await client.connect();
             return client;
           },

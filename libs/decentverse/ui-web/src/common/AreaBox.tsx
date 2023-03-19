@@ -1,5 +1,3 @@
-import styled from "styled-components";
-
 interface AreaBoxProps {
   color: string;
   center: [number, number];
@@ -11,59 +9,26 @@ export const AreaBox = ({ color, center, wh }: AreaBoxProps) => {
     const long = Math.max(wh[0], wh[1]);
     return [(wh[0] / long) * 100, (wh[1] / long) * 100];
   };
+
   return (
-    <BoxContainer color={color} width={getWh()[0]} height={getWh()[1]}>
-      <div className="box">
-        <span className="width">{Math.round(wh[0])}</span>
-        <span className="height">{Math.round(wh[1])}</span>
-        <div className="dot">
-          <span>
-            ({Math.round(center[0])},{Math.round(center[1])})
+    <div className="flex justify-center items-center w-full h-[100px]">
+      <div
+        className="relative border border-black"
+        style={{ backgroundColor: color, width: getWh()[0], height: getWh()[1] }}
+      >
+        <span className="absolute left-1/2 text-[10px] translate-x-[-50%] translate-y-[-100%]">
+          {wh[0]?.toFixed(4)}
+        </span>
+        <span className="absolute top-1/2 right-0 text-[10px] translate-x-[120%] translate-y-[-50%]">
+          {wh[1]?.toFixed(4)}
+        </span>
+        <div className="absolute bg-black w-1 h-1 -translate-x-1/2 -translate-y-1/2 rounded-full top-1/2 left-1/2" />
+        <div className="absolute -translate-x-1/2 -translate-y-1/2 pt-4 rounded-full top-1/2 left-1/2">
+          <span className="text-[10px] w-full">
+            ({center[0]?.toFixed(4)},{center[1]?.toFixed(4)})
           </span>
         </div>
       </div>
-    </BoxContainer>
+    </div>
   );
 };
-
-const BoxContainer = styled.div<{ color: string; width: number; height: number }>`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100px;
-  .box {
-    /* width: 140px;
-    height: 80px; */
-    width: ${(props) => `${props.width}px`};
-    height: ${(props) => `${props.height}px`};
-    background-color: ${(props) => props.color};
-    position: relative;
-    border: 1px solid black;
-  }
-  .dot {
-    width: 3px;
-    height: 3px;
-    border-radius: 100%;
-    background-color: black;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    span {
-      font-size: 10px;
-    }
-  }
-  .width {
-    position: absolute;
-    left: 50%;
-    transform: translate(-50%, -100%);
-    font-size: 10px;
-  }
-  .height {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    transform: translate(120%, -50%);
-    font-size: 10px;
-  }
-`;

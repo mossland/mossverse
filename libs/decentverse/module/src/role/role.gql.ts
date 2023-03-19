@@ -1,7 +1,7 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
-import { Field, ID, InputType, IntersectionType, ObjectType } from "@nestjs/graphql";
-import * as gql from "../gql";
+import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
+import { Area, AreaInput, AreaSchema } from "../_scalar/area.gql";
 
 // * 1. 보안필드를 제외한 모든 필드
 @ObjectType({ isAbstract: true })
@@ -12,16 +12,16 @@ class Base {
   @Prop({ type: String, required: true, index: true })
   name: string;
 
-  @Field(() => [gql.Area])
-  @Prop([gql.AreaSchema])
-  areas: gql.Area[];
+  @Field(() => [Area])
+  @Prop([AreaSchema])
+  areas: Area[];
 }
 
 // * 2. 다른 필드를 참조하는 값 Input형식으로 덮어씌우기
 @InputType({ isAbstract: true })
 class InputOverwrite {
-  @Field(() => [gql.AreaInput])
-  areas: gql.AreaInput[];
+  @Field(() => [AreaInput])
+  areas: AreaInput[];
 }
 
 // * 3. 보안필드, default 필드 생성 필수
@@ -46,3 +46,12 @@ export class RoleInput extends IntersectionType(InputOverwrite, Base, InputType)
 export class Role extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class RoleSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class RoleSummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalRole: number;
+}

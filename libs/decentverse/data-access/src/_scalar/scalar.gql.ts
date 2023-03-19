@@ -1,10 +1,5 @@
-import graphql from "graphql-tag";
-import { cnst } from "@shared/util";
-import { Socket } from "socket.io";
-import { Vector3 } from "three";
-import { BaseArrayFieldGql, createFragment, Field, Float, InputType, Int, ObjectType } from "@shared/util-client";
-import { gql as shared } from "@shared/data-access";
-import { Character } from "../character/character.gql";
+import { createFragment, Field, Float, InputType, Int, makeDefault, ObjectType } from "@shared/util-client";
+import type { User, Character, LightCharacter } from "../gql";
 
 @InputType("SpriteDefInput")
 export class SpriteDefInput {
@@ -34,26 +29,10 @@ export class Sprite extends SpriteInput {}
 export const spriteFragment = createFragment(Sprite);
 
 export const interactionTypes = ["collision", "webview", "callRoom", "videoRoom"] as const;
-export type InteractionType = typeof interactionTypes[number];
+export type InteractionType = (typeof interactionTypes)[number];
 
-@InputType("CollisionInput")
-export class CollisionInput {
-  @Field(() => String, { nullable: true })
-  message: string | null;
-
-  @Field(() => [Float])
-  center: [number, number];
-
-  @Field(() => [Float])
-  wh: [number, number];
-}
-
-@ObjectType("Collision")
-export class Collision extends BaseArrayFieldGql(CollisionInput) {}
-export const collisionFragment = createFragment(Collision);
-
-export const interactions = ["collision", "webview", "callRoom", "live", "dialogue"] as const;
-export type Interaction = typeof interactions[number];
+export const interactions = ["placement", "collision", "webview", "callRoom", "live", "teleport"] as const;
+export type Interaction = (typeof interactions)[number];
 
 @InputType("MapConfigInput")
 export class MapConfigInput {
@@ -65,44 +44,129 @@ export class MapConfigInput {
 export class MapConfig extends MapConfigInput {}
 export const mapConfigFragment = createFragment(MapConfig);
 
+@InputType("MapPositionInput")
+export class MapPositionInput {
+  @Field(() => String)
+  key: string;
+
+  @Field(() => [Float], { default: [0, 0] })
+  position: [number, number];
+}
+@ObjectType("MapPosition")
+export class MapPosition extends MapPositionInput {}
+export const mapPositionFragment = createFragment(MapPosition);
+export const defaultMapPosition = makeDefault(MapPosition);
+
 export const keyMap = {
   KeyW: "up",
   KeyA: "left",
   KeyS: "down",
   KeyD: "right",
-  KeyF: "interaction",
-  Space: "interaction",
+  KeyF: "webview",
+  Space: "webview",
   ArrowUp: "up",
   ArrowLeft: "left",
   ArrowDown: "down",
   ArrowRight: "right",
-  Digit1: "emoji1",
-  Digit2: "emoji2",
-  Digit3: "emoji3",
-  Digit4: "emoji4",
+  // Digit1: "emoji1",
+  // Digit2: "emoji2",
+  // Digit3: "emoji3",
+  // Digit4: "emoji4",
 } as const;
 export type Key = keyof typeof keyMap;
 
-export const keyTypes = ["left", "right", "up", "down", "interaction", "emoji1", "emoji2", "emoji3", "emoji4"] as const;
-export type KeyType = typeof keyTypes[number];
-export const keyboard = {
+export const keyTypes = ["left", "right", "up", "down", "webview"] as const;
+export type KeyType = (typeof keyTypes)[number];
+export type Keyboard = { [key in KeyType]: boolean };
+export const defaultKeyboard: Keyboard = {
   left: false,
   right: false,
   up: false,
   down: false,
-  interaction: false,
-  emoji1: false,
-  emoji2: false,
-  emoji3: false,
-  emoji4: false,
+  webview: false,
 };
-export type Keyboard = { [key in KeyType]: boolean };
-export const mouse = new Vector3(0, 0, 0);
-export type Mouse = Vector3;
 
-// export const flowStyles = ["speak"] as const;
-export const flowStyles = ["speak", "question"] as const;
-export type FlowStyle = typeof flowStyles[number];
+export type MapLayerView = {
+  collision: boolean;
+  webview: boolean;
+  callRoom: boolean;
+  teleport: boolean;
+  live: {
+    iframe: boolean;
+  };
+  placement: {
+    top: boolean;
+    wall: boolean;
+    bottom: boolean;
+    lighting: boolean;
+  };
+  tile: {
+    top: boolean;
+    wall: boolean;
+    bottom: boolean;
+    lighting: boolean;
+  };
+  dialogue: boolean;
+};
+export const mapEditorLayerView: MapLayerView = {
+  collision: true,
+  webview: true,
+  callRoom: true,
+  teleport: true,
+  live: {
+    iframe: true,
+  },
+  placement: {
+    top: true,
+    wall: true,
+    bottom: true,
+    lighting: true,
+  },
+  tile: {
+    top: true,
+    wall: true,
+    bottom: true,
+    lighting: true,
+  },
+  dialogue: true,
+};
+export const mapPlayerLayerView: MapLayerView = {
+  collision: false,
+  webview: false,
+  callRoom: false,
+  teleport: false,
+  live: {
+    iframe: true,
+  },
+  placement: {
+    top: true,
+    wall: true,
+    bottom: true,
+    lighting: true,
+  },
+  tile: {
+    top: true,
+    wall: true,
+    bottom: true,
+    lighting: true,
+  },
+  dialogue: false,
+};
 
-export const avatarPositions = ["left", "right", "center"] as const;
-export type AvatarPosition = typeof avatarPositions[number];
+export type PlayerInit = {
+  playerNickname: string;
+  playerType: null | "user" | "guest";
+  playerCharacter: LightCharacter;
+  playerMaxSpeed: number;
+  playerAcceleration: number;
+  playerDeceleration: number;
+};
+export type PlayerRender = {
+  playerVelocity: [number, number];
+  playerPosition: [number, number];
+  playerSpriteState: "idle" | "walk";
+  playerDirection: "left" | "right" | "up" | "down";
+  playerChatText: string;
+  playerEmojiUrl: null | string;
+  playerStatus: null | "talk";
+};

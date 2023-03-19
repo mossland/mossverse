@@ -12,7 +12,6 @@ import {
   BaseArrayFieldGql,
   Int,
   PickType,
-  SliceModel,
 } from "@shared/util-client";
 import { Map } from "../map/map.gql";
 
@@ -50,6 +49,12 @@ export class Role extends BaseGql(RoleInput) {
 @ObjectType("LightRole", { _id: "id", gqlRef: "Role" })
 export class LightRole extends PickType(Role, ["status"] as const) {}
 
+@ObjectType("RoleSummary")
+export class RoleSummary {
+  @Field(() => Int)
+  totalRole: number;
+}
+
 export const roleGraphQL = createGraphQL("role" as const, Role, RoleInput, LightRole);
 export const {
   getRole,
@@ -61,6 +66,8 @@ export const {
   removeRole,
   roleFragment,
   purifyRole,
+  crystalizeRole,
+  lightCrystalizeRole,
   defaultRole,
+  mergeRole,
 } = roleGraphQL;
-export type RoleSlice = SliceModel<"role", Role, LightRole>;

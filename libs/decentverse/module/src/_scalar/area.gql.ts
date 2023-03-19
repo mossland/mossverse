@@ -1,12 +1,13 @@
 import { Field, ObjectType, Int, InputType, ID, IntersectionType } from "@nestjs/graphql";
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import { BaseArrayField, Id, ObjectId } from "@shared/util-server";
-import * as gql from "../gql";
+import { Map } from "../map/map.gql";
+
 @ObjectType()
 @InputType({ isAbstract: true })
 @Schema()
 export class Area extends BaseArrayField {
-  @Field(() => gql.Map)
+  @Field(() => Map)
   @Prop({ type: ObjectId, required: true, ref: "map" })
   map: Id;
 

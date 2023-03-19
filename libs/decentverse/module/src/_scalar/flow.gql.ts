@@ -1,7 +1,7 @@
 import { Field, ObjectType, Int, InputType, ID, IntersectionType } from "@nestjs/graphql";
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import { BaseArrayField, Id, ObjectId } from "@shared/util-server";
-import * as gql from "../gql";
+import { gql as shared } from "@shared/module";
 
 export const flowStyles = ["speak", "question"] as const;
 export type FlowStyle = typeof flowStyles[number];
@@ -25,11 +25,11 @@ export class Flow extends BaseArrayField {
   @Prop({ type: ObjectId, ref: "character", required: false })
   character?: Id;
 
-  @Field(() => gql.shared.File, { nullable: true })
+  @Field(() => shared.File, { nullable: true })
   @Prop({ type: ObjectId, ref: "file", required: false })
   image?: Id;
 
-  @Field(() => gql.shared.File, { nullable: true })
+  @Field(() => shared.File, { nullable: true })
   @Prop({ type: ObjectId, ref: "file", required: false })
   background?: Id;
 
