@@ -1,8 +1,7 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
-import { Field, ID, InputType, IntersectionType, ObjectType } from "@nestjs/graphql";
+import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
 import { cnst } from "@shared/util";
-import * as gql from "../gql";
 
 // * 1. 보안필드를 제외한 모든 필드
 @ObjectType({ isAbstract: true })
@@ -10,17 +9,8 @@ import * as gql from "../gql";
 @Schema()
 class Base {
   @Field(() => ID)
-  @Prop({ type: String, required: true, unique: true, index: true })
+  @Prop({ type: String, required: true, unique: true, validate: validate.email, index: true })
   accountId: string;
-
-  @Field(() => String)
-  @Prop({
-    type: String,
-    validate: validate.email,
-    required: true,
-    index: true,
-  })
-  email: string;
 
   @Field({ nullable: true })
   @Prop({ type: String, required: true, select: false })
@@ -36,9 +26,9 @@ class InputOverwrite {}
 @InputType({ isAbstract: true })
 @Schema()
 class Tail extends Base {
-  @Field(() => String)
-  @Prop({ type: String, enum: cnst.adminRoles, required: true, default: "admin" })
-  role: cnst.AdminRole;
+  @Field(() => [String])
+  @Prop([{ type: String, enum: cnst.adminRoles, required: true }])
+  roles: cnst.AdminRole[];
 
   @Field(() => String)
   @Prop({ type: String, enum: cnst.adminStatuses, required: true, default: "active" })
@@ -52,3 +42,12 @@ export class AdminInput extends IntersectionType(InputOverwrite, Base, InputType
 export class Admin extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class AdminSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class AdminSummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalAdmin: number;
+}

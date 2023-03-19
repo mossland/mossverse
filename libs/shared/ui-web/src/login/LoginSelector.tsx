@@ -1,6 +1,5 @@
 // ! This File Needs to be Refactor
-import styled from "styled-components";
-import { gql, store } from "@shared/data-access";
+import { gql, st } from "@shared/data-access";
 import { ConnectButton } from "./index";
 import { KlaytnIcon, LuniverseIcon, EthereumIcon, ModalContainer } from "../common";
 
@@ -9,17 +8,16 @@ export type LoginSelectorProps = {
 };
 
 export const LoginSelector = ({ networkList }: LoginSelectorProps) => {
-  const isOpenModal = store.keyring.use.isOpenModal();
+  const keyringModal = st.use.keyringModal();
 
-  if (!isOpenModal) return null;
-
+  if (keyringModal !== "addWallet") return null;
   return (
     <ModalContainer
-      showModal={isOpenModal}
-      closeShowModal={() => store.keyring.setState({ isOpenModal: false })}
       title="Select Network"
+      showModal={keyringModal === "addWallet"}
+      closeShowModal={() => st.set({ keyringModal: null })}
     >
-      <LoginSelectorContainer>
+      <div className="py-[24px] px-[22px] flex gap-[18px] flex-col z-[2]">
         {networkList.map((network) =>
           network.provider === "klaytn" ? (
             <ConnectButton
@@ -27,7 +25,7 @@ export const LoginSelector = ({ networkList }: LoginSelectorProps) => {
               fontColor={"white"}
               backgroundColor={"#69583F"}
               icon={<KlaytnIcon />}
-              onClick={async () => await store.keyring.do.signinWithWallet("kaikas", network)}
+              onClick={() => st.do.signuporinWallet("kaikas", network, { loginType: "skipReplace" })}
             />
           ) : network.provider === "ethereum" ? (
             <ConnectButton
@@ -35,20 +33,11 @@ export const LoginSelector = ({ networkList }: LoginSelectorProps) => {
               fontColor={"white"}
               backgroundColor={"#343434"}
               icon={<EthereumIcon />}
-              onClick={async () => await store.keyring.do.signinWithWallet("metamask", network)}
+              onClick={() => st.do.signuporinWallet("metamask", network, { loginType: "skipReplace" })}
             />
           ) : null
         )}
-      </LoginSelectorContainer>
+      </div>
     </ModalContainer>
   );
 };
-
-const LoginSelectorContainer = styled.div`
-  padding: 24px 22px;
-  display: flex;
-  gap: 18px;
-  flex-direction: column;
-  z-index: 2;
-  /* height: 240px; */
-`;

@@ -1,42 +1,18 @@
 // ! This File Needs to be Refactor
-import styled from "styled-components";
-import { store } from "@shared/data-access";
-import { darken } from "polished";
+import { st } from "@shared/data-access";
 
 type LoginButtonProps = {
   title: string;
   color?: string;
 };
 export const LoginButton = ({ title }: LoginButtonProps) => {
-  const openModal = () => store.keyring.setState({ isOpenModal: true });
-  return <Button onClick={openModal}>{title}</Button>;
+  const openModal = () => st.set({ keyringModal: "addWallet" });
+  return (
+    <button
+      className="h-[24px] md:h-fit mt-[4px] md:mt-0 py-[0px] mb-[10px] md:mb-0 text-[14px] block w-full md:py-[8px] px-[16px] md:text-[20px] text-black bg-[#ffe177] text-center rounded-[6px] border-0 transition duration-500 cursor-pointer hover:bg-[#ffe177]/90"
+      onClick={openModal}
+    >
+      {title}
+    </button>
+  );
 };
-const Button = styled.button`
-  display: block;
-  /* width: 370px; */
-  width: 100%;
-  padding: 8px 16px;
-  /* margin-bottom: 30px; */
-  font-size: 20px;
-  color: #000;
-  background-color: #ffe177;
-  text-align: center;
-  border-radius: 6px;
-  /* border: 2px solid #000; */
-  border-width: 0px;
-  transition: 0.5s;
-  cursor: pointer;
-  &:hover {
-    background-color: ${darken(0.3, "#FFE177")};
-  }
-
-  @media screen and (max-width: 800px) {
-    /* width: 260px; */
-    /* height: 50px; */
-    height: 24px;
-    margin-top: 4px;
-    padding: 0px;
-    margin-bottom: 10px;
-    font-size: 14px;
-  }
-`;

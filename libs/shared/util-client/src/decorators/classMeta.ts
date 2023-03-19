@@ -1,11 +1,8 @@
 import "reflect-metadata";
-import { DocumentNode } from "graphql";
-import gql from "graphql-tag";
-import { Utils } from "@shared/util";
 import { ClassMeta, ClassProps, FieldMeta, getClassMeta } from "./scalar";
 import { makeFragmentGqlStr } from "./fragment";
 import { makeDefault } from "./defaultValue";
-import { makePurify } from "./purify";
+import { makeCrystalize, makePurify } from "./purify";
 
 export const getChildClassRefs = (metadatas: FieldMeta[]) => {
   const childRefs = metadatas
@@ -23,7 +20,11 @@ export function ObjectType(refName: string, { _id, isAbstract, gqlRef = refName 
   return function (target: any) {
     const metadataMap: Map<string, FieldMeta> = Reflect.getMetadata("fields", target.prototype) ?? new Map();
     for (const [field, metadata] of metadataMap)
-      if (metadata.className === target.name) metadataMap.set(field, { ...metadata, tailed: true });
+      metadataMap.set(field, {
+        ...metadata,
+        className: metadata.className ?? refName,
+        tailed: metadata.tailed || !metadata.className,
+      });
     Reflect.defineMetadata("fields", metadataMap, target.prototype);
     const metadatas = [...metadataMap.values()];
     const classMeta: ClassMeta = {
@@ -32,6 +33,7 @@ export function ObjectType(refName: string, { _id, isAbstract, gqlRef = refName 
       refName,
       modelRef: target,
       purify: makePurify(target),
+      crystalize: makeCrystalize(target),
       default: makeDefault(target),
       gqlRef,
       gqlStr: makeFragmentGqlStr(refName, gqlRef, metadatas),
@@ -45,7 +47,12 @@ export function InputType(refName: string, { _id, isAbstract, gqlRef = refName }
   return function (target: any) {
     const metadataMap: Map<string, FieldMeta> = Reflect.getMetadata("fields", target.prototype) ?? new Map();
     for (const [field, metadata] of metadataMap)
-      if (metadata.className === target.name) metadataMap.set(field, { ...metadata, tailed: false });
+      metadataMap.set(field, {
+        ...metadata,
+        className: metadata.className ?? refName,
+        tailed: !metadata.tailed && !!metadata.className,
+      });
+
     Reflect.defineMetadata("fields", metadataMap, target.prototype);
     const metadatas = [...metadataMap.values()];
     const classMeta: ClassMeta = {
@@ -54,6 +61,7 @@ export function InputType(refName: string, { _id, isAbstract, gqlRef = refName }
       refName,
       modelRef: target,
       purify: makePurify(target),
+      crystalize: makeCrystalize(target),
       default: makeDefault(target),
       gqlRef,
       gqlStr: makeFragmentGqlStr(refName, gqlRef, metadatas),

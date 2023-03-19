@@ -10,7 +10,7 @@ import "tsconfig-paths/register";
 
 // dotenv.config({ path: __dirname + "/.env" });
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { env } = require("./env.contract");
+const { env } = require("./env");
 if (process.env["REPORT_GAS"]) require("hardhat-gas-reporter");
 const config: HardhatUserConfig = {
   paths: {

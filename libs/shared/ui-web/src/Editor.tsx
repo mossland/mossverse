@@ -1,102 +1,78 @@
-import React, { MutableRefObject, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import styled from "styled-components";
-import "react-quill/dist/quill.snow.css";
 import dynamic from "next/dynamic";
-import ImageResize from "quill-image-resize-module-react";
-import { Quill } from "react-quill";
+import React, { useRef } from "react";
+import SunEditorCore from "suneditor/src/lib/core";
 import { gql } from "@shared/data-access";
-import { useInterval } from "@shared/util-client";
-import { cnst } from "@shared/util";
+
+const SunEditor = dynamic(() => import("suneditor-react"), {
+  ssr: false,
+});
 
 export interface EditorProps {
   addFilesGql: (fileList: FileList, id?: string) => Promise<gql.File[]>;
-  addFile: (file: gql.File | gql.File[], idx?: number) => void;
+  addFile: (file: gql.File | gql.File[], options?: { idx?: number; limit?: number }) => void;
   onChange: (content: string) => void;
   defaultValue?: string;
 }
-const getVideoUrl = (url: string) => {
-  let match: any =
-    url.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/) ||
-    url.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
-    url.match(/^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#&?]*).*/);
-  console.log(match[2]);
-  if (match && match[2].length === 11) {
-    return "https" + "://www.youtube.com/embed/" + match[2] + "?showinfo=0";
-  }
-  if ((match = url.match(/^(?:(https?):\/\/)?(?:www\.)?vimeo\.com\/(\d+)/))) {
-    // eslint-disable-line no-cond-assign
-    return (match[1] || "https") + "://player.vimeo.com/video/" + match[2] + "/";
-  }
-  return null;
-};
+
 export const Editor = ({ addFilesGql, addFile, onChange, defaultValue }: EditorProps) => {
-  const quillRef = useRef<any>();
-  const imageHandler = () => {
-    if (!quillRef.current) return;
-    const { getEditor } = quillRef.current;
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/*");
-    // document.body.appendChild(input);
-    input.click();
-    const range = getEditor().getSelection(true);
-    input.onchange = async (e: any) => {
-      if (!e.target.files?.length) return;
-      const [file] = await addFilesGql(e.target.files);
+  const editor = useRef<SunEditorCore>();
+
+  const options = {
+    // defaultStyle: "font-size: 20px",
+    buttonList: [
+      // ["undo", "redo"],
+      ["font", "fontSize", "formatBlock"],
+      // ["paragraphStyle", "blockquote"],
+      ["bold", "underline", "italic", "strike" /** 'subscript', 'superscript' */],
+      ["fontColor", "hiliteColor" /** , 'textStyle' */],
+      ["codeView"],
+      // ["outdent", "indent"],
+      ["align", "list", "lineHeight"], // "horizontalRule",
+      // '/', // Line break
+      ["table", "link", "image", "video" /**'video', 'audio' ,'math' */], // You must add the 'katex' library at options to use the 'math' plugin.
+      /** ['imageGallery'] */ // You must add the "imageGalleryUrl".
+      // ["fullScreen", "showBlocks", "codeView"],
+      // ["removeFormat"],
+      // ['preview', 'print'],
+      // ['save', 'template'],
+    ],
+    // plugins: [plugin],
+  };
+
+  const getSunEditorInstance = (sunEditor: SunEditorCore) => {
+    editor.current = sunEditor;
+  };
+
+  const handleImageUploadBefore = (files, info, uploadHandler) => {
+    (async () => {
+      const [file] = await addFilesGql(files);
       addFile(file);
-      getEditor().insertEmbed(range, "image", file.url);
-      getEditor().setSelection(range.index + 1);
-    };
-  };
-  const videoHandler = () => {
-    if (!quillRef.current) return;
-    const { getEditor } = quillRef.current;
-    const url = prompt("Enter Video URL: ");
-    const range = getEditor().getSelection(true);
-    if (!url) return;
-    getEditor().insertEmbed(range, "video", getVideoUrl(url));
-    getEditor().setSelection(range.index + 1);
-  };
-  const modules = useMemo(() => {
-    return {
-      toolbar: {
-        container: [
-          ["bold", "italic", "underline", "strike", "blockquote"],
-          [{ size: ["small", false, "large", "huge"] }, { color: [] }],
-          [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }, { align: [] }],
-          ["link", "image", "video"],
+      const response = {
+        result: [
+          {
+            url: `${file.url}`,
+            name: files[0].name,
+            size: files[0].size,
+          },
         ],
-        handlers: {
-          image: imageHandler,
-          video: videoHandler,
-        },
-      },
-      // imageResize: {
-      //   parchment: Quill.import("parchment"),
-      //   modules: ["Resize", "DisplaySize", "Toolbar"],
-      // },
-    };
-  }, []);
+      };
+      uploadHandler(response);
+    })();
+    uploadHandler();
+  };
+
   return (
-    <CSREditor
-      forwardRef={quillRef}
-      modules={modules}
+    <SunEditor
+      lang="ko"
+      getSunEditorInstance={getSunEditorInstance}
       defaultValue={defaultValue}
+      placeholder="Please type here..."
+      width="100%"
+      height="1000px"
+      setOptions={options}
+      setAllPlugins={true}
       onChange={onChange}
-      theme="snow"
-      formats={cnst.quillEditorFormats}
-      // {...props}
+      onImageUploadBefore={handleImageUploadBefore}
     />
   );
 };
-const CSREditor = dynamic(
-  async () => {
-    const { default: RQ, Quill } = await import("react-quill");
-    // const { default: ImageResize } = await import("quill-image-resize-module");
-    // Quill.register("modules/imageResize", ImageResize);
-    return function comp({ forwardRef, ...props }: any) {
-      return <RQ ref={forwardRef} {...props} />;
-    };
-  },
-  { ssr: false }
-);

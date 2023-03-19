@@ -45,6 +45,7 @@ export class BaseArrayField {
 export const mixObjectType = (classRef: Type<unknown>, baseRef: Type<unknown>) => {
   PartialType(baseRef, ObjectType);
   const { properties } = TypeMetadataStorage.getObjectTypeMetadataByTarget(baseRef) || {};
+
   properties?.forEach((propertyMetadata) => {
     Field(
       propertyMetadata.options.isArray ? () => [propertyMetadata.typeFn()] : () => propertyMetadata.typeFn(),

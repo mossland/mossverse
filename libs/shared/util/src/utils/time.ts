@@ -1,4 +1,4 @@
-export const millisecToSec = (millisec: number) => {
+export const msToSec = (millisec: number) => {
   return Math.floor(millisec / 1000);
 };
 
@@ -8,7 +8,7 @@ export const secToMillisec = (sec: number) => {
 
 export const toUnixTime = (date: Date) => Math.floor(date.getTime() / 1000);
 export const sleep = async (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(() => resolve, ms));
 };
 export const sleepSync = (ms: number) => {
   const date = Date.now();
@@ -75,5 +75,17 @@ export const getNextYears = (years = 1, timestamp = new Date()) => {
   const date = new Date(timestamp);
   date.setFullYear(date.getFullYear() + years);
   return date;
+};
+export const getNextDays = (days = 1, timestamp = new Date()) => {
+  const date = new Date(timestamp);
+  date.setDate(date.getDate() + days);
+  return date;
+};
+export const getPeriodicType = (now = new Date()): ["monthly" | "weekly" | "daily" | "hourly", Date] => {
+  now.setMinutes(0, 0, 0);
+  const [hour, weekDay, date] = [now.getHours(), now.getDay(), now.getDate()];
+  const type =
+    date === 1 && hour === 0 ? "monthly" : weekDay === 0 && hour === 0 ? "weekly" : hour === 0 ? "daily" : "hourly";
+  return [type, now];
 };
 // export const IsPeriodToday = (startAt:Date,EndAt:Date) => {}

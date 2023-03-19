@@ -2,7 +2,6 @@ import { environment } from "../_environments/environment";
 import { ThingService } from "./thing.service";
 import { TestSystem } from "@shared/test-server";
 import { ThingModule } from "./thing.module";
-
 import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";

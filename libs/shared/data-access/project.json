@@ -1,4 +1,5 @@
 {
+  "name": "shared/data-access",
   "sourceRoot": "libs/shared/data-access/src",
   "projectType": "library",
   "tags": [],
@@ -23,7 +24,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/shared/data-access"],
+      "outputs": ["{workspaceRoot}/coverage/libs/shared/data-access"],
       "options": {
         "jestConfig": "libs/shared/data-access/jest.config.ts",
         "passWithNoTests": true

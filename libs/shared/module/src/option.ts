@@ -1,14 +1,33 @@
 import { ModulesOptions as Options } from "@shared/util-server";
 import { option as external } from "@external/module";
 export interface EnvironmentOptions {
-  // dir: string;
   srv: "script" | "serve" | "test";
-  env: "local" | "debug" | "develop" | "main";
+  env: "testing" | "testing.local" | "debug" | "debug.local" | "develop" | "develop.local" | "main" | "main.local";
+  origin: string;
+  serves: string[];
 }
+
+export const ssoTypes = ["github", "google", "facebook", "apple", "naver", "kakao"] as const;
+export type SSOType = (typeof ssoTypes)[number];
+export type SSOCredential = {
+  clientID: string;
+  clientSecret?: string; //apple의 경우 keypath
+  callbackURL: string;
+};
+export type AppleCredential = SSOCredential & {
+  teamID: string;
+  keyID: string;
+  keyFilePath: string;
+};
+export type SSOOptions = {
+  [key in SSOType]?: SSOCredential | AppleCredential;
+};
 export interface SecurityOptions {
   aeskey: string;
-  saltRounds: string;
+  saltRounds: number;
   jwtSecret: string;
+  verifies: ("wallet" | "password" | "phone" | "kakao" | "naver" | "email")[][];
+  sso: SSOOptions;
 }
 export interface MongoOptions {
   uri: string;

@@ -55,4 +55,9 @@ export class NetworkService extends LoadService<Network.Mdl, Network.Doc, Networ
     const instance = provider[contract.interface](contract.address);
     return instance;
   }
+  async summarize(): Promise<gql.NetworkSummary> {
+    return {
+      totalNetwork: await this.Network.countDocuments({ status: { $ne: "inactive" } }),
+    };
+  }
 }

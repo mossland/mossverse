@@ -7,6 +7,9 @@ import { ethers } from "ethers";
 import { SecurityOptions } from "../option";
 import * as gql from "../gql";
 import * as db from "../db";
+import { srv as external } from "@external/module";
+import { RedisPubSub } from "graphql-redis-subscriptions";
+
 @Injectable()
 export class SecurityService extends LogService {
   constructor(@Inject("SECURITY_OPTIONS") private options: SecurityOptions) {
@@ -21,12 +24,13 @@ export class SecurityService extends LogService {
   async verifySignature(signature: gql.Signature): Promise<string | null> {
     return await serverUtils.getAddrFromSig(signature, this.options.aeskey);
   }
-  generateToken(keyring: db.Keyring.Doc): gql.AccessToken {
-    const accessToken = jwt.sign(
-      { keyring: keyring._id, role: "user", status: keyring.status, _id: keyring.user },
-      this.options.jwtSecret
-    );
-    return { accessToken };
+  generateToken(keyring: db.Keyring.Doc, user: db.User.Doc): gql.AccessToken {
+    return {
+      jwt: jwt.sign(
+        { keyring: keyring._id, role: "user", roles: user.roles, status: keyring.status, _id: user._id },
+        this.options.jwtSecret
+      ),
+    };
   }
   verifyToken(token?: string) {
     return verifyToken(this.options.jwtSecret, token);

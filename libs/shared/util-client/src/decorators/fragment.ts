@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import { DocumentNode } from "graphql";
 import gql from "graphql-tag";
 import { Utils } from "@shared/util";
 import { FieldMeta, getClassMeta } from "./scalar";

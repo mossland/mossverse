@@ -10,10 +10,9 @@ import {
   ObjectType,
   BaseGql,
   PickType,
-  SliceModel,
+  Int,
 } from "@shared/util-client";
 import { Network } from "../network/network.gql";
-import { TokenItem } from "../token/token.gql";
 
 @InputType("WalletInput")
 export class WalletInput {
@@ -29,15 +28,22 @@ export class Wallet extends BaseGql(WalletInput) {
   @Field(() => String)
   type: cnst.WalletType;
 
-  @Field(() => [TokenItem])
-  items: TokenItem[];
-
   @Field(() => String)
   status: cnst.WalletStatus;
+
+  getShortenedAddress() {
+    return this.address.slice(0, 6) + "..." + this.address.slice(-4);
+  }
 }
 
 @ObjectType("LightWallet", { _id: "id", gqlRef: "Wallet" })
-export class LightWallet extends PickType(Wallet, ["address", "status"] as const) {}
+export class LightWallet extends PickType(Wallet, ["address", "status", "network"] as const) {}
+
+@ObjectType("WalletSummary")
+export class WalletSummary {
+  @Field(() => Int)
+  totalWallet: number;
+}
 
 export const walletGraphQL = createGraphQL("wallet" as const, Wallet, WalletInput, LightWallet);
 export const {
@@ -47,9 +53,9 @@ export const {
   walletExists,
   createWallet,
   updateWallet,
-  // removeWallet,
+  removeWallet,
   walletFragment,
   purifyWallet,
   defaultWallet,
+  mergeWallet,
 } = walletGraphQL;
-export type WalletSlice = SliceModel<"wallet", Wallet, LightWallet>;

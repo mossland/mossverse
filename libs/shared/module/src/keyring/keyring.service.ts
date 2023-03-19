@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Id, LoadService } from "@shared/util-server";
 import * as bcrypt from "bcrypt";
@@ -9,8 +9,9 @@ import * as db from "../db";
 import { WalletService } from "../wallet/wallet.service";
 import { ContractService } from "../contract/contract.service";
 import { SecurityService } from "../security/security.service";
+import { UserService } from "../user/user.service";
 import { srv as external } from "@external/module";
-import { Utils } from "@shared/util";
+import { Utils, cnst } from "@shared/util";
 import { SecurityOptions } from "../option";
 
 @Injectable()
@@ -21,289 +22,191 @@ export class KeyringService extends LoadService<Keyring.Mdl, Keyring.Doc, Keyrin
     private readonly Keyring: db.Keyring.Mdl,
     private readonly walletService: WalletService,
     private readonly contractService: ContractService,
+    private readonly userService: UserService,
     private readonly securityService: SecurityService,
-    private readonly mailerService: external.MailerService
+    private readonly mailerService: external.MailerService,
+    private readonly messageService: external.MessageService
   ) {
     super(KeyringService.name, Keyring);
   }
+  async whoAmI(keyringId: Id, data: Partial<db.User.Doc> = {}) {
+    const lastLoginAt = new Date();
+    const keyring = await this.Keyring.pickById(keyringId);
+    const user = await this.userService.generateWithKeyring(keyringId, data);
+    if (!keyring.isFor(user._id)) await keyring.merge({ user: user._id });
+    await keyring.merge({ lastLoginAt }).save();
+    return await user.merge({ lastLoginAt }).save();
+  }
+  async generateToken(keyring: Keyring.Doc) {
+    const user = await this.whoAmI(keyring._id);
+    return this.securityService.generateToken(keyring, user);
+  }
 
-  async generateOtp(keyringId: Id): Promise<gql.Otp> {
-    const keyring = await this.Keyring.pickById(keyringId);
-    const otpExpireAt = Utils.getNextMinutes(10, new Date());
-    const otp = this.securityService.encrypt(otpExpireAt.toString());
-    await keyring.merge({ otp, otpExpireAt }).save();
-    return { otp };
-  }
-
-  async signinWithOtp(otp: string): Promise<gql.AccessToken> {
-    const keyring = await this.Keyring.pickOne({ otp });
-    if (keyring.isOtpExpired()) throw new Error("otp is expired.");
-    return this.securityService.generateToken(keyring);
-  }
-  async signinWithAddress(networkId: Id, address: string): Promise<gql.AccessToken> {
+  //*=================================================================*//
+  //*====================== Wallet Signing Area ======================*//
+  async getKeyringIdHasWallet(networkId: Id, address: string) {
     const wallet = await this.walletService.myWallet(networkId, address);
-    const keyring =
-      (await this.Keyring.findOne({ wallets: wallet._id })) ?? (await this.Keyring.create({ wallets: [wallet._id] }));
-    return this.securityService.generateToken(keyring);
+    return (await this.Keyring.findOne({ wallets: wallet._id, status: "active" }))?._id;
   }
-  async signinWithPassword(accountId: string, password: string): Promise<gql.AccessToken> {
-    const account = await this.Keyring.findOne({ accountId }).select({
-      _id: true,
-      status: true,
-      role: true,
-      password: true,
-    });
-    if (!account) throw new Error("Signin Failed");
-    if (account.status !== "active" || !(await bcrypt.compare(password, account.password || "")))
-      throw new Error("Signin Failed");
-    const keyring = await this.Keyring.pickById(account._id);
-    return this.securityService.generateToken(keyring);
-  }
-  async signupWithPassword(accountId: string, password: string): Promise<gql.AccessToken> {
-    const account = await this.Keyring.findOne({ accountId, status: "active" }).select({
-      status: true,
-      role: true,
-      password: true,
-    });
-    if (account) throw new Error(`The Account Already Exists`);
-    const keyring = await new this.Keyring({ accountId, password }).save();
-    return this.securityService.generateToken(keyring);
-  }
-  async changePassword(keyringId: Id, password: string, prevPassword: string): Promise<gql.AccessToken> {
-    const account = await this.Keyring.findOne({ _id: keyringId, status: "active" }).select({
-      status: true,
-      role: true,
-      password: true,
-    });
-    if (!account) throw new Error(`The Account does not exists`);
-    if (account && !(await bcrypt.compare(prevPassword, account.password || ""))) throw new Error(`not match`);
-    const keyring = await this.Keyring.pickAndWrite(keyringId, { password });
-    return this.securityService.generateToken(keyring);
-  }
-  async resetPassword(accountId: string): Promise<boolean> {
-    const account = await this.Keyring.findOne({ accountId, status: "active" });
-    if (!account) throw new Error(`The Account does not exists`);
-    else if (account.updatedAt.getTime() > Date.now() - 1000 * 60 * 3) throw new Error(`Retry after 3 minutes`);
-    const password = (Math.random() + 1).toString(36).slice(2, 14);
-    const keyring = await this.Keyring.pickAndWrite(account._id, { password });
-    return this.mailerService.sendPasswordResetMail(accountId, password);
-  }
-  override async remove(keyringId: Id): Promise<Keyring.Doc> {
-    const keyring = await this.Keyring.pickById(keyringId);
-    return await keyring.reset().merge({ status: "inactive" }).save();
-  }
-  async keyringsHasWallet(networkId: Id, address: string) {
+  async signupWallet(networkId: Id, keyringId: Id | null, address: string): Promise<Keyring.Doc> {
     const wallet = await this.walletService.myWallet(networkId, address);
-    return await this.Keyring.find({ wallets: wallet._id });
+    const keyring = await this.Keyring.generateWithWallet(wallet._id, keyringId);
+    const num = await this.Keyring.extinctWallet(wallet._id, keyring._id);
+    this.logger.log(`${num} Keyrings removed for wallet(${wallet._id}) - ${address}`);
+    this.contractService.inventory(wallet);
+    return keyring;
   }
-  async addWallet(keyringId: Id, networkId: Id, address: string) {
+  async signinWallet(networkId: Id, address: string): Promise<gql.AccessToken> {
+    const wallet = await this.walletService.myWallet(networkId, address);
+    const keyring = await this.Keyring.pickOne({ wallets: wallet._id });
+    if (keyring.status !== "active") throw new Error("Not activated yet");
+    return this.generateToken(keyring);
+  }
+  async signaddWallet(networkId: Id, address: string, keyringId: Id) {
     const wallet = await this.walletService.myWallet(networkId, address);
     const keyring = await this.Keyring.pickById(keyringId);
-    const num = await this.Keyring.extinctWallet(wallet._id);
+    if (keyring.status !== "active") throw new Error("Not activated yet");
+    const num = await this.Keyring.extinctWallet(wallet._id, keyring._id);
     this.logger.log(`${num} Keyrings removed for wallet(${wallet._id}) - ${address}`);
     await this.contractService.inventory(wallet);
     return await keyring.addWallet(wallet._id).save();
   }
-  async removeWallet(keyringId: Id, walletId: Id, address: string) {
-    const wallet = (await this.walletService.get(walletId)).check(address);
+  async signsubWallet(walletId: Id, keyringId: Id) {
     const keyring = await this.Keyring.pickById(keyringId);
-    return await keyring.removeWallet(wallet._id).save();
+    if (keyring.status !== "active") throw new Error("Not activated yet");
+    return await keyring.subWallet(walletId).save();
   }
-  // async whoAmI(address: string, discordId?: string): Promise<db.Keyring.Doc> {
-  //   const keyring =
-  //     (await this.Keyring.findOne({
-  //       $or: [{ address: address.toLowerCase() }, { sideAddresses: { $in: [address.toLowerCase()] } }],
-  //     })) ??
-  //     (await this.Keyring.create({
-  //       address: address.toLowerCase(),
-  //     }));
+  //*====================== Wallet Signing Area ======================*//
+  //*=================================================================*//
 
-  //   let akamirs: string[] = (await this.akamirService.myAkamirs(keyring.address)).map((akamir) => akamir.address);
-  //   for (const sideAddress of keyring.sideAddresses)
-  //     akamirs = [...akamirs, ...(await this.akamirService.myAkamirs(sideAddress)).map((akamir) => akamir.address)];
+  //*===================================================================*//
+  //*====================== Password Signing Area ======================*//
+  async getKeyringIdHasAccountId(accountId: string) {
+    return (await this.Keyring.findOne({ accountId, status: "active" }))?._id;
+  }
+  async signupPassword(accountId: string, password: string, keyringId: Id | null): Promise<Keyring.Doc> {
+    const keyring = await this.Keyring.generateWithAccountId(accountId, password, keyringId);
+    await this.Keyring.extinctAccountId(accountId, keyring._id);
+    return keyring;
+  }
+  async signinPassword(accountId: string, password: string): Promise<gql.AccessToken> {
+    const keyring = await this.Keyring.getAuthorizedKeyring(accountId, password);
+    if (keyring.status !== "active") throw new Error("Not activated yet");
+    return await this.generateToken(keyring);
+  }
+  async signaddPassword(accountId: string, password, keyringId: Id) {
+    const keyring = await this.Keyring.pickById(keyringId);
+    if (keyring.verifies.includes("password")) throw new Error("Already has password");
+    if (keyring.status !== "active") throw new Error("Not activated yet");
+    await this.Keyring.extinctAccountId(accountId, keyring._id);
+    return await keyring.applyIdPassword(accountId, password).save();
+  }
+  async changePassword(password: string, prevPassword: string, keyringId: Id) {
+    const prevKeyring = await this.Keyring.pickById(keyringId);
+    const keyring = await this.Keyring.getAuthorizedKeyring(prevKeyring.accountId as string, prevPassword);
+    if (keyring.status !== "active") throw new Error("Not activated yet");
+    return await keyring.merge({ password }).save();
+  }
+  async changePasswordWithPhone(password: string, phone: string, phoneCode: string, keyringId: Id) {
+    const keyring = await this.Keyring.pickById(keyringId);
+    if (!keyring.verifies.includes("phone")) throw new Error("Unable to change password with phone");
+    if (keyring.status !== "active") throw new Error("Not activated yet");
+    await keyring.consumePhoneVerification(phone, phoneCode).save();
+    return await keyring.merge({ password }).save();
+  }
+  async resetPassword(accountId: string): Promise<boolean> {
+    const keyring = await this.Keyring.pickOne({ accountId, status: { $ne: "inactive" } });
+    if (keyring.status !== "active") throw new Error("Not activated yet");
+    if (keyring.updatedAt.getTime() > Utils.getLastMinutes(3).getTime()) throw new Error(`Retry after 3 minutes`);
+    const password = Utils.randomString();
+    await keyring.merge({ password }).save();
+    return this.mailerService.sendPasswordResetMail(accountId, password);
+  }
+  //*====================== Password Signing Area ======================*//
+  //*===================================================================*//
 
-  //   const isHolder = keyring.isVerifyWallet && akamirs.length > 0;
+  //*================================================================*//
+  //*====================== Phone Signing Area ======================*//
+  async getKeyringIdHasPhone(phone: string) {
+    return (await this.Keyring.findOne({ phone, status: "active" }))?._id;
+  }
+  async addPhoneInPrepareKeyring(phone: string, keyringId: Id | null): Promise<Keyring.Doc> {
+    if (await this.Keyring.exists({ phone, status: "active" })) throw new Error("Already used phone number");
+    const keyring = await this.Keyring.generateWithPhone(phone, keyringId);
+    return keyring;
+  }
+  async addPhoneInActiveKeyring(phone: string, keyringId: Id): Promise<Keyring.Doc> {
+    if (await this.Keyring.exists({ phone, status: "active", _id: { $ne: keyringId }, verifies: "phone" }))
+      throw new Error("Already used phone number");
+    return await this.Keyring.pickAndWrite(keyringId, { phone });
+  }
+  async requestPhoneCode(keyringId: Id, phone: string, hash: string) {
+    const keyring = await this.Keyring.pickById(keyringId);
+    await keyring.applyPhoneCode(phone, Utils.randomCode(6)).save();
+    await this.messageService.sendPhoneCode(keyring.phone as string, keyring.phoneCode as string, hash);
+    return keyring.getPhoneCodeAt();
+  }
+  async verifyPhoneCode(keyringId: Id, phone: string, phoneCode: string) {
+    const keyring = await this.Keyring.pickById(keyringId);
+    return await keyring.applyPhoneVerification(phone, phoneCode).save();
+  }
+  async signupPhone(keyringId: Id, phone: string, phoneCode: string): Promise<Keyring.Doc> {
+    const keyring = await this.Keyring.pickById(keyringId);
+    if (keyring.status !== "prepare") throw new Error("Already Activated Keyring");
+    await keyring.consumePhoneVerification(phone, phoneCode).save();
+    await this.Keyring.extinctPhone(phone, keyring._id);
+    return keyring;
+  }
+  async signinPhone(keyringId: Id, phone: string, phoneCode: string) {
+    const keyring = await this.Keyring.pickById(keyringId);
+    if (keyring.status !== "active") throw new Error("Not activated yet");
+    await keyring.consumePhoneVerification(phone, phoneCode).save();
+    return this.generateToken(keyring);
+  }
+  async signaddPhone(keyringId: Id, phone: string, phoneCode: string) {
+    const keyring = await this.Keyring.pickById(keyringId);
+    if (keyring.status !== "active") throw new Error("Not activated yet");
+    await keyring.consumePhoneVerification(phone, phoneCode).save();
+    await this.Keyring.extinctPhone(phone, keyring._id);
+    return keyring;
+  }
+  //*====================== Phone Signing Area ======================*//
+  //*================================================================*//
+  override async remove(keyringId: Id): Promise<Keyring.Doc> {
+    const keyring = await this.Keyring.pickById(keyringId);
+    return await keyring.reset().merge({ status: "inactive" }).save();
+  }
+  async summarize(): Promise<gql.KeyringSummary> {
+    return {
+      totalKeyring: await this.Keyring.countDocuments({ status: { $ne: "inactive" } }),
+    };
+  }
 
-  //   if (discordId && !keyring.isVerifyWallet) {
-  //     let walletVerifiedId: string;
-  //     const u = await this.Keyring.findOne({ "discord.keyring.id": discordId, status: "active" });
+  //*====================== SSO Signing Area ======================*//
+  //*================================================================*//
+  async signupSso(accountId: string, ssoType: cnst.SsoType, keyringId?: Id) {
+    const keyring = await this.Keyring.generateWithSSO(accountId, ssoType, keyringId);
+    await this.Keyring.extinctAccountId(accountId, keyring._id);
+    return keyring;
+  }
+  async signinSso(accountId: string, ssoType: cnst.SsoType): Promise<gql.AccessToken> {
+    const keyring = await this.Keyring.getKeyringWithSSO(accountId, ssoType);
+    if (keyring.status !== "active") throw new Error("Not activated yet");
+    return this.generateToken(keyring);
+  }
+  async signaddSso(keyringId: Id, accountId: string, ssoType: cnst.SsoType): Promise<Keyring.Doc> {
+    const keyring = await this.Keyring.pickById(keyringId);
+    if (keyring.verifies.includes(ssoType)) throw new Error(`Already has ${ssoType} SSO`);
+    if (keyring.status !== "active") throw new Error("Not activated yet");
+    await keyring.applyIdWithSSO(accountId, ssoType).save();
+    await this.Keyring.extinctAccountId(accountId, keyring._id);
+    return keyring;
+  }
 
-  //     if (u) throw new Error("already registered discord account");
-  //     // walletVerifiedId = await this.akamirBotService.addRole(discordId, "Wallet Verified");
-  //     const member = await this.akamirBotService.keyring(discordId);
-  //     if (member.roles.cache.has(this.akamirBotService.roleMap["Need Re-Verify  Go to #verify-wallet"]))
-  //       await this.akamirBotService.removeRole(discordId, "Need Re-Verify  Go to #verify-wallet");
-
-  //     try {
-  //       const verifiedKeyring = await keyring
-  //         .merge({
-  //           isHolder,
-  //           isVerifyWallet: member ? true : false,
-  //           sideAddresses: keyring.sideAddresses ?? [],
-  //           // discordImageUrl: member && member.avatarURL() ? member.avatarURL() : null,
-  //           isOnline: member && member.presence && member.presence.status === "online" ? true : false,
-  //           discord: member ? { ...member, keyring: { ...member.keyring } } : {},
-  //         })
-  //         .save();
-  //       await this.akamirCoreBotService.sendMessageWithEmbed("verify-wallet-log", null, {
-  //         // color: "AQUA",
-  //         description: `지갑인증 완료 @${member.keyring.keyringname}#${member.keyring.discriminator}`,
-  //       });
-
-  //       return verifiedKeyring;
-  //     } catch (error) {
-  //       const member = await this.akamirBotService.keyring(discordId);
-  //       await this.akamirCoreBotService.sendMessageWithEmbed("verify-wallet-log", null, {
-  //         // color: "RED",
-  //         description: `지갑인증 실패 @${member.keyring.keyringname}#${member.keyring.discriminator}\n\n error message :\n${error.message}`,
-  //       });
-  //       throw new Error(`verify wallet failed. error message : ${member.keyring.keyringname}${error}`);
-  //     }
-  //   }
-
-  //   return keyring.merge({ isHolder }).save();
-  // }
-  // async registerKeyring(message: string, signAddress: string, data: gql.KeyringInput) {
-  //   const address = await this.securityService.checkSignature(message, signAddress);
-  //   const member = await this.akamirBotService.keyring(data.discordId);
-  //   return await this.Keyring.create({
-  //     ...data,
-  //     address: address,
-  //     discord: member ? { ...member, keyring: { ...member.keyring } } : {},
-  //     isOnline: member && member.presence && member.presence.status === "online" ? true : false,
-  //     discordImageUrl: member ? member.avatarURL() : undefined,
-  //   });
-  // }
-
-  // async modifyKeyring(message: string, signAddress: string, data: gql.KeyringInput) {
-  //   const address = await this.securityService.checkSignature(message, signAddress);
-  //   const keyring = await this.Keyring.findOne({ $or: [{ address }, { sideAddresses: { $in: [address] } }] });
-  //   if (!keyring) throw new Error("not found keyring.");
-  //   const member = await this.akamirBotService.keyring(data.discordId);
-  //   return await keyring
-  //     .merge({
-  //       ...data,
-  //       discord: member ? { ...member, keyring: { ...member.keyring } } : { ...keyring.discord },
-  //       isOnline: member && member.presence && member.presence.status === "online" ? true : false,
-  //       // discordImageUrl: member ? member.avatarURL() : keyring.discordImageUrl,
-  //     })
-  //     .save();
-  // }
-  // async deleteKeyring(message: string, signAddress: string) {
-  //   const address = await this.securityService.checkSignature(message, signAddress);
-
-  //   const keyring = await this.Keyring.findOne({ address });
-  //   if (!keyring) throw new Error("not found keyring.");
-  //   return await keyring.delete();
-  // }
-
-  // async changeMainAddress(message: string, signAddress: string) {
-  //   const address = await this.securityService.checkSignature(message, signAddress);
-  //   const keyring = await this.Keyring.findOne({ sideAddresses: { $in: [address] } });
-  //   if (!keyring) throw new Error("not found keyring.");
-  //   const sideAdressIndex = keyring.sideAddresses.indexOf(address);
-  //   const newSideAdress = keyring.sideAddresses.splice(sideAdressIndex, 1);
-  //   return await keyring
-  //     .merge({
-  //       address,
-  //       sideAddresses: [...newSideAdress, keyring.address],
-  //     })
-  //     .save();
-  // }
-
-  // async addWallet(address: string, message: string, signAddress: string) {
-  //   const addAddress = await this.securityService.checkSignature(message, signAddress);
-  //   const keyring = await this.Keyring.findOne({ address });
-
-  //   if (!keyring) throw new Error("not found keyring.");
-  //   return await keyring
-  //     .merge({
-  //       sideAddresses: [...keyring.sideAddresses, addAddress],
-  //     })
-  //     .save();
-  // }
-  // async signinKeyring(keyringId: string) {
-  //   const keyring = await this.Keyring.pickById(keyringId);
-  //   const token = jwt.sign({ _id: keyring._id, role: "keyring" }, secret);
-  //   return { accessToken: token };
-  // }
-
-  // async onlineKeyrings(filterBot = true) {
-  //   const keyrings = await this.akamirBotService.onlineKeyrings(filterBot);
-  //   const onlineKeyrings = keyrings.map((u) => u.nickname && u.keyring.keyringname);
-
-  //   return await this.Keyring.find({
-  //     $or: [
-  //       { "discord.nickname": { $in: onlineKeyrings } },
-  //       { "discord.keyring.keyringname": { $in: onlineKeyrings } },
-  //     ],
-  //     isVerifyWallet: true,
-  //     // isOnline: true,
-  //   });
-  // }
-
-  // async verifyWallet(keyringId: string, discordId: string) {
-  //   const keyring = await this.Keyring.pickById(keyringId);
-  //   const walletVerifiedId = await this.akamirBotService.addRole(discordId, "Wallet Verified");
-  //   const member = await this.akamirBotService.keyring(discordId);
-
-  //   await keyring
-  //     .merge({
-  //       isVerifyWallet: true,
-  //       isOnline: member && member.presence && member.presence.status === "online" ? true : false,
-  //       discord:
-  //         Object.keys(keyring.discord).length === 0
-  //           ? { ...member, keyring: { ...member.keyring } }
-  //           : { ...keyring.discord, _roles: [...keyring.discord._roles, walletVerifiedId] },
-  //     })
-  //     .save();
-
-  //   return true;
-  // }
-
-  // async isActiveKeyring(address: string) {
-  //   const keyring = await this.Keyring.findOne({ address, status: "active" });
-  //   if (keyring) return true;
-  //   return false;
-  // }
-
-  // async findVerifyWalletKeyrings() {
-  //   return await this.Keyring.findOne({ isVerifyWallet: true, status: "active" });
-  // }
-  // async syncBeHolders(akamirs: string[]) {
-  //   const beHolders = await this.Keyring.find({
-  //     isVerifyWallet: true,
-  //     status: "active",
-  //     "discord._roles": { $nin: [this.akamirBotService.roleMap["a.k.a Holder"]] },
-  //     $or: [{ address: { $in: akamirs } }],
-  //   });
-  //   for (const keyring of beHolders) {
-  //     try {
-  //       await this.akamirBotService.addRole(keyring.discord.keyring.id, "a.k.a Holder");
-  //       await keyring.merge({ isHolder: true }).save();
-  //       this.logger.log(`added holder : ${keyring.discord.keyring.keyringname}`);
-  //     } catch (error) {
-  //       this.logger.error(error, keyring.address);
-  //     }
-  //   }
-  //   return beHolders;
-  // }
-  // async syncWasHolders(akamirs: string[]) {
-  //   const wasHolders = await this.Keyring.find({
-  //     isVerifyWallet: true,
-  //     status: "active",
-  //     "discord._roles": { $in: [this.akamirBotService.roleMap["a.k.a Holder"]] },
-  //     $or: [{ address: { $nin: akamirs } }],
-  //   });
-  //   for (const keyring of wasHolders) {
-  //     try {
-  //       await this.akamirBotService.removeRole(keyring.discord.keyring.id, "a.k.a Holder");
-  //       this.logger.log(`remove holder : ${keyring.discord.keyring.keyringname}`);
-  //       await keyring.merge({ isHolder: false }).save();
-  //     } catch (error) {
-  //       this.logger.error(error, keyring.address);
-  //     }
-  //   }
-  //   return wasHolders;
-  // }
+  async activateUser(keyringId: Id) {
+    const keyring = await this.Keyring.pickById(keyringId);
+    if (keyring.status === "active") throw new Error("Already activated");
+    // TODO: check minimum verification levels
+    return await keyring.merge({ status: "active" }).save();
+  }
 }

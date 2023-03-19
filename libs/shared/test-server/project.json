@@ -1,4 +1,5 @@
 {
+  "name": "shared/test-server",
   "sourceRoot": "libs/shared/test-server/src",
   "projectType": "library",
   "targets": {
@@ -21,7 +22,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/shared/test-server"],
+      "outputs": ["{workspaceRoot}/coverage/libs/shared/test-server"],
       "options": {
         "jestConfig": "libs/shared/test-server/jest.config.ts",
         "passWithNoTests": true

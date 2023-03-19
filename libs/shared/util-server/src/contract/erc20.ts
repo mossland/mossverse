@@ -24,9 +24,9 @@ export class Erc20 {
       await this.settings.multicall.view({
         calls: [
           { address: this.address, fn: "name", args: [] },
-          // { address: this.address, fn: "symbol", args: [] },
-          // { address: this.address, fn: "decimals", args: [] },
-          // { address: this.address, fn: "totalSupply", args: [] },
+          { address: this.address, fn: "symbol", args: [] },
+          { address: this.address, fn: "decimals", args: [] },
+          { address: this.address, fn: "totalSupply", args: [] },
         ],
         settings: this.settings,
       })
@@ -39,19 +39,19 @@ export class Erc20 {
         calls: contracts.map((address) => ({ address, fn: "balanceOf", args: [owner] })),
         settings: this.settings,
       })
-    ).map((ret, idx) => ({ address: owner, contract: contracts[idx], num: parseInt(ret[0].toString()), bn: ret[1] }));
+    ).map((ret, idx) => ({ address: owner, contract: contracts[idx], value: parseInt(ret[0].toString()), bn: ret[1] }));
   }
   async snapshot(owners: string[]) {
     const balances = await this.balances(owners);
     return owners.map((owner, idx) => ({ address: owner, ...balances[idx] }));
   }
   async balances(owners: string[]) {
-    const balances: { num: number; bn: number }[] = (
+    const balances: { value: number; bn: number }[] = (
       await this.settings.multicall.view({
         calls: owners.map((owner) => ({ address: this.address, fn: "balanceOf", args: [owner] })),
         settings: this.settings,
       })
-    ).map((ret) => ({ num: parseInt(ret[0].toString()), bn: ret[1] }));
+    ).map((ret) => ({ value: parseInt(ret[0].toString()), bn: ret[1] }));
     return balances;
   }
   async checkApproval(owner: string, amount: number) {

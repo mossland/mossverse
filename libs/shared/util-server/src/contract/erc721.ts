@@ -49,8 +49,8 @@ export class Erc721 {
         calls: contracts.map((address) => ({ address, fn: "balanceOf", args: [owner] })),
         settings: this.settings,
       })
-    ).map((ret, idx) => ({ address: owner, contract: contracts[idx], num: parseInt(ret[0].toString()), bn: ret[1] }));
-    const tokenMap: { address: string; contract: string; tokenId: number; num: number; uri: string; bn: number }[][] =
+    ).map((ret, idx) => ({ address: owner, contract: contracts[idx], value: parseInt(ret[0].toString()), bn: ret[1] }));
+    const tokenMap: { address: string; contract: string; tokenId: number; value: number; uri: string; bn: number }[][] =
       await Promise.all(
         balanceMap.map(async (b) => {
           // 1. ERC721AQueryable
@@ -65,7 +65,7 @@ export class Erc721 {
               address: owner,
               contract: b.contract,
               tokenId: parseInt(tokenId.toString()),
-              num: 1,
+              value: 1,
               bn,
             }));
             const uris = await this.tokenURIs(
@@ -80,7 +80,7 @@ export class Erc721 {
             const calls = balanceMap.reduce(
               (acc, map) => [
                 ...acc,
-                ...new Array(map.num)
+                ...new Array(map.value)
                   .fill(0)
                   .map((_, idx) => ({ address: map.contract, fn: "tokenOfOwnerByIndex", args: [owner, idx] })),
               ],
@@ -90,7 +90,7 @@ export class Erc721 {
               address: owner,
               contract: calls[idx].address,
               tokenId: parseInt(ret[0].toString()),
-              num: 1,
+              value: 1,
               bn: ret[1],
             }));
             const uris = await this.tokenURIs(
@@ -117,7 +117,7 @@ export class Erc721 {
       address: owner,
       contract: this.address,
       tokenId,
-      num: 1,
+      value: 1,
       bn: 0,
     }));
     const uris = await this.tokenURIs(tokenIds);
@@ -193,12 +193,12 @@ export class Erc721 {
     return await this.contract.ownerOf(tokenId);
   }
   async #ownersOf(tokenIds: number[]) {
-    const owners: { address: string; num: number; bn: number }[] = (
+    const owners: { address: string; value: number; bn: number }[] = (
       await this.settings.multicall.view({
         calls: tokenIds.map((tokenId) => ({ address: this.address, fn: "ownerOf", args: [tokenId] })),
         settings: this.settings,
       })
-    ).map((ret) => ({ address: ret[0].toLowerCase(), bn: ret[1], num: 1 }));
+    ).map((ret) => ({ address: ret[0].toLowerCase(), bn: ret[1], value: 1 }));
     return owners;
   }
   async #tokenIdsOfOwner(owner: string): Promise<number[]> {

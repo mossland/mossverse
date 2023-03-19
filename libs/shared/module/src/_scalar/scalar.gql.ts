@@ -1,9 +1,10 @@
 import { ReadStream } from "fs";
-import { Field, InputType, ObjectType } from "@nestjs/graphql";
+import { Field, InputType, ObjectType, Int, ID, Float } from "@nestjs/graphql";
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import GraphQLJSON from "graphql-type-json";
-import { Int, ID } from "@nestjs/graphql";
 import { cnst } from "@shared/util";
+import { Id, ObjectId } from "@shared/util-server";
+import { GraphQLUpload } from "graphql-upload";
 
 export { GraphQLJSON as JSON };
 export { Int, ID };
@@ -23,12 +24,7 @@ export type LocalFile = {
 @ObjectType()
 export class AccessToken {
   @Field(() => String)
-  accessToken: string;
-}
-@ObjectType()
-export class Otp {
-  @Field(() => String)
-  otp: string;
+  jwt: string;
 }
 
 export interface FileUpload {
@@ -37,7 +33,7 @@ export interface FileUpload {
   encoding: string;
   createReadStream(): ReadStream;
 }
-export { GraphQLUpload as FileUpload } from "graphql-upload";
+export { GraphQLUpload as FileUpload };
 
 // * OpenSea Attribute Schema Definition
 
@@ -131,86 +127,6 @@ export class OpenSeaMeta {
 export class OpenSeaMetaInput extends OpenSeaMeta {}
 export const OpenSeaMetaSchema = SchemaFactory.createForClass(OpenSeaMeta);
 
-@InputType({ isAbstract: true })
-@ObjectType()
-@Schema()
-export class TokenProfile {
-  @Field(() => String)
-  @Prop({ type: String, required: true, default: "Default Nickname" })
-  nickname: string;
-
-  @Field(() => Int)
-  @Prop({ type: Number, required: true, default: 20 })
-  age: number;
-
-  @Field(() => String)
-  @Prop({ type: String, required: true, default: "Default Class" })
-  class: string;
-
-  @Field(() => [String])
-  @Prop([{ type: String, required: true }])
-  speciality: string[];
-
-  @Field(() => [String])
-  @Prop([{ type: String, required: true }])
-  weakness: string[];
-}
-@InputType()
-export class TokenProfileInput extends TokenProfile {}
-export const TokenProfileSchema = SchemaFactory.createForClass(TokenProfile);
-
-// * Token Data Schema Definition
-
-@InputType({ isAbstract: true })
-@ObjectType()
-@Schema()
-export class SaleInfo {
-  @Field()
-  @Prop({ type: Number, required: false })
-  price?: number;
-
-  @Field()
-  @Prop({ type: Number, required: false })
-  supply?: number;
-
-  @Field()
-  @Prop({ type: Number, required: false })
-  remains?: number;
-
-  @Field()
-  @Prop({ type: Date, required: false })
-  saleStartTime?: Date;
-
-  @Field()
-  @Prop({ type: Date, required: false })
-  saleEndTime?: Date;
-}
-
-@InputType({ isAbstract: true })
-@ObjectType()
-@Schema()
-export class LanguagePack {
-  @Field(() => String, { nullable: false })
-  @Prop({ type: String, enum: cnst.locales })
-  locale: cnst.Locale;
-
-  @Field(() => String, { nullable: false })
-  @Prop({ type: String })
-  title: string;
-
-  @Field(() => String, { nullable: true })
-  @Prop({ type: String })
-  description?: string;
-
-  @Field(() => [String], { nullable: true })
-  @Prop({ type: [String] })
-  selection?: string[];
-}
-
-@InputType()
-export class LanguagePackInput extends LanguagePack {}
-export const LanguagePackSchema = SchemaFactory.createForClass(LanguagePack);
-
 export interface Signature {
   signchain: string;
   signmessage: string;
@@ -244,22 +160,58 @@ export const AccessStatSchema = SchemaFactory.createForClass(AccessStat);
 @InputType({ isAbstract: true })
 @ObjectType()
 @Schema()
+export class Coordinate {
+  @Field(() => String)
+  @Prop({ type: String, required: true, enum: ["Point"], default: "Point" })
+  type: "Point";
+
+  @Field(() => [Float])
+  @Prop([{ type: Number, required: true }])
+  coordinates: number[];
+}
+@InputType()
+export class CoordinateInput extends Coordinate {}
+export const CoordinateSchema = SchemaFactory.createForClass(Coordinate);
+
+@InputType({ isAbstract: true })
+@ObjectType()
+@Schema()
 export class AccessLog {
   @Field()
   @Prop({ type: Number, required: true, default: 0 })
   period: number;
 
-  @Field()
-  @Prop({ type: Number, required: true, default: 0 })
-  device: number;
+  @Field(() => String, { nullable: true })
+  @Prop({ type: String, required: false })
+  countryCode?: string;
 
-  @Field()
-  @Prop({ type: Number, required: true, default: 0 })
-  ip: number;
+  @Field(() => String, { nullable: true })
+  @Prop({ type: String, required: false })
+  countryName?: string;
 
-  @Field()
-  @Prop({ type: Number, required: true, default: 0 })
-  country: number;
+  @Field(() => String, { nullable: true })
+  @Prop({ type: String, required: false })
+  city?: string;
+
+  @Field(() => Int, { nullable: true })
+  @Prop({ type: Number, required: false })
+  postal?: number;
+
+  @Field(() => Coordinate, { nullable: true })
+  @Prop({ type: CoordinateSchema, required: false, index: "2dsphere" })
+  location?: Coordinate;
+
+  @Field(() => String, { nullable: true })
+  @Prop({ type: String, required: false })
+  ipv4?: string;
+
+  @Field(() => String, { nullable: true })
+  @Prop({ type: String, required: false })
+  state?: string;
+
+  @Field(() => String, { nullable: true })
+  @Prop({ type: String, required: false })
+  userAgent?: string;
 
   @Field()
   @Prop({ type: Date, required: true, default: () => new Date() })
@@ -268,3 +220,19 @@ export class AccessLog {
 @InputType()
 export class AccessLogInput extends AccessLog {}
 export const AccessLogSchema = SchemaFactory.createForClass(AccessLog);
+
+@InputType({ isAbstract: true })
+@ObjectType()
+@Schema()
+export class ServiceReview {
+  @Field(() => Int)
+  @Prop({ type: Number, min: 0, default: 0, required: true })
+  score: number;
+
+  @Field(() => String)
+  @Prop({ type: String, required: false })
+  comment?: string;
+}
+@InputType()
+export class ServiceReviewInput extends ServiceReview {}
+export const ServiceReviewSchema = SchemaFactory.createForClass(ServiceReview);

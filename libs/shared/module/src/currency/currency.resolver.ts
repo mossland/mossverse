@@ -3,8 +3,8 @@ import { CurrencyService } from "./currency.service";
 import { Allow, Account, BaseResolver } from "@shared/util-server";
 import * as db from "../db";
 import * as gql from "../gql";
-import * as srv from "../srv";
 import { UseGuards } from "@nestjs/common";
+import { FileService } from "../file/file.service";
 
 @Resolver(() => gql.Currency)
 export class CurrencyResolver extends BaseResolver(
@@ -14,7 +14,7 @@ export class CurrencyResolver extends BaseResolver(
   Allow.Every,
   Allow.Every
 ) {
-  constructor(private readonly currencyService: CurrencyService, private readonly fileService: srv.FileService) {
+  constructor(private readonly currencyService: CurrencyService, private readonly fileService: FileService) {
     super(currencyService);
   }
 }

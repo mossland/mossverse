@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
+import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import * as Contract from "./contract.model";
 import * as db from "../db";
@@ -9,17 +9,15 @@ import {
   Erc721,
   Id,
   AddrLoadService,
-  serverUtils,
   Erc20TrasferEventHandler,
   Erc721TrasferEventHandler,
   Erc1155TrasferSingleEventHandler,
   Erc1155TrasferBatchEventHandler,
-  ObjectId,
 } from "@shared/util-server";
 import { NetworkService } from "../network/network.service";
 import { TokenService } from "../token/token.service";
 import { WalletService } from "../wallet/wallet.service";
-
+import { OwnershipService } from "../ownership/ownership.service";
 @Injectable()
 export class ContractService
   extends AddrLoadService<Contract.Mdl, Contract.Doc, Contract.Input>
@@ -31,7 +29,8 @@ export class ContractService
     private readonly Contract: Contract.Mdl,
     private readonly networkService: NetworkService,
     private readonly tokenService: TokenService,
-    private readonly walletService: WalletService
+    private readonly walletService: WalletService,
+    private readonly ownershipService: OwnershipService
   ) {
     super(ContractService.name, Contract);
   }
@@ -39,13 +38,9 @@ export class ContractService
     const contracts = await this.Contract.find({ status: "active" });
     return await Promise.all(contracts.map(async (contract) => await this.#listenContract(contract)));
   }
-  async myInventory(walletId: Id) {
-    const wallet = await this.walletService.get(walletId);
-    return (await this.inventory(wallet)).items;
-  }
   async inventory(wallet: db.Wallet.Doc) {
     const contracts = await this.Contract.find({ status: "active", network: wallet.network });
-    const items = [
+    const ownershipInputs = [
       ...(await this.#inventoryErc20(
         wallet,
         contracts.filter((c) => c.is("erc20"))
@@ -59,10 +54,9 @@ export class ContractService
         contracts.filter((c) => c.is("erc1155"))
       )),
     ];
-    // return await wallet.merge({ items }).save();
-    return wallet.merge({ items });
+    return await this.ownershipService.setTokens(ownershipInputs);
   }
-  async #inventoryErc20(wallet: db.Wallet.Doc, contracts: Contract.Doc[]): Promise<gql.TokenItem[]> {
+  async #inventoryErc20(wallet: db.Wallet.Doc, contracts: Contract.Doc[]): Promise<db.Ownership.TokenInput[]> {
     if (!contracts.length) return [];
     const instance = (await this.networkService.loadContract(contracts[0])) as Erc20;
     const tokens = (await this.tokenService.ctrLoadMany(contracts.map((c) => c._id))).map((t) => t[0]);
@@ -70,9 +64,9 @@ export class ContractService
       wallet.address,
       contracts.map((c) => c.address)
     );
-    return items.map((item, idx) => ({ ...item, contract: contracts[idx]._id, token: tokens[idx]._id }));
+    return items.map((item, idx) => ({ wallet: wallet._id, token: tokens[idx], value: item.value }));
   }
-  async #inventoryErc721(wallet: db.Wallet.Doc, contracts: Contract.Doc[]): Promise<gql.TokenItem[]> {
+  async #inventoryErc721(wallet: db.Wallet.Doc, contracts: Contract.Doc[]): Promise<db.Ownership.TokenInput[]> {
     if (!contracts.length) return [];
     const instance = (await this.networkService.loadContract(contracts[0])) as Erc721;
     const [contractMap, tokenMap] = [new Map(), new Map()];
@@ -91,11 +85,11 @@ export class ContractService
         const token =
           tokenMap.get(`${item.contract}-${item.tokenId}`) ??
           (await this.tokenService.generate(contract, item.tokenId, item.uri));
-        return { ...item, contract: contract._id, token: token._id };
+        return { wallet: wallet._id, token, value: 1 };
       })
     );
   }
-  async #inventoryErc1155(wallet: db.Wallet.Doc, contracts: Contract.Doc[]): Promise<gql.TokenItem[]> {
+  async #inventoryErc1155(wallet: db.Wallet.Doc, contracts: Contract.Doc[]): Promise<db.Ownership.TokenInput[]> {
     if (!contracts.length) return [];
     const instance = (await this.networkService.loadContract(contracts[0])) as Erc1155;
     const tokens = await this.tokenService.ctrLoadMany(contracts.map((c) => c._id));
@@ -106,15 +100,15 @@ export class ContractService
           address: contract.address,
           id: token.tokenId as number,
           cId: contract._id,
-          tId: token._id,
+          token,
         })),
       ],
       []
     );
     const items = await instance.inventory(wallet.address, contractMap);
-    return items.map((item, idx) => ({ ...item, contract: contractMap[idx].cId, token: contractMap[idx].tId }));
+    return items.map((item, idx) => ({ wallet: wallet._id, token: contractMap[idx].token, value: item.value }));
   }
-  async snapshot(contractId: Id, walletIds: Id[] = [], save = false) {
+  async snapshot(contractId: Id, walletIds: Id[] = []) {
     const contract = await this.Contract.pickById(contractId);
     const instance = await this.networkService.loadContract(contract);
     const wallets = contract.is("erc721")
@@ -122,31 +116,30 @@ export class ContractService
       : walletIds.length
       ? await this.walletService.loadMany(walletIds)
       : await this.walletService.list({ network: contract.network });
-    const ownerships: gql.Ownership[] = contract.is("erc20")
+    const inputs = contract.is("erc20")
       ? await this.#snapshotErc20(contract, instance as Erc20, wallets)
       : contract.is("erc721")
       ? await this.#snapshotErc721(contract, instance as Erc721)
       : contract.is("erc1155")
       ? await this.#snapshotErc1155(contract, instance as Erc1155, wallets)
       : [];
-    const snapshot = ownerships.filter((ownership) => ownership.num > 0);
-    if (save || !walletIds.length) await contract.merge({ snapshot, snapshotAt: new Date() }).save();
-    await this.walletService.setItems(contract._id, snapshot, !walletIds.length);
-    return snapshot;
+    return await this.ownershipService.setOwnershipsByContract(contractId, inputs);
   }
-  async #snapshotErc20(contract: Contract.Doc, instance: Erc20, wallets: db.Wallet.Doc[]) {
+  async #snapshotErc20(
+    contract: Contract.Doc,
+    instance: Erc20,
+    wallets: db.Wallet.Doc[]
+  ): Promise<db.Ownership.TokenInput[]> {
     const list = await (instance as Erc20).snapshot(wallets.map((w) => w.address));
     const token = await this.tokenService.generate(contract);
-    const snapshot = list.map((l, idx) => ({ ...l, wallet: wallets[idx]._id, token: token._id }));
-    return snapshot;
+    return list.map((l, idx) => ({ wallet: wallets[idx]._id, token, value: l.value }));
   }
-  async #snapshotErc721(contract: Contract.Doc, instance: Erc721) {
+  async #snapshotErc721(contract: Contract.Doc, instance: Erc721): Promise<db.Ownership.TokenInput[]> {
     const list = await (instance as Erc721).snapshot();
     const wallets = await this.walletService.generateWallets(
       contract.network,
       list.map((l) => l.address)
     );
-
     const tokens = await this.tokenService.list({ contract: contract._id });
     const [tokenMap, walletMap] = [new Map(), new Map()];
     wallets.map((wallet) => walletMap.set(wallet.address, wallet));
@@ -157,14 +150,17 @@ export class ContractService
         list.filter((l) => !tokenMap.get(l.tokenId))
       )
     ).map((token) => tokenMap.set(token.tokenId, token));
-    const snapshot = list.map((l) => ({
-      ...l,
-      wallet: walletMap.get(l.address)._id,
+    return list.map((l) => ({
+      wallet: walletMap.get(l.address)._id as Id,
       token: tokenMap.get(l.tokenId)._id,
+      value: 1,
     }));
-    return snapshot;
   }
-  async #snapshotErc1155(contract: Contract.Doc, instance: Erc1155, wallets: db.Wallet.Doc[]) {
+  async #snapshotErc1155(
+    contract: Contract.Doc,
+    instance: Erc1155,
+    wallets: db.Wallet.Doc[]
+  ): Promise<db.Ownership.TokenInput[]> {
     const tokens = await this.tokenService.list({ contract: contract._id });
     if (!tokens.length) return [];
     const tokenMap = new Map();
@@ -173,13 +169,7 @@ export class ContractService
       wallets.map((w) => w.address),
       tokens.map((t) => t.tokenId as number)
     );
-    const snapshot = list.map((l, idx) => ({ ...l, wallet: wallets[idx]._id, token: tokenMap.get(l.tokenId)._id }));
-    return snapshot;
-  }
-  async getSnapshot(contractId: Id) {
-    return (
-      (await this.Contract.findById(contractId).select("snapshot"))?.snapshot ?? this.snapshot(contractId, [], true)
-    );
+    return list.map((l, idx) => ({ wallet: wallets[idx]._id, token: tokenMap.get(l.tokenId), value: l.value }));
   }
   async #listenContract(contract: Contract.Doc) {
     const instance = await this.networkService.loadContract(contract);
@@ -204,13 +194,7 @@ export class ContractService
       this.logger.log(`ERC20 Transfer Detected from ${from} to ${to} value: ${value.toString()} bn: ${bn}`);
       const f = await this.walletService.myWallet(contract.network, from);
       const t = await this.walletService.myWallet(contract.network, to);
-      await this.walletService.transferItem({
-        item: { contract: contract._id, token: token._id },
-        from: f._id,
-        to: t._id,
-        num: parseInt(value.toString()),
-        bn,
-      });
+      await this.ownershipService.transferToken(token, f._id, t._id, parseInt(value.toString()), bn);
     };
   }
   #onErc721Transfer(contract: Contract.Doc, instance: Erc721): Erc721TrasferEventHandler {
@@ -224,13 +208,7 @@ export class ContractService
         ? undefined
         : await instance.contract.tokenURI(tokenId);
       const token = await this.tokenService.generate(contract, tokenId, uri);
-      await this.walletService.transferItem({
-        item: { contract: contract._id, token: token._id },
-        from: f._id,
-        to: t._id,
-        num: 1,
-        bn,
-      });
+      await this.ownershipService.transferToken(token, f._id, t._id, 1, bn);
     };
   }
   #onErc1155TransferSingle(contract: Contract.Doc, instance: Erc1155): Erc1155TrasferSingleEventHandler {
@@ -246,13 +224,7 @@ export class ContractService
         ? undefined
         : await instance.contract.uri(tokenId);
       const token = await this.tokenService.generate(contract, tokenId, uri);
-      await this.walletService.transferItem({
-        item: { contract: contract._id, token: token._id },
-        from: f._id,
-        to: t._id,
-        num: parseInt(value.toString()),
-        bn,
-      });
+      await this.ownershipService.transferToken(token, f._id, t._id, parseInt(value.toString()), bn);
     };
   }
   #onErc1155TransferBatch(contract: Contract.Doc, instance: Erc1155): Erc1155TrasferBatchEventHandler {
@@ -267,13 +239,7 @@ export class ContractService
           ? undefined
           : await instance.contract.uri(tokenId);
         const token = await this.tokenService.generate(contract, tokenId, uri);
-        await this.walletService.transferItem({
-          item: { contract: contract._id, token: token._id },
-          from: f._id,
-          to: t._id,
-          num,
-          bn,
-        });
+        await this.ownershipService.transferToken(token, f._id, t._id, num, bn);
       }
     };
   }
@@ -300,7 +266,6 @@ export class ContractService
     const token = await this.tokenService.get(tokenId);
     const contract = await this.Contract.pickById(token.contract);
     const instance = await this.networkService.loadContract(contract);
-    // console.log(contract);
     // console.log(instance);
     const wallet =
       walletId === "root"
@@ -328,7 +293,6 @@ export class ContractService
     try {
       const tx = await instance.contract.provider.getTransaction(hash);
       const decoded = instance.settings.intf.parseTransaction({ data: tx.data, value: tx.value });
-      console.log(decoded);
       //! should check validity of tx
       // TransactionDescription {
       //   args: [
@@ -379,7 +343,7 @@ export class ContractService
     const instance = await this.networkService.loadContract(contract);
     const info = await instance.info();
     await contract.merge({ ...info, status: "active" }).save();
-    await this.snapshot(contract._id, [], true);
+    await this.snapshot(contract._id, []);
     if (ids.length && contract.interface === "erc1155") {
       const uris = await (instance as Erc1155).tokenUris(ids);
       await this.tokenService.generates(
@@ -392,11 +356,16 @@ export class ContractService
   }
   override async remove(contractId: Id) {
     const contract = await this.Contract.pickById(contractId);
-    await this.walletService.resetItems(contractId);
+    await this.ownershipService.removeOwnershipsByContract(contract._id);
     await this.tokenService.deactivateTokens(contractId);
     return await contract.merge({ status: "inactive" }).save();
   }
   async onModuleDestroy() {
     await Promise.all(this.destroyers.map(async (destroyer) => await destroyer()));
+  }
+  async summarize(): Promise<gql.ContractSummary> {
+    return {
+      totalContract: await this.Contract.countDocuments({ status: { $ne: "inactive" } }),
+    };
   }
 }

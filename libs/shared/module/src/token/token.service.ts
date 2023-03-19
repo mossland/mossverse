@@ -30,7 +30,7 @@ export class TokenService extends AddrLoadService<Token.Mdl, Token.Doc, Token.In
     for (const token of tokens) res.push(await this.generate(contract, token.tokenId, token.uri));
     return res;
   }
-  async generate(contract: db.Contract.Doc, tokenId?: number, uri?: string) {
+  async generate(contract: db.Contract.Doc, tokenId?: number, uri?: string): Promise<Token.Doc> {
     const token =
       (await this.Token.findOne({ contract: contract._id, tokenId })) ??
       (await this.create({ contract: contract._id, tokenId }));
@@ -56,5 +56,10 @@ export class TokenService extends AddrLoadService<Token.Mdl, Token.Doc, Token.In
     if (!meta) return token;
     const image = await this.fileService.addFileFromUri(uri, "token", token._id.toString());
     return await token.merge({ meta, image: image?._id }).save();
+  }
+  async summarize(): Promise<gql.TokenSummary> {
+    return {
+      totalToken: await this.Token.countDocuments({ status: { $ne: "inactive" } }),
+    };
   }
 }

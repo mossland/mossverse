@@ -1,6 +1,13 @@
 import { uniqueNamesGenerator, Config, adjectives, colors, animals } from "unique-names-generator";
+import { pad } from "./format";
 export const getRandomNickname = () =>
   uniqueNamesGenerator({ dictionaries: [adjectives, colors, animals], separator: " ", style: "capital" });
+export const randomCode = (length = 6) => pad(Math.floor(Math.random() * 10 ** length), 6);
+export const randomString = (length = 12) =>
+  [
+    ...new Array(Math.floor(length / 12)).fill(0).map(() => (Math.random() + 1).toString(36).slice(2, 14)),
+    (Math.random() + 1).toString(36).slice(2, 2 + (length % 12)),
+  ].join("");
 export const randomPick = <T = any>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 export const randomPicks = <T = any>(arr: T[], count = 1, allowDuplicate?: boolean): T[] => {
   if (!allowDuplicate && arr.length <= count) return arr;
@@ -88,12 +95,24 @@ export const moveCenter = (...points: [number, number][]): [number, number] => {
   return points.reduce((acc, cur) => [acc[0] + cur[0], acc[1] + cur[1]]);
 };
 
-export const objectify = (obj: any) => {
+export const objectify = (obj: any, keys = Object.keys(obj)) => {
   const val: any = {};
-  Object.keys(obj).forEach((key) => {
+  keys.forEach((key) => {
     if (typeof obj[key] !== "function") val[key] = obj[key];
   });
   return val;
 };
 
 export const objPath = <T>(o: T, p: string) => p.split(".").reduce((a: any, v: string) => a && a[v], o);
+export const set = (obj: any, path: any, value: any) => {
+  if (Object(obj) !== obj) return obj;
+  if (!Array.isArray(path)) path = path.toString().match(/[^.[\]]+/g) || [];
+  path
+    .slice(0, -1)
+    .reduce(
+      (a: any, c: any, i: any) =>
+        Object(a[c]) === a[c] ? a[c] : (a[c] = Math.abs(path[i + 1]) >> 0 === +path[i + 1] ? [] : {}),
+      obj
+    )[path[path.length - 1]] = value;
+  return obj;
+};

@@ -1,10 +1,10 @@
 import "reflect-metadata";
-import { DocumentNode } from "graphql";
 import gql from "graphql-tag";
 import { Utils } from "@shared/util";
 import { DefaultGqls, getClassMeta, InputOf, ProtoFile } from "./scalar";
 import { extractDependentFragments } from "./fragment";
-import { mutate, query } from "../apollo";
+import { mutate, query } from "../client";
+import dayjs from "dayjs";
 
 const fileFragment = `
   fragment fileFragment on File {
@@ -89,7 +89,8 @@ export const makeDefaultQMs = <T extends string, M, I, L>(
   inputRef: any,
   lightModelRef: any = modelRef
 ): DefaultGqls<T, M, InputOf<I>, L> => {
-  const { refName, hasFile } = getClassMeta(modelRef);
+  const { refName, hasFile, crystalize } = getClassMeta(modelRef);
+  const { crystalize: lightCrystalize } = getClassMeta(lightModelRef);
   const gqls = makeDefaultGqls(modelRef, lightModelRef);
   const requests: DefaultGqls<T, M, InputOf<I>, L> = {} as any;
   const [fieldName, className] = [Utils.lowerlize(refName), Utils.capitalize(refName)];
@@ -104,8 +105,7 @@ export const makeDefaultQMs = <T extends string, M, I, L>(
     remove: `remove${className}`,
     addFiles: `add${className}Files`,
   };
-  requests[names.get] = async (id: string) =>
-    Object.assign(new modelRef(), (await query(gqls.get, { [names.id]: id }))[names.get]);
+  requests[names.get] = async (id: string) => crystalize((await query(gqls.get, { [names.id]: id }))[names.get]);
   requests[names.list] = async (qry: any, skip?: number, limit?: number, sort?: any) => {
     const ret = await query(gqls.list, {
       query: qry ?? { status: { $ne: "inactive" } },
@@ -114,22 +114,23 @@ export const makeDefaultQMs = <T extends string, M, I, L>(
       sort: sort ?? { createdAt: -1 },
     });
     return {
-      [names.list]: ret[names.list].map((data) => Object.assign(new lightModelRef(), data)),
+      [names.list]: ret[names.list].map((data) => lightCrystalize(data)),
       [names.count]: ret[names.count],
     };
   };
   requests[names.count] = async (qry: any) => (await query(gqls.count, { query: qry ?? {} }))[names.count];
   requests[names.exists] = async (qry: any) => (await query(gqls.exists, { query: qry ?? {} }))[names.exists];
-  requests[names.create] = async (data: I) =>
-    Object.assign(new modelRef(), (await mutate(gqls.create, { data }))[names.create]);
-  requests[names.update] = async (id: string, data: I) =>
-    Object.assign(new modelRef(), (await mutate(gqls.update, { [names.id]: id, data }))[names.update]);
+  requests[names.create] = async (data: I) => crystalize((await mutate(gqls.create, { data }))[names.create]);
+  requests[names.update] = async (id: string, data: I) => {
+    return crystalize((await mutate(gqls.update, { [names.id]: id, data }))[names.update]);
+  };
+
   requests[names.remove] = async (id: string) =>
-    Object.assign(new modelRef(), (await mutate(gqls.remove, { [names.id]: id }))[names.remove]);
+    crystalize((await mutate(gqls.remove, { [names.id]: id }))[names.remove]);
   if (hasFile)
     requests[names.addFiles] = async (files: FileList, id?: string) =>
       (await mutate(gqls.addFiles, { files, [names.id]: id }))[names.addFiles].map((file) =>
-        Object.assign(new ProtoFile(), file)
+        Object.assign(new ProtoFile(), { ...file, createdAt: dayjs(file.createdAt), updatedAt: dayjs(file.updatedAt) })
       );
   return requests;
 };

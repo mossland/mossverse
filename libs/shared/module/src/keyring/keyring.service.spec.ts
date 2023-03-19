@@ -29,8 +29,8 @@ describe("Keyring Service", () => {
   let keyring: db.Keyring.Doc;
   let anotherKeyring: db.Keyring.Doc;
   it("Signin With Wallet", async () => {
-    const { accessToken } = await keyringService.signinWithAddress(network._id, testWallets[0].address);
-    expect(accessToken).toBeDefined();
+    const { jwt } = await keyringService.signinWallet(network._id, testWallets[0].address);
+    expect(jwt).toBeDefined();
   });
   it("Add Wallet", async () => {
     [keyring] = await keyringService.keyringsHasWallet(network._id, testWallets[0].address);
@@ -38,30 +38,30 @@ describe("Keyring Service", () => {
     expect(keyring.wallets.some((_id) => _id.equals(testWallets[0]._id))).toBeTruthy();
   });
   it("Add Wallet More", async () => {
-    keyring = await keyringService.addWallet(keyring._id, network._id, testWallets[1].address);
+    keyring = await keyringService.signaddWallet(keyring._id, network._id, testWallets[1].address);
     expect(keyring.wallets.some((_id) => _id.equals(testWallets[0]._id))).toBeTruthy();
     expect(keyring.wallets.some((_id) => _id.equals(testWallets[1]._id))).toBeTruthy();
   });
   it("Not Duplicate Wallets", async () => {
-    keyring = await keyringService.addWallet(keyring._id, network._id, testWallets[1].address);
+    keyring = await keyringService.signaddWallet(keyring._id, network._id, testWallets[1].address);
     expect(keyring.wallets.some((_id) => _id.equals(testWallets[0]._id))).toBeTruthy();
     expect(keyring.wallets.some((_id) => _id.equals(testWallets[1]._id))).toBeTruthy();
     expect(keyring.wallets.length).toEqual(2);
   });
   it("Migrate Wallet", async () => {
-    const { accessToken } = await keyringService.signinWithAddress(network._id, testWallets[2].address);
-    expect(accessToken).toBeDefined();
+    const { jwt } = await keyringService.signinWallet(network._id, testWallets[2].address);
+    expect(jwt).toBeDefined();
     [anotherKeyring] = await keyringService.keyringsHasWallet(network._id, testWallets[2].address);
     expect(anotherKeyring).toBeDefined();
     expect(anotherKeyring.wallets.some((_id) => _id.equals(testWallets[2]._id))).toBeTruthy();
-    anotherKeyring = await keyringService.addWallet(anotherKeyring._id, network._id, testWallets[1].address);
+    anotherKeyring = await keyringService.signaddWallet(anotherKeyring._id, network._id, testWallets[1].address);
     await keyring.refresh();
     expect(keyring.wallets.some((_id) => _id.equals(testWallets[1]._id))).toBeFalsy();
     expect(keyring.wallets.some((_id) => _id.equals(testWallets[1]._id))).toBeFalsy();
   });
   it("Prevent Empty Wallets When Remove Wallet", async () => {
     await expect(
-      keyringService.removeWallet(keyring._id, testWallets[0]._id, testWallets[0].address)
+      keyringService.signsubWallet(keyring._id, testWallets[0]._id, testWallets[0].address)
     ).rejects.toThrow();
   });
 });

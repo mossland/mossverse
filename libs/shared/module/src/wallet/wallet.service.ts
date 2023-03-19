@@ -19,32 +19,9 @@ export class WalletService extends AddrLoadService<Wallet.Mdl, Wallet.Doc, Walle
   async generateWallets(networkId: Id, addresses: string[]) {
     return await this.Wallet.generateMany(networkId, addresses);
   }
-
-  // async inventory(walletId: string) {
-  //   const wallet = await this.Wallet.pickById(walletId);
-  //   return this.contractService.inventory(wallet);
-  // }
-
-  async transferItem({ item, from, to, num, bn }: TokenTransferSignal) {
-    await Promise.all([this.Wallet.incItem(item, from, -num, bn), this.Wallet.incItem(item, to, num, bn)]);
-    // ! send signal to Websocket & Pubsub
-    return true;
-  }
-  async resetItems(resetContractId: Id) {
-    return await this.Wallet.resetItems(resetContractId);
-  }
-  async setItems(contractId: Id, ownerships: gql.Ownership[], reset = false) {
-    if (reset) await this.resetItems(contractId);
-    await this.Wallet.setItems(contractId, ownerships);
+  async summarize(): Promise<gql.WalletSummary> {
+    return {
+      totalWallet: await this.Wallet.countDocuments({ status: { $ne: "inactive" } }),
+    };
   }
 }
-type TokenTransferSignal = {
-  item: {
-    contract: Id;
-    token: Id;
-  };
-  from: Id;
-  to: Id;
-  num: number;
-  bn: number;
-};

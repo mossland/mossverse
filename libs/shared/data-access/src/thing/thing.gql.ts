@@ -12,7 +12,7 @@ import {
   Int,
   BaseArrayFieldGql,
   PickType,
-  SliceModel,
+  ID,
 } from "@shared/util-client";
 import { File, fileFragment } from "../file/file.gql";
 
@@ -26,19 +26,49 @@ export class ThingInput {
 
   @Field(() => File)
   image: File;
+
+  @Field(() => String, { nullable: true })
+  root: string | null;
+
+  @Field(() => String, { nullable: true })
+  rootType: string | null;
 }
 
 @ObjectType("Thing", { _id: "id" })
 export class Thing extends BaseGql(ThingInput) {
   @Field(() => String)
-  type: cnst.ThingType;
+  purpose: cnst.ThingPurpose;
 
   @Field(() => String)
   status: cnst.ThingStatus;
+
+  getImageUrl() {
+    return this.image?.url ?? "";
+  }
+
+  static find(things: LightThing[], name: string) {
+    return things.find((thing) => thing.name === name);
+  }
+  static findByName(things: LightThing[], name: string) {
+    return things.find((thing) => thing.name === name);
+  }
+
+  static pickByName(things: LightThing[], name: string) {
+    console.log(things, name);
+    const thing = things.find((thing) => thing.name === name);
+    if (!thing) throw new Error(`Thing with name ${name} not found`);
+    return thing;
+  }
 }
 
 @ObjectType("LightThing", { _id: "id", gqlRef: "Thing" })
-export class LightThing extends PickType(Thing, ["name", "image", "status"] as const) {}
+export class LightThing extends PickType(Thing, ["name", "image", "purpose", "description", "status"] as const) {}
+
+@ObjectType("ThingSummary")
+export class ThingSummary {
+  @Field(() => Int)
+  totalThing: number;
+}
 
 export const thingGraphQL = createGraphQL("thing" as const, Thing, ThingInput, LightThing);
 export const {
@@ -51,19 +81,9 @@ export const {
   removeThing,
   thingFragment,
   purifyThing,
+  crystalizeThing,
+  lightCrystalizeThing,
   defaultThing,
   addThingFiles,
+  mergeThing,
 } = thingGraphQL;
-export type ThingSlice = SliceModel<"thing", Thing, LightThing>;
-
-@InputType("ThingItemInput")
-export class ThingItemInput {
-  @Field(() => Thing)
-  thing: Thing;
-
-  @Field(() => Int)
-  num: number;
-}
-@ObjectType("ThingItem")
-export class ThingItem extends BaseArrayFieldGql(ThingItemInput) {}
-export const thingItemFragment = createFragment(ThingItem);

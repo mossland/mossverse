@@ -55,7 +55,7 @@ export class Erc1155 {
       })
     ).map((ret, idx) => ({
       address: owner,
-      num: parseInt(ret[0].toString()),
+      value: parseInt(ret[0].toString()),
       tokenId: contracts[idx].id,
       bn: ret[1],
       contract: contracts[idx].address,
@@ -72,7 +72,7 @@ export class Erc1155 {
     return uris;
   }
   async balances(owners: string[], ids: number[]) {
-    const balances: { address: string; num: number; tokenId: number; bn: number }[] = (
+    const balances: { address: string; value: number; tokenId: number; bn: number }[] = (
       await this.settings.multicall.view({
         calls: owners.map((address) => ({
           address: this.address,
@@ -84,9 +84,9 @@ export class Erc1155 {
     ).reduce(
       (acc, ret: [BigNumber[], number], index) => [
         ...acc,
-        ...ret[0].map((num, idx) => ({
+        ...ret[0].map((value, idx) => ({
           address: owners[index],
-          num: parseInt(num.toString()),
+          value: parseInt(value.toString()),
           tokenId: ids[idx],
           bn: ret[1],
         })),

@@ -40,7 +40,7 @@ describe("ERC1155 Instance", () => {
   it("Transfer Token", async () => {
     let isTransferred = false;
     const value = 10;
-    const balance = (await instance.balances([wallets[0].address], [0]))[0].num;
+    const balance = (await instance.balances([wallets[0].address], [0]))[0].value;
     instance.listen({
       onTransferSingle: (operator, from, to, id, val) => {
         isTransferred = parseInt(val.toString()) === value && from === wallet.address;
@@ -48,7 +48,7 @@ describe("ERC1155 Instance", () => {
     });
     await instance.contract.safeTransferFrom(wallet.address, wallets[0].address, tokenId, value, "0x00");
     await Utils.sleep(8000);
-    const postBalance = (await instance.balances([wallets[0].address], [0]))[0].num;
+    const postBalance = (await instance.balances([wallets[0].address], [0]))[0].value;
     expect(isTransferred).toBeTruthy();
     expect(postBalance - balance).toEqual(value);
     await instance.contract

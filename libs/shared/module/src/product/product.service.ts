@@ -18,4 +18,9 @@ export class ProductService extends LoadService<Product.Mdl, Product.Doc, Produc
     super(ProductService.name, Product);
   }
   //!remove시 유저 인벤토리에서 삭제 필요
+  async summarize(): Promise<gql.ProductSummary> {
+    return {
+      totalProduct: await this.Product.countDocuments({ status: { $ne: "inactive" } }),
+    };
+  }
 }

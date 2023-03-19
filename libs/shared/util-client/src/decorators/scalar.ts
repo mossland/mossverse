@@ -1,17 +1,22 @@
+import dayjs, { Dayjs } from "dayjs";
+
 export class BaseObject {
   id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Dayjs;
+  updatedAt: Dayjs;
+  __ModelType__: "full" | "light";
 }
 export interface Type<T = any> extends Function {
   new (...args: any[]): T;
 }
 export class ProtoFile {
   id: string;
+  filename: string;
   imageSize: [number, number];
   url: string;
-  createdAt: Date;
-  updatedAt: Date;
+  __ModelType__: "full" | "light";
+  createdAt: Dayjs;
+  updatedAt: Dayjs;
 }
 export class Int {}
 export class Float {}
@@ -20,10 +25,10 @@ export class JSON {}
 export type SingleFieldType = Int | Float | StringConstructor | BooleanConstructor | ID | DateConstructor | JSON | Type;
 
 export const defaultMap = {
-  ID: "",
+  ID: null,
   String: "",
   Boolean: false,
-  Date: new Date(-1),
+  Date: dayjs(new Date(-1)),
   Int: 0,
   Float: 0,
   JSON: {},
@@ -45,6 +50,7 @@ export interface ClassMeta extends ClassProps {
   gqlRef: string;
   gqlStr: string;
   purify: PurifyFunc<any>;
+  crystalize: CrystalizeFunc<any>;
   modelRef: any;
   childRefs: any[];
   hasFile: boolean;
@@ -52,7 +58,7 @@ export interface ClassMeta extends ClassProps {
 export type FieldMeta = {
   key: string;
   name: string;
-  className: string;
+  className: string | null;
   isClass: boolean;
   nullable: boolean;
   modelRef: any;
@@ -86,6 +92,10 @@ export const getFieldMetas = (modelRef: any) => {
 export type InputField<T> = T extends (infer K)[] ? InputField<K>[] : T extends BaseObject ? string : T;
 export type InputOf<T> = { [K in keyof T]: InputField<T[K]> };
 export type PurifyFunc<I> = (self: DefaultOf<I>, isChild?: boolean) => InputOf<I> | null;
+export type CrystalizeFunc<M> = (
+  self: { [K in keyof M as M[K] extends (...args: any) => any ? never : K]: M[K] },
+  isChild?: boolean
+) => M;
 
 export const getId = (self: any, key: string) => {
   const _id = self[key];
@@ -99,7 +109,7 @@ export type FieldState<T> = T extends string
   ? T
   : T extends boolean
   ? T
-  : T extends Date
+  : T extends Dayjs
   ? T
   : T extends any[]
   ? T
@@ -139,7 +149,7 @@ type RemoveMutation<T extends string, M> = T extends `${infer S}`
   : never;
 type AddFilesMutation<T extends string, M> = T extends `${infer S}`
   ? {
-      [K in keyof M as M[K] extends ProtoFile | ProtoFile[] ? `add${Capitalize<S>}Files` : never]: (
+      [K in keyof M as M[K] extends ProtoFile | ProtoFile[] | null ? `add${Capitalize<S>}Files` : never]: (
         files: FileList,
         id?: string
       ) => Promise<ProtoFile[]>;
@@ -154,4 +164,4 @@ export type DefaultGqls<T extends string, M, I, L> = GetQuery<T, M> &
   RemoveMutation<T, M> &
   AddFilesMutation<T, M>;
 
-export type Submit = { disabled: boolean; loading: boolean };
+export type Submit = { disabled: boolean; loading: boolean; times: number };

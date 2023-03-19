@@ -3,9 +3,7 @@ import { twMerge } from "tailwind-merge";
 
 export const Navigator = ({ children, className }: Props.BaseProps) => {
   return (
-    <div
-      className={`flex items-center justify-center border-t-[1px] border-b-[1px] border-solid border-[#000] ${className}`}
-    >
+    <div className={`flex items-center justify-center border-y-[2px] border-solid border-[#000] ${className}`}>
       {children}
     </div>
   );

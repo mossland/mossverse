@@ -8,3 +8,4 @@ export * from "./scalar";
 export * from "./queryMutation";
 export * from "./graphql";
 export * from "./store";
+export * from "./dataHandlingTypes";

@@ -1,8 +1,11 @@
-import { cnst } from "@shared/util";
-import { message, notification } from "antd";
-import { MessageInstance } from "antd/lib/message";
-import { NotificationInstance } from "antd/lib/notification";
 import { WalletNetworkType } from "./wallet";
+import Router, { NextRouter } from "next/router";
+import { InitActionForm } from "./decorators";
+import { isMobile } from "react-device-detect";
+import { logger } from "./logger";
+
+type DecodedURLQuery = { init: { [key: string]: InitActionForm<any> }; state: { [key: string]: any } };
+type EncodedURLQuery = { x: string };
 
 export type PathMap = {
   paths: string[];
@@ -13,37 +16,72 @@ export class PageMap {
   admin: PathMap;
   user: PathMap;
   public: PathMap;
-  entry = "/";
-  entryQuery = {};
+  init: { [key: string]: any } = {};
+  state: { [key: string]: any } = {};
   auth: "user" | "admin" | "public" = "admin";
+  isMobile = isMobile;
   blockCountries: string[] = [];
   constructor(pageMap: Partial<PageMap> & { admin: PathMap; user: PathMap; public: PathMap }) {
-    Object.assign(this, pageMap);
+    this.set(pageMap);
   }
-  setEntry(path: string, query: any) {
-    this.entry = path;
-    this.entryQuery = query;
+  set(pageMap: Partial<PageMap>) {
+    Object.assign(this, pageMap);
     return this;
   }
-  getAuth(path?: string): "user" | "admin" | "public" {
-    const pathname = path ?? this.entry;
+  getAuth(): "user" | "admin" | "public" {
+    const pathname = Router.pathname;
     if (this.admin.paths.some((path) => pathname.startsWith(path))) this.auth = "admin";
     else if (this.public.paths.some((path) => pathname.startsWith(path))) this.auth = "public";
     else if (this.user.paths.some((path) => pathname.startsWith(path))) this.auth = "user";
     else this.auth = "public";
     return this.auth;
   }
-  getHome(auth?: "user" | "admin" | "public") {
-    return this[auth ?? this.auth].home;
+  getHome() {
+    return this[this.getAuth()].home;
   }
-  getUnauthorized(auth?: "user" | "admin" | "public") {
-    return this[auth ?? this.auth].unauthorized;
+  getUnauthorized() {
+    return this[this.getAuth()].unauthorized;
+  }
+  unauthorize() {
+    if (Router.pathname === this.getUnauthorized()) return;
+    logger.verbose(`Unauthorized in ${this.getAuth()}. Redirecting to ${this.getUnauthorized()}.`);
+    Router.push({ pathname: this.getUnauthorized(), query: { loginType: "requireAuth", asPath: Router.asPath } });
+  }
+  redirectAfterLogin(loginType, auth: "user" | "admin" | "public" = this.getAuth()) {
+    const type = Router.query.loginType ?? loginType ?? "signin";
+    logger.verbose(`Redirecting after login: ${type} in ${auth}.`);
+    if (type === "skipReplace") return;
+    if (type === "signin") Router.push(this[auth].home);
+    else if (type === "signup") Router.push(this[auth].home);
+    else if (type === "autoLogin") return;
+    else if (type === "requireAuth") Router.push((Router.query.asPath as string) ?? this[auth].home);
+  }
+  setState(state: { [key: string]: any }, { replace }: { replace?: boolean } = {}) {
+    this.state = { ...(replace ? this.state : {}), ...state };
+    Router.replace({
+      pathname: Router.pathname,
+      query: this.#encodeQuery({ init: this.init, state: this.state }),
+    });
+  }
+  goto(path: string, query: { [key: string]: any } = {}) {
+    Router.push({ pathname: path, query: this.#encodeQuery(query as any) });
+  }
+  enter() {
+    const query = this.#decodeQuery(Router.query as any);
+    this.init = query.init ?? {};
+    this.state = query.state ?? {};
+  }
+  #encodeQuery(query: DecodedURLQuery): EncodedURLQuery {
+    return { x: Buffer.from(JSON.stringify(query)).toString("base64") };
+  }
+  #decodeQuery(query: EncodedURLQuery): DecodedURLQuery {
+    return { ...query, ...(query.x ? JSON.parse(Buffer.from(query.x, "base64").toString("utf8")) : {}) };
   }
 }
 
-export const defaultPageMap = new PageMap({
+export const pageMap = new PageMap({
   public: {
-    paths: ["/"],
+    paths: [],
     home: "/",
     unauthorized: "/signin",
   },
@@ -53,16 +91,17 @@ export const defaultPageMap = new PageMap({
     unauthorized: "/signin",
   },
   admin: {
-    paths: ["/"],
+    paths: [],
     home: "/",
     unauthorized: "/admin",
   },
 });
-
+export type LoginType = "signin" | "signup" | "requireAuth" | "autoLogin" | "skipReplace";
+export type LoginAuth = "user" | "admin" | "public";
 export type LoginForm = {
-  auth: "user" | "admin" | "public";
-  type: "signin" | "signup" | "requireAuth" | "autoLogin";
-  token?: string;
+  auth: LoginAuth;
+  loginType?: LoginType;
+  jwt?: string | null;
 };
 
 export type Geolocation = {
@@ -70,8 +109,10 @@ export type Geolocation = {
   countryName: string;
   city: string;
   postal: number | null;
-  latitude: number;
-  longitude: number;
+  location: {
+    type: "Point";
+    coordinates: number[];
+  };
   ipv4: string;
   state: string;
 };
@@ -80,8 +121,10 @@ export const defaultGeolocation: Geolocation = {
   countryName: "",
   city: "",
   postal: null,
-  latitude: 0,
-  longitude: 0,
+  location: {
+    type: "Point",
+    coordinates: [0, 0],
+  },
   ipv4: "",
   state: "",
 };
@@ -93,31 +136,26 @@ export const getGeolocation = async (): Promise<Geolocation> => {
     countryName: geodb.country_name,
     city: geodb.city,
     postal: geodb.postal,
-    latitude: geodb.latitude,
-    longitude: geodb.longitude,
+    location: {
+      type: "Point",
+      coordinates: [geodb.longitude, geodb.latitude],
+    },
     ipv4: geodb.IPv4,
     state: geodb.state,
   };
 };
 export type InitClientForm = {
-  pageMap: PageMap;
   uri: string;
   ws: string | null;
   networkType?: WalletNetworkType;
-  msg: MessageInstance;
-  noti: NotificationInstance;
+  jwt?: string | undefined;
+  // msg: MessageInstance;
+  // noti: NotificationInstance;
   whoAmI: () => Promise<void>;
 };
 export const defaultInitClientForm = {
-  pageMap: defaultPageMap,
-  // entryPath: "/",
-  // uri: "http://localhost:8080/graphql",
-  // ws: null,
-  msg: message as MessageInstance,
-  noti: notification as NotificationInstance,
-  geolocation: defaultGeolocation,
   networkType: "debugnet" as WalletNetworkType,
-  whoAmI: async () => {
+  whoAmI: async ({ reset }: { reset?: boolean } = {}) => {
     //
   },
 };

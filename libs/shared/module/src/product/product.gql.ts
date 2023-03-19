@@ -1,7 +1,7 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
-import { Field, ID, InputType, IntersectionType, ObjectType } from "@nestjs/graphql";
-import * as gql from "../gql";
+import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
+import { File } from "../file/file.gql";
 import { cnst } from "@shared/util";
 
 // * 1. 보안필드를 제외한 모든 필드
@@ -17,7 +17,7 @@ class Base {
   @Prop({ type: String, required: false, default: "Default Description" })
   description: string;
 
-  @Field(() => gql.File)
+  @Field(() => File)
   @Prop({ type: ObjectId, required: true, ref: "file", index: true })
   image: Id;
 }
@@ -46,3 +46,12 @@ export class ProductInput extends IntersectionType(InputOverwrite, Base, InputTy
 export class Product extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class ProductSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class ProductSummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalProduct: number;
+}

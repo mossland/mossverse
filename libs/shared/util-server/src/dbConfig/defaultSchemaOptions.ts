@@ -9,8 +9,8 @@ export const defaultSchemaOptions: SchemaOptions = {
   id: true,
   _id: true,
   methods: getDefaultDocumentMethods(),
-  statics: getDefaultModelStatics(),
-  query: getDefaultQueryHelpers(),
+  statics: getDefaultModelStatics() as any,
+  query: getDefaultQueryHelpers() as any,
 };
 
 // @Schema({ timestamps: true })

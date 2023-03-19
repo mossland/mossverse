@@ -8,4 +8,6 @@ export * from "./token/token.sample";
 export * from "./wallet/wallet.sample";
 export * from "./product/product.sample";
 export * from "./currency/currency.sample";
-// export * from "./user/user.sample";
+export * from "./ownership/ownership.sample";
+
+export * from "./notification/notification.sample";

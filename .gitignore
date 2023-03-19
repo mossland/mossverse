@@ -1,7 +1,7 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 # compiled output
-/dist
+**/dist
 /tmp
 /out-tsc
 
@@ -49,6 +49,7 @@ tokens
 **/build
 **/node_modules
 **/package-lock.json
+**/pnpm-lock.yaml
 /data
 /secure
 /src
@@ -63,6 +64,7 @@ schema.gql
 **/.env
 **/.env.*
 **/env.**.ts
+**/env.ts
 # Kubernetes
 **/*secrets.yaml
 **/kubeconfig.yaml
@@ -70,3 +72,7 @@ schema.gql
 
 # Next.js
 .next
+
+**/.secret/*
+**/**.p8
+dump

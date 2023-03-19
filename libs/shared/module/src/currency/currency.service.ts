@@ -32,4 +32,9 @@ export class CurrencyService extends LoadService<Currency.Mdl, Currency.Doc, Cur
   async withdraw(currencyId: Id, amount: number) {
     // WIP
   }
+  async summarize(): Promise<gql.CurrencySummary> {
+    return {
+      totalCurrency: await this.Currency.countDocuments({ status: { $ne: "inactive" } }),
+    };
+  }
 }

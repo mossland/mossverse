@@ -1,8 +1,9 @@
 import { INestApplication, Logger } from "@nestjs/common";
 import { RedisIoAdapter, LoggingInterceptor } from "./middlewares";
-import { graphqlUploadExpress } from "graphql-upload";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { ModulesOptions } from "./option";
+import { json, urlencoded } from "body-parser";
+import { graphqlUploadExpress } from "graphql-upload";
 
 export const boot = async (app: INestApplication, options: ModulesOptions) => {
   // if (options.globalPrefix) app.setGlobalPrefix(options.globalPrefix);
@@ -12,10 +13,12 @@ export const boot = async (app: INestApplication, options: ModulesOptions) => {
     preflightContinue: false,
     optionsSuccessStatus: 204,
     allowedHeaders:
-      "DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,signmessage,signchain,signaddress",
+      "DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,signmessage,signchain,signaddress,geolocation",
   });
   const redisIoAdapter = new RedisIoAdapter(app);
   await redisIoAdapter.connectToRedis(`redis://${options.redis.host}:${options.redis.port}`);
+  app.use(json({ limit: "100mb" }));
+  app.use(urlencoded({ limit: "100mb", extended: true }));
   app.useWebSocketAdapter(redisIoAdapter);
   app.use(graphqlUploadExpress());
   app.useGlobalInterceptors(new LoggingInterceptor());

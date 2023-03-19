@@ -1,7 +1,6 @@
 // ! This File Needs to be Refactor
-import styled, { keyframes } from "styled-components";
-import { gql, store } from "@shared/data-access";
-import { ConnectEthereum, ConnectKlaytn, ConnectLuniverse, ConnectButton } from "./index";
+import { gql, st, useLocale } from "@shared/data-access";
+import { ConnectButton } from "./index";
 import { MetamaskIcon, KlaytnIcon, LuniverseIcon, EthereumIcon, ModalContainer } from "../common";
 
 export type LoginSelectorMobileProps = {
@@ -11,19 +10,18 @@ export type LoginSelectorMobileProps = {
 };
 
 export const LoginSelectorMobile = ({ klaytn, ethereum, networkList }: LoginSelectorMobileProps) => {
-  const isOpenModal = store.keyring.use.isOpenModal();
+  const keyringModal = st.use.keyringModal();
+  const { l } = useLocale();
 
-  if (!isOpenModal) return null;
+  if (keyringModal !== "addWallet") return null;
 
   return (
     <ModalContainer
-      showModal={isOpenModal}
-      closeShowModal={() => {
-        store.keyring.setState({ isOpenModal: false });
-      }}
-      title="Select Network"
+      showModal={keyringModal === "addWallet"}
+      closeShowModal={() => st.set({ keyringModal: null })}
+      title={l("main.selectNetwork")}
     >
-      <LoginSelectorContainer>
+      <div className="p-[24px] flex flex-col gap-[18px]">
         {networkList.map((network) =>
           network.provider === "klaytn" ? (
             <ConnectButton
@@ -31,7 +29,9 @@ export const LoginSelectorMobile = ({ klaytn, ethereum, networkList }: LoginSele
               fontColor={"white"}
               backgroundColor={"#69583F"}
               icon={<KlaytnIcon />}
-              onClick={async () => await store.keyring.do.signinWithWallet("walletConnect", network)}
+              onClick={async () => {
+                await st.do.signuporinWallet("walletConnect", network, { loginType: "skipReplace" });
+              }}
             />
           ) : network.provider === "ethereum" ? (
             <ConnectButton
@@ -39,18 +39,13 @@ export const LoginSelectorMobile = ({ klaytn, ethereum, networkList }: LoginSele
               fontColor={"white"}
               backgroundColor={"#343434"}
               icon={<EthereumIcon />}
-              onClick={async () => await store.keyring.do.signinWithWallet("walletConnect", network)}
+              onClick={async () => {
+                await st.do.signuporinWallet("walletConnect", network, { loginType: "skipReplace" });
+              }}
             />
           ) : null
         )}
-      </LoginSelectorContainer>
+      </div>
     </ModalContainer>
   );
 };
-
-const LoginSelectorContainer = styled.div`
-  padding: 24px;
-  display: flex;
-  gap: 18px;
-  flex-direction: column;
-`;

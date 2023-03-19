@@ -45,7 +45,7 @@ describe("ERC20 Instance", () => {
   });
   it("Transfer Token", async () => {
     const value = Math.floor(Math.random() * 10 + 1);
-    const balance = (await instance.balances([wallets[0].address]))[0].num;
+    const balance = (await instance.balances([wallets[0].address]))[0].value;
     let isTransferred = false;
     instance.listen({
       onTransfer: (from, to, val) => {
@@ -55,7 +55,7 @@ describe("ERC20 Instance", () => {
     await instance.contract.transfer(wallets[0].address, value);
     await Utils.sleep(8000);
     expect(isTransferred).toBeTruthy();
-    const nextBalance = (await instance.balances([wallets[0].address]))[0].num;
+    const nextBalance = (await instance.balances([wallets[0].address]))[0].value;
     expect(nextBalance - balance).toEqual(value);
   }, 30000);
   it("Approve", async () => {
@@ -74,7 +74,7 @@ describe("ERC20 Instance", () => {
     const snapshot = await instance.snapshot([wallet.address, ...wallets.map((w) => w.address)]);
     snapshot.map((s) => {
       expect(s.address).toBeDefined();
-      expect(s.num).toBeDefined();
+      expect(s.value).toBeDefined();
     });
   });
 });

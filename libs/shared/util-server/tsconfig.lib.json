@@ -5,7 +5,9 @@
     "outDir": "../../../dist/out-tsc",
     "declaration": true,
     "types": ["node"],
-    "target": "es6"
+    "target": "es6",
+    "allowJs": true,
+    "maxNodeModuleJsDepth": 10
   },
   "exclude": ["**/*.spec.ts", "**/*.test.ts"],
   "include": ["**/*.ts"]

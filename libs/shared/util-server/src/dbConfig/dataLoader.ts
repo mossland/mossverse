@@ -10,7 +10,7 @@ export const createLoader = <Key, Value>(
   return new DataLoader<Key, Value>(
     (fields: any): any => {
       const query: FilterQuery<unknown> = {
-        status: { $ne: "inactive" },
+        // status: { $ne: "inactive" },
         ...defaultQuery,
       };
       query[fieldName] = { $in: fields };
@@ -20,7 +20,7 @@ export const createLoader = <Key, Value>(
       });
       return data;
     },
-    { cache: false }
+    { name: "dataloader", cache: false }
   );
 };
 export const createArrayLoader = <K, V>(
@@ -30,7 +30,7 @@ export const createArrayLoader = <K, V>(
 ) => {
   return new DataLoader<K, V>((fields: any) => {
     const query: FilterQuery<unknown> = {
-      status: { $ne: "inactive" },
+      // status: { $ne: "inactive" },
       ...defaultQuery,
     };
     query[fieldName] = { $in: fields };
@@ -48,7 +48,7 @@ export const createArrayElementLoader = <K, V>(
   return new DataLoader<K, V>(
     (fields: any): any => {
       const query: FilterQuery<unknown> = {
-        status: { $ne: "inactive" },
+        // status: { $ne: "inactive" },
         ...defaultQuery,
       };
       query[fieldName] = { $in: fields };
@@ -64,7 +64,7 @@ export const createArrayElementLoader = <K, V>(
       });
       return data;
     },
-    { cache: false }
+    { name: "dataloader", cache: false }
   );
 };
 export const createPopulatedLoader = <K, V>(
@@ -76,7 +76,7 @@ export const createPopulatedLoader = <K, V>(
   return new DataLoader<K, V>(
     (fields: any): any => {
       const query: FilterQuery<unknown> = {
-        status: { $ne: "inactive" },
+        // status: { $ne: "inactive" },
         ...defaultQuery,
       };
       query[fieldName] = { $in: fields };
@@ -88,7 +88,7 @@ export const createPopulatedLoader = <K, V>(
         });
       return data;
     },
-    { cache: false }
+    { name: "dataloader", cache: false }
   );
 };
 export const createArrayElementPopulatedLoader = <K, V>(
@@ -100,7 +100,7 @@ export const createArrayElementPopulatedLoader = <K, V>(
   return new DataLoader<K, V>(
     (fields) => {
       const query: FilterQuery<unknown> = {
-        status: { $ne: "inactive" },
+        // status: { $ne: "inactive" },
         ...defaultQuery,
       };
       query[fieldName] = { $in: fields };
@@ -118,6 +118,25 @@ export const createArrayElementPopulatedLoader = <K, V>(
         });
       return data;
     },
-    { cache: false }
+    { name: "dataloader", cache: false }
+  );
+};
+
+export const createQueryLoader = <Key, Value>(
+  model: Model<any>,
+  queryKeys: string[],
+  defaultQuery: FilterQuery<unknown> = {}
+) => {
+  return new DataLoader<Key, Value>(
+    (queries: any): any => {
+      const query: FilterQuery<unknown> = { $and: [{ $or: queries }, defaultQuery] };
+      const getQueryKey = (query) => queryKeys.map((key) => query[key].toString()).join("");
+      const data = model.find(query).then((list: Document<unknown>[]) => {
+        const listByKey = _.keyBy(list, getQueryKey);
+        return queries.map((query) => _.get(listByKey, getQueryKey(query), null));
+      });
+      return data;
+    },
+    { name: "dataloader", cache: false }
   );
 };

@@ -83,7 +83,7 @@ describe("ERC721 Instance", () => {
     snapshot.map((s) => {
       expect(s.address).toBeDefined();
       expect(s.uri).toBeDefined();
-      expect(s.num).toEqual(1);
+      expect(s.value).toEqual(1);
       expect(s.tokenId).toBeDefined();
     });
   }, 1200000);

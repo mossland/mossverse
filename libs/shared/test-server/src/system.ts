@@ -31,5 +31,6 @@ export class TestSystem {
     await mongoose.disconnect();
     await this.mongod.stop();
     Logger.log("System Terminated");
+    process.exit(0);
   }
 }

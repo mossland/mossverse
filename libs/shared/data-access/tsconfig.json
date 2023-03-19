@@ -7,7 +7,7 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
+
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },

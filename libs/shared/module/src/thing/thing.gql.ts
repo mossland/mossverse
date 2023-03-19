@@ -1,7 +1,7 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
-import { Field, ID, InputType, IntersectionType, ObjectType } from "@nestjs/graphql";
-import * as gql from "../gql";
+import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
+import { File } from "../file/file.gql";
 import { cnst } from "@shared/util";
 
 // * 1. 보안필드를 제외한 모든 필드
@@ -17,9 +17,17 @@ class Base {
   @Prop({ type: String, required: false, default: "Default Description" })
   description: string;
 
-  @Field(() => gql.File)
+  @Field(() => File)
   @Prop({ type: ObjectId, required: true, ref: "file", index: true })
   image: Id;
+
+  @Field(() => ID, { nullable: true })
+  @Prop({ type: ObjectId, required: false, refPath: "rootType" })
+  root?: Id;
+
+  @Field(() => String, { nullable: true })
+  @Prop({ type: String, required: false, immutable: true })
+  rootType?: string;
 }
 
 // * 2. 다른 필드를 참조하는 값 Input형식으로 덮어씌우기
@@ -35,8 +43,8 @@ class InputOverwrite {
 @Schema()
 class Tail extends Base {
   @Field(() => String)
-  @Prop({ type: String, required: true, index: true, default: "general", enum: cnst.thingTypes })
-  type: cnst.ThingType;
+  @Prop({ type: String, required: true, index: true, default: "item", enum: cnst.thingPurposes })
+  purpose: cnst.ThingPurpose;
 
   @Field(() => String)
   @Prop({ type: String, enum: cnst.thingStatuses, required: true, default: "active" })
@@ -50,3 +58,12 @@ export class ThingInput extends IntersectionType(InputOverwrite, Base, InputType
 export class Thing extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class ThingSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class ThingSummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalThing: number;
+}

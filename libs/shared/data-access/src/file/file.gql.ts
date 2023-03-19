@@ -12,7 +12,6 @@ import {
   BaseGql,
   ProtoFile,
   PickType,
-  SliceModel,
 } from "@shared/util-client";
 
 @InputType("FileInput")
@@ -20,6 +19,9 @@ export class FileInput {}
 
 @ObjectType("File", { _id: "id" })
 export class File extends BaseGql(FileInput) implements ProtoFile {
+  @Field(() => String)
+  filename: string;
+
   @Field(() => [Int])
   imageSize: [number, number];
 
@@ -27,7 +29,17 @@ export class File extends BaseGql(FileInput) implements ProtoFile {
   url: string;
 }
 @ObjectType("LightFile", { _id: "id", gqlRef: "File" })
-export class LightFile extends PickType(File, ["imageSize", "url"] as const) {}
+export class LightFile extends PickType(File, ["filename", "imageSize", "url"] as const) {}
+
+@ObjectType("FileSummary")
+export class FileSummary {
+  @Field(() => Int)
+  totalFile: number;
+}
+
+export const fileQueryMap = {
+  totalFile: { status: { $ne: "inactive" } },
+};
 
 export const fileGraphQL = createGraphQL("file" as const, File, FileInput, LightFile);
 export const {
@@ -40,6 +52,8 @@ export const {
   removeFile,
   fileFragment,
   purifyFile,
+  crystalizeFile,
+  lightCrystalizeFile,
   defaultFile,
+  mergeFile,
 } = fileGraphQL;
-export type FileSlice = SliceModel<"file", File, LightFile>;

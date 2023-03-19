@@ -1,4 +1,5 @@
 {
+  "name": "shared/ui-web",
   "sourceRoot": "libs/shared/ui-web/src",
   "projectType": "library",
   "tags": [],
@@ -32,7 +33,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/shared/ui-web"],
+      "outputs": ["{workspaceRoot}/coverage/libs/shared/ui-web"],
       "options": {
         "jestConfig": "libs/shared/ui-web/jest.config.ts",
         "passWithNoTests": true

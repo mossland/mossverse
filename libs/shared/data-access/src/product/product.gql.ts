@@ -10,7 +10,7 @@ import {
   ObjectType,
   BaseGql,
   PickType,
-  SliceModel,
+  Int,
 } from "@shared/util-client";
 import { File } from "../file/file.gql";
 
@@ -33,7 +33,13 @@ export class Product extends BaseGql(ProductInput) {
 }
 
 @ObjectType("LightProduct", { _id: "id", gqlRef: "Product" })
-export class LightProduct extends PickType(Product, ["name", "image", "status"] as const) {}
+export class LightProduct extends PickType(Product, ["name", "image", "description", "status"] as const) {}
+
+@ObjectType("ProductSummary")
+export class ProductSummary {
+  @Field(() => Int)
+  totalProduct: number;
+}
 
 export const productGraphQL = createGraphQL("product" as const, Product, ProductInput, LightProduct);
 export const {
@@ -46,6 +52,8 @@ export const {
   removeProduct,
   productFragment,
   purifyProduct,
+  crystalizeProduct,
+  lightCrystalizeProduct,
   defaultProduct,
+  mergeProduct,
 } = productGraphQL;
-export type ProductSlice = SliceModel<"product", Product, LightProduct>;

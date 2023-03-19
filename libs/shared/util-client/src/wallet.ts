@@ -1,16 +1,12 @@
-import { MetaMaskInpageProvider } from "@metamask/providers";
+import type { MetaMaskInpageProvider } from "@metamask/providers";
 import { cnst, Utils } from "@shared/util";
 import { isMobile } from "react-device-detect";
 import WC from "@walletconnect/client";
 import QRCodeModal from "@walletconnect/qrcode-modal";
 import { ethers } from "ethers";
-import { ERC20, erc20 } from "@shared/contract";
+import { ERC20, erc20, erc721 } from "@shared/contract";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import { Signature } from "./apollo";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Caver = require("caver-js");
-// import Caver from "caver-js-latest";
+import { Signature } from "./client";
 
 declare global {
   interface Window {
@@ -32,6 +28,7 @@ export abstract class Wallet {
   getAccount: () => Promise<string>;
   sendValue: (value: number, to: string, account?: string) => Promise<string>;
   sendErc20: (contract: string, num: number, to: string, account?: string) => Promise<string>;
+  // setApprovalForAll: (ctrAddr: string, operator: string) => Promise<string>;
 }
 export class Metamask implements Wallet {
   chain: Chain;
@@ -131,8 +128,7 @@ export class Kaikas implements Wallet {
       window.alert(message);
       throw new Error(message);
     }
-    const caver = new Caver(window.klaytn);
-    const signaddress = await caver.klay.sign(signmessage, account);
+    const signaddress = await window.caver.klay.sign(signmessage, address ?? account);
     return { signchain: this.chain.chainId, signmessage, signaddress };
   }
   async init() {
@@ -157,29 +153,38 @@ export class Kaikas implements Wallet {
   }
   async sendValue(value: number, to: string, account?: string) {
     await this.#validateChain(account);
-    const caver = new Caver(window.klaytn);
     const from = await this.getAccount();
-    const receipt = await caver.klay.sendTransaction({
+    const receipt = await window.caver.klay.sendTransaction({
       type: "VALUE_TRANSFER",
       from,
       to,
-      value: caver.utils.toPeb(value.toString(), "KLAY"),
+      value: window.caver.utils.toPeb(value.toString(), "KLAY"),
     });
     return receipt.transactionHash;
     // .once("receipt", (receipt) => {
-    //   console.log("receipt", receipt);
+    //   console.log("receipts", receipt);
     // })
   }
   async sendErc20(ctrAddr: string, num: number, to: string, account?: string) {
     await this.#validateChain(account);
     const from = await this.getAccount();
-    const caver = new Caver(window.klaytn);
-    const contract = new caver.klay.Contract(erc20.abi, ctrAddr);
+    const contract = new window.caver.klay.Contract(erc20.abi, ctrAddr);
     const decimals = await contract.methods.decimals().call();
     const value = ethers.utils.parseUnits(num.toString(), decimals);
     const gas = await contract.methods.transfer(to, value).estimateGas({ from });
     const receipt = await contract.methods.transfer(to, value).send({ from, gas });
     return receipt.transactionHash;
+  }
+
+  async setApprovalForAll(ctrAddr: string, operator: string) {
+    const from = await this.getAccount();
+    await this.#validateChain(from);
+    const contract = new window.caver.klay.Contract(erc721.abi, ctrAddr);
+    const approved = await contract.methods.isApprovedForAll(from, operator).call();
+    if (!approved) {
+      const gas = await contract.methods.setApprovalForAll(operator, true).estimateGas({ from });
+      await contract.methods.setApprovalForAll(operator, true).send({ from, gas });
+    }
   }
 }
 
@@ -257,3 +262,18 @@ export class WalletConnect implements Wallet {
     return receipt.hash;
   }
 }
+
+// let link: string;
+// if (isMobile) {
+//   link = `https://metamask.app.link/dapp/${window.location.href.slice(
+//     window.location.protocol === "http:" ? 7 : 8,
+//     window.location.href.length
+//   )}`;
+//   // setLink(link);
+//   window.location.assign(link);
+// } else {
+//   link = "https://metamask.io/download/";
+//   const win = window.open(link, "_blank");
+//   win?.focus();
+// }
+// };

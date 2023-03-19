@@ -1,12 +1,12 @@
 // https://github.com/nestjs/graphql/issues/755
 import { Args, Int, Mutation, Query, Resolver, ID } from "@nestjs/graphql";
-import { Id, Query as DbQuery } from "../dbConfig";
+import { Id, Query as DbQuery, DefaultDocMtds, DefaultMdlStats } from "../dbConfig";
 import { LoadService } from "./service";
 import { Model, Document } from "mongoose";
 import { Utils } from "@shared/util";
 const { capitalize, lowerlize } = Utils;
 import { Ip, UseGuards } from "@nestjs/common";
-import { Account, Allow, Auth, Signature, UserIp } from "../middlewares";
+import { Account, Allow, Auth, Signature } from "../middlewares";
 import JSON from "graphql-type-json";
 import * as pluralize from "pluralize";
 
@@ -20,7 +20,11 @@ interface DocInput extends Function {
 interface AuthPolicy extends Function {
   new (...any: any[]): any;
 }
-export interface BaseResolverConstructor<Mdl extends Model<any>, Doc extends Document<any>, Input> {
+export interface BaseResolverConstructor<
+  Mdl extends Model<any> & DefaultMdlStats<any, any>,
+  Doc extends Document<any> & DefaultDocMtds<any>,
+  Input
+> {
   new (service: LoadService<Mdl, Doc, Input>): BaseResolverInstance<Doc, Input>;
 }
 
@@ -36,36 +40,17 @@ export interface BaseResolverInstance<Doc, Input> {
 export function BaseResolver<
   T extends BaseEntity,
   I extends DocInput,
-  Mdl extends Model<any>,
-  Doc extends Document<any>,
+  Mdl extends Model<any> & DefaultMdlStats<any, any>,
+  Doc extends Document<any> & DefaultDocMtds<any>,
   Input
 >(classRef: T, inputRef: I, get?: AuthPolicy, list?: AuthPolicy, cru?: AuthPolicy): any {
   @Resolver({ isAbstract: true })
   abstract class BaseResolver {
     constructor(private readonly service: LoadService<Mdl, Doc, Input>) {}
-
-    @UseGuards(get ?? Allow.Public) // will be deprecated
-    @Query(() => classRef, { name: `${lowerlize(classRef.name)}` })
-    async getLegacy(@Args({ name: "id", type: () => ID }) id: string): Promise<Doc> {
-      return await this.service.get(new Id(id));
-    }
     @UseGuards(get ?? Allow.Public)
     @Query(() => classRef, { name: `get${classRef.name}` })
     async get(@Args({ name: `${Utils.lowerlize(classRef.name)}Id`, type: () => ID }) id: string): Promise<Doc> {
-      // async get(@Args({ name: "id", type: () => ID }) id: string): Promise<Doc> {
       return await this.service.get(new Id(id));
-    }
-
-    @UseGuards(list ?? Allow.Public)
-    @Query(() => [classRef], { name: `${pluralize(lowerlize(classRef.name))}` })
-    // @Query(() => [classRef], { name: `list${lowerlize(classRef.name)}` })
-    async listLegacy(
-      // will be deprecated
-      @Args({ name: "query", type: () => JSON }) query: DbQuery<Doc>,
-      @Args({ name: "skip", type: () => Int, nullable: true }) skip: number,
-      @Args({ name: "limit", type: () => Int, nullable: true }) limit: number
-    ): Promise<Doc[]> {
-      return await this.service.list(query, skip, limit);
     }
     @UseGuards(list ?? Allow.Public)
     @Query(() => [classRef], { name: `list${classRef.name}` })
@@ -91,9 +76,10 @@ export function BaseResolver<
     @Mutation(() => classRef, { name: `create${capitalize(classRef.name)}` })
     async create(
       @Args({ name: `data`, type: () => inputRef }) data: Input,
-      @Auth() account: Account | null
+      @Auth() account: Account | null,
+      @Signature() address: string
     ): Promise<Doc> {
-      return await this.service.create(data, { account });
+      return await this.service.create(data, { address, account });
     }
     @UseGuards(cru ?? Allow.Public)
     @Mutation(() => classRef, { name: `update${capitalize(classRef.name)}` })

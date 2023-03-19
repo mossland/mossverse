@@ -12,7 +12,6 @@ import {
   PickType,
   ID,
 } from "@shared/util-client";
-import { ThingItem } from "../thing/thing.gql";
 import { Keyring } from "../keyring/keyring.gql";
 import { File } from "../file/file.gql";
 
@@ -24,17 +23,14 @@ export class UserInput {
   @Field(() => File, { nullable: true })
   image: File | null;
 
-  @Field(() => String, { nullable: true })
-  nftImage: string | null;
+  @Field(() => [String])
+  requestRoles: cnst.UserRole[];
 }
 
 @ObjectType("User", { _id: "id" })
 export class User extends BaseGql(UserInput) {
-  @Field(() => String)
-  role: cnst.UserRole;
-
-  @Field(() => [ThingItem])
-  items: ThingItem[];
+  @Field(() => [String])
+  roles: cnst.UserRole[];
 
   @Field(() => ID)
   keyring: string;
@@ -44,4 +40,4 @@ export class User extends BaseGql(UserInput) {
 }
 
 @ObjectType("LightUser", { _id: "id", gqlRef: "User" })
-export class LightUser extends PickType(User, ["nickname", "nftImage", "image"] as const) {}
+export class LightUser extends PickType(User, ["nickname", "image"] as const) {}

@@ -11,3 +11,7 @@ export { WalletService } from "./wallet/wallet.service";
 export { ProductService } from "./product/product.service";
 export { UserService } from "./user/user.service";
 export { CurrencyService } from "./currency/currency.service";
+export { SummaryService } from "./summary/summary.service";
+export { OwnershipService } from "./ownership/ownership.service";
+
+export { NotificationService } from "./notification/notification.service";

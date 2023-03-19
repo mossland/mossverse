@@ -1,121 +1,67 @@
-import React, { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
-import styled from "styled-components";
-import { ToolOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Modal, Button, Table, Space, Input, Radio, Col, Row, Select, List, Card, Skeleton } from "antd";
-import { store, gql } from "@shared/data-access";
-import { Field, Img } from "../index";
+import { st, gql, slice, useLocale } from "@shared/data-access";
 import { cnst, Utils } from "@shared/util";
-import { SliceModel } from "@shared/util-client";
+import { DataEditModal, DataItem, DataListContainer, Field, Img } from "../index";
+import { DataMenuItem, DefaultOf, ModelEditProps, ModelProps, ModelsProps } from "@shared/util-client";
+import { RadarChartOutlined } from "@ant-design/icons";
 
-interface NetworksProps {
-  networkType?: cnst.NetworkType;
-  networkSlice: gql.NetworkSlice;
-}
-export const Networks = ({ networkType, networkSlice }: NetworksProps) => {
-  const networkList = networkSlice.use.networkList();
-  const networkModal = networkSlice.use.networkModal();
-  useEffect(() => {
-    networkSlice.do.initNetwork({ query: {} });
-  }, []);
-
+export const NetworkMenuItem: DataMenuItem = {
+  key: "network",
+  label: "Network",
+  icon: <RadarChartOutlined />,
+  render: () => <Networks />,
+};
+export const Networks = ({ slice = st.slice.network, init }: ModelsProps<slice.NetworkSlice, gql.Network>) => {
   return (
-    <div>
-      <Header>
-        <h2>Networks</h2>
-        <Button onClick={() => networkSlice.do.newNetwork()} icon={<PlusOutlined />}>
-          Add
-        </Button>
-      </Header>
-      {networkList === "loading" ? (
-        <Skeleton />
-      ) : (
-        <List
-          grid={{ gutter: 16, column: 5 }}
-          dataSource={networkList}
-          renderItem={(network) => <Network key={network.id} network={network} networkSlice={networkSlice} />}
-        ></List>
-      )}
-      <NetworkEdit networkSlice={networkSlice} />
-    </div>
+    <DataListContainer
+      init={init}
+      slice={slice}
+      edit={<NetworkEdit slice={slice} />}
+      renderItem={Network}
+      columns={["name", "networkId", "provider", "type"]}
+      actions={["edit"]}
+    />
   );
 };
-
-interface NetworkProps {
-  network: gql.LightNetwork;
-  networkSlice: gql.NetworkSlice;
-}
-export const Network = React.memo(({ network, networkSlice }: NetworkProps) => {
-  return (
-    <Card hoverable actions={[<EditOutlined key="edit" onClick={() => networkSlice.do.editNetwork(network.id)} />]}>
-      <Card.Meta title={network.name} />
-    </Card>
-  );
-});
-interface NetworkEditProps {
-  networkSlice: gql.NetworkSlice;
-}
-export const NetworkEdit = ({ networkSlice }: NetworkEditProps) => {
-  const networkModal = networkSlice.use.networkModal();
-  const networkForm = networkSlice.use.networkForm();
-  const networkSumbit = networkSlice.use.networkSubmit();
-  useEffect(() => {
-    networkSlice.do.checkNetworkSubmitable();
-  }, [networkForm]);
-  return (
-    <Modal
-      title={networkForm.id ? "New Network" : `Network - ${networkForm.name}`}
-      open={!!networkModal}
-      onOk={networkSlice.do.submitNetwork}
-      onCancel={() => networkSlice.do.resetNetwork()}
-      okButtonProps={networkSumbit}
-    >
-      <Field.Container>
-        <Field.Text label="Name" value={networkForm.name} onChange={networkSlice.do.setNameOnNetwork} />
-        <Select
-          value={networkForm.provider}
-          style={{ width: "100%" }}
-          onChange={networkSlice.do.setProviderOnNetwork}
-          disabled={!!networkForm.id}
-        >
-          {cnst.networkProviders.map((provider) => (
-            <Select.Option key={provider} value={provider}>
-              {provider}
-            </Select.Option>
-          ))}
-        </Select>
-        <Select
-          value={networkForm.type}
-          style={{ width: "100%" }}
-          onChange={networkSlice.do.setTypeOnNetwork}
-          disabled={!!networkForm.id}
-        >
-          {cnst.networkTypes.map((type) => (
-            <Select.Option key={type} value={type}>
-              {type}
-            </Select.Option>
-          ))}
-        </Select>
-        <Field.Number
-          label="Network ID"
-          value={networkForm.networkId}
-          onChange={networkSlice.do.setNetworkIdOnNetwork}
-        />
-        <Field.Text
-          label="End Point"
-          value={networkForm.endPoint}
-          onChange={networkSlice.do.setEndPointOnNetwork}
-          disabled={!!networkForm.id}
-        />
-      </Field.Container>
-    </Modal>
-  );
+export const Network = ({
+  network,
+  slice = st.slice.network,
+  actions,
+  columns,
+}: ModelProps<slice.NetworkSlice, gql.LightNetwork>) => {
+  return <DataItem title={network.name} model={network} slice={slice} actions={actions} columns={columns} />;
 };
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin: 60px 0 10px 0;
-  h2 {
-    font-size: 20px;
-  }
-`;
+export const NetworkEdit = ({ slice }: ModelEditProps<slice.NetworkSlice>) => {
+  const { l } = useLocale();
+  const networkForm = slice.use.networkForm();
+
+  return (
+    <DataEditModal slice={slice} renderTitle={(network: DefaultOf<gql.Network>) => `${network.name}`}>
+      <Field.Text label={l("network.name")} value={networkForm.name} onChange={slice.do.setNameOnNetwork} />
+      <Field.SelectItem
+        label={l("network.provider")}
+        items={cnst.networkProviders}
+        value={networkForm.provider}
+        onChange={slice.do.setProviderOnNetwork}
+        disabled={!!networkForm.id}
+      />
+      <Field.SelectItem
+        label={l("network.type")}
+        items={cnst.networkTypes}
+        value={networkForm.type}
+        onChange={slice.do.setTypeOnNetwork}
+      />
+      <Field.Number
+        label={l("network.networkId")}
+        value={networkForm.networkId}
+        onChange={slice.do.setNetworkIdOnNetwork}
+      />
+      <Field.Text
+        label={l("network.endPoint")}
+        value={networkForm.endPoint}
+        onChange={slice.do.setEndPointOnNetwork}
+        disabled={!!networkForm.id}
+      />
+    </DataEditModal>
+  );
+};

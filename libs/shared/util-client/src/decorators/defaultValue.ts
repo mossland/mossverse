@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import gql from "graphql-tag";
 import { Utils } from "@shared/util";
 import { BaseObject, ClassMeta, defaultMap, DefaultOf, FieldMeta, getFieldMetas, PurifyFunc, Type } from "./scalar";
 

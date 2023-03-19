@@ -1,7 +1,7 @@
 import { Id } from "@shared/util-server";
 import { TestingModule } from "@nestjs/testing";
+import { CurrencyService } from "./currency.service";
 import * as Chance from "chance";
-import * as srv from "../srv";
 import * as gql from "../gql";
 const c = new Chance();
 export const currencyInput = (): gql.CurrencyInput => ({
@@ -12,7 +12,7 @@ export const currencyInput = (): gql.CurrencyInput => ({
 });
 
 export const createCurrency = async (app: TestingModule) => {
-  const currencyService = app.get<srv.CurrencyService>(srv.CurrencyService);
+  const currencyService = app.get<CurrencyService>(CurrencyService);
   const currency = await currencyService.create(currencyInput());
   return currency;
 };

@@ -1,5 +1,3 @@
-import { CSSProp } from "styled-components";
-
 export type BaseProps = {
   children?: React.ReactNode;
   className?: string;

@@ -3,15 +3,16 @@ import { TokenService } from "./token.service";
 import { Allow, Account, BaseResolver, Id } from "@shared/util-server";
 import * as db from "../db";
 import * as gql from "../gql";
-import * as srv from "../srv";
 import { UseGuards } from "@nestjs/common";
+import { FileService } from "../file/file.service";
+import { ContractService } from "../contract/contract.service";
 
 @Resolver(() => gql.Token)
 export class TokenResolver extends BaseResolver(gql.Token, gql.TokenInput, Allow.Every, Allow.Every, Allow.None) {
   constructor(
     private readonly tokenService: TokenService,
-    private readonly fileService: srv.FileService,
-    private readonly contractService: srv.ContractService
+    private readonly fileService: FileService,
+    private readonly contractService: ContractService
   ) {
     super(tokenService);
   }
@@ -19,7 +20,7 @@ export class TokenResolver extends BaseResolver(gql.Token, gql.TokenInput, Allow
   @UseGuards(Allow.Admin)
   async addTokenFiles(
     @Args({ name: "files", type: () => [gql.FileUpload] }) files: gql.FileUpload[],
-    @Args({ name: "tokenId", type: () => String, nullable: true }) tokenId?: string
+    @Args({ name: "tokenId", type: () => ID, nullable: true }) tokenId?: string
   ) {
     return await this.fileService.addFiles(files, "token", tokenId);
   }
