@@ -10,14 +10,14 @@ export const tradeInput = (token: Id, thing: Id): gql.TradeInput => ({
     {
       type: "token",
       token,
-      num: 1,
+      value: 1,
     },
   ],
   outputs: [
     {
       type: "thing",
       thing,
-      num: 1,
+      value: 1,
     },
   ],
   policy: ["reversible"],

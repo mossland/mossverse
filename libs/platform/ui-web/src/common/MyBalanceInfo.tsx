@@ -1,6 +1,4 @@
-import React from "react";
 import { Utils } from "@shared/util";
-import styled from "styled-components";
 
 type MyBalanceInfoProps = {
   address: string;
@@ -11,100 +9,46 @@ type MyBalanceInfoProps = {
 };
 
 export const MyBalanceInfo = ({ address, balanceInMOC, balanceInMMOC, isHideMoc, isHideMmoc }: MyBalanceInfoProps) => {
+  const itemClassName = "flex justify-between mb-[12px]";
+  const itemLabelClassName = "text-[#555] font-bold text-[22px] leading-[22px] flex items-center";
+  const labelImageClassName = "w-[16px] h-[16px] mr-[4px]";
+  const valueClassName = "font-normal text-[22px] leading-[22px] text-black";
+  const unitClassName = "ml-[6px] font-bold";
+
   return (
-    <MyBalanceInfoContainer>
-      <div className="address">
-        <div className="label">ADDRESS:</div>
+    <div className="md:flex md:flex-row-reverse md:gap-[30px]">
+      <div className="md:flex-1 bg-[#9a9a9a] text-[#555] font-normal text-[16px] leading-[16px] py-[14px] px-[8px] rounded-[10px] mb-[20px] break-words">
+        <div className="mb-[4px]">ADDRESS:</div>
         {address}
       </div>
 
-      <div className="balance">
+      <div className="md:flex-1 ">
         {!isHideMmoc && (
-          <div className="item">
-            <div className="label">
-              <img src="/images/mm_coin.png" />
+          <div className={itemClassName}>
+            <div className={itemLabelClassName}>
+              <img src="/images/mm_coin.png" className={labelImageClassName} />
               <span>MMOC</span>
             </div>
-            <div className="value">
+            <div className={valueClassName}>
               {Utils.numberWithCommas(balanceInMMOC)}
-              <span className="unit">MMOC</span>
+              <span className={unitClassName}>MMOC</span>
             </div>
           </div>
         )}
 
         {!isHideMoc && (
-          <div className="item">
-            <div className="label">
-              <img src="/images/m_coin.png" />
+          <div className={itemClassName}>
+            <div className={itemLabelClassName}>
+              <img src="/images/m_coin.png" className={labelImageClassName} />
               <span>MOC</span>
             </div>
-            <div className="value">
+            <div className={valueClassName}>
               {Utils.numberWithCommas(balanceInMOC)}
-              <span className="unit">MOC</span>
+              <span className={unitClassName}>MOC</span>
             </div>
           </div>
         )}
       </div>
-    </MyBalanceInfoContainer>
+    </div>
   );
 };
-
-const MyBalanceInfoContainer = styled.div`
-  .address {
-    background-color: ${(props) => props.theme.color.gray};
-    color: ${(props) => props.theme.color.grayDD};
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 16px;
-    padding: 14px 8px;
-    border-radius: 10px;
-    word-wrap: break-word;
-    margin-bottom: 20px;
-    .label {
-      margin-bottom: 4px;
-    }
-  }
-
-  .item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    .label {
-      color: ${(props) => props.theme.color.grayDD};
-      font-weight: 700;
-      font-size: 22px;
-      line-height: 22px;
-      display: flex;
-      align-items: center;
-
-      img {
-        width: 16px;
-        height: 16px;
-        margin-right: 4px;
-      }
-    }
-    .value {
-      font-weight: 400;
-      font-size: 22px;
-      line-height: 22px;
-      color: ${(props) => props.theme.color.black};
-
-      .unit {
-        margin-left: 6px;
-        font-weight: 700;
-      }
-    }
-  }
-  /* PC */
-  @media screen and (min-width: 800px) {
-    display: flex;
-    flex-direction: row-reverse;
-    gap: 30px;
-    .address {
-      flex: 1;
-    }
-    .balance {
-      flex: 1;
-    }
-  }
-`;

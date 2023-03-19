@@ -13,25 +13,35 @@ export class UserService<
     Input extends User.Input = User.Input
   >
   extends LoadService<Mdl, Doc, Input>
-  implements GetObject<shared.UserService<Mdl, Doc, Input>>, OnModuleInit
+  implements GetObject<shared.UserService<Mdl, Doc, Input>>
 {
   root: Doc;
-  constructor(@InjectModel(User.name) readonly User: Mdl, private readonly keyringService: shared.KeyringService) {
+  constructor(
+    @InjectModel(User.name) readonly User: Mdl,
+    // ================= Library Import Zone ================= //
+    private readonly keyringService: shared.KeyringService // ================= Library Import Zone ================= //
+  ) {
     super(UserService.name, User);
   }
-  async onModuleInit() {
-    this.root =
-      (await this.User.findOne({ role: "root" })) ?? (await this.whoAmI(new Id(), { role: "root" } as Partial<Doc>));
-  }
-  async exchangeItems(fromId: Id, toId: Id, exchanges: gql.ExchangeInput[]) {
-    const [from, to] = await this.loadMany([fromId, toId]);
-    from.decItems(exchanges);
-    to.incItems(exchanges);
-    return await Promise.all([from.save(), to.save()]);
-  }
-  async changeItems(userId: Id, exchanges: gql.ExchangeInput[]) {
-    const user = await this.get(userId);
-    return await user.incItems(exchanges).save();
+  // async onModuleInit() {
+  //   this.root =
+  //     (await this.User.findOne({ role: "root" })) ??
+  //     ((await this.keyringService.whoAmI(new Id(), { role: "root" } as Partial<Doc>)) as Doc);
+  // }
+  // async exchangeItems(fromId: Id, toId: Id, exchanges: gql.ExchangeInput[]) {
+  //   const [from, to] = await this.loadMany([fromId, toId]);
+  //   from.decItems(exchanges);
+  //   to.incItems(exchanges);
+  //   return await Promise.all([from.save(), to.save()]);
+  // }
+  // async changeItems(userId: Id, exchanges: gql.ExchangeInput[]) {
+  //   const user = await this.get(userId);
+  //   return await user.incItems(exchanges).save();
+  // }
+  async summarizePlatform(): Promise<gql.PlatformUserSummary> {
+    return {
+      //
+    };
   }
 }
 

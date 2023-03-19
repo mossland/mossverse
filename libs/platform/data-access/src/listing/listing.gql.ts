@@ -12,16 +12,18 @@ import {
   Int,
   InputOf,
   PickType,
-  SliceModel,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 import { User } from "../user/user.gql";
-import { PriceTag, PriceTagInput, ShipInfoInput } from "../_scalar";
-import { gql } from "@platform/data-access";
+import { PriceTag, PriceTagInput } from "../_scalar/scalar.gql";
+import { Dayjs } from "dayjs";
 InputType("ListingInput");
 export class ListingInput {
   @Field(() => User)
   user: User;
+
+  @Field(() => String, { nullable: false })
+  type: cnst.ListingType;
 
   @Field(() => shared.Wallet, { nullable: true })
   wallet: shared.Wallet | shared.LightWallet | null;
@@ -35,11 +37,17 @@ export class ListingInput {
   @Field(() => shared.Product, { nullable: true })
   product: shared.Product | shared.LightProduct | null;
 
-  @Field(() => Int)
-  limit: number;
+  @Field(() => String, { nullable: false })
+  sellingType: cnst.SellingType;
 
-  @Field(() => Date)
-  closeAt: Date;
+  @Field(() => Int)
+  value: number;
+
+  @Field(() => Date, { nullable: true })
+  closeAt: Dayjs | null;
+
+  @Field(() => [String])
+  tags: string[];
 
   @Field(() => [PriceTag])
   priceTags: PriceTag[];
@@ -50,30 +58,68 @@ export class Listing extends BaseGql(ListingInput) {
   @Field(() => String)
   status: cnst.ListingStatus;
 
-  getListingName() {
+  //매출량
+  @Field(() => Int)
+  sale: number;
+  getName() {
     if (this.token?.meta?.name) return this.token.meta.name;
     if (this.thing?.name) return this.thing.name;
     if (this.product?.name) return this.product.name;
-    return "";
+    else return `Unknown ${this.token ? `#${this.token.tokenId}` : ""}`;
   }
-
-  getListingImage() {
+  getImage() {
+    if (this.token?.image) return this.token.image;
+    if (this.thing?.image) return this.thing.image;
+    if (this.product?.image) return this.product.image;
+    else return "";
+  }
+  getImageUrl() {
     if (this.token?.image?.url) return this.token.image.url;
     if (this.thing?.image?.url) return this.thing.image.url;
     if (this.product?.image?.url) return this.product.image.url;
-    return "";
+    else return "";
+  }
+  getDescription() {
+    if (this.token?.meta?.description) return this.token.meta.description;
+    if (this.thing?.description) return this.thing.description;
+    if (this.product?.description) return this.product.description;
+    else return "";
   }
 
-  filterMyListing(self: gql.User) {
-    console.log(this);
+  getRemain() {
+    return this.value - this.sale;
+  }
+  totalValue() {
+    return this.value + this.sale;
+  }
+
+  filterMyListing(self: User) {
     return this.user.id === self.id;
   }
 }
 
 @ObjectType("LightListing", { _id: "id", gqlRef: "Listing" })
-export class LightListing extends PickType(Listing, ["status", "priceTags", "token", "thing", "user"] as const) {
+export class LightListing extends PickType(Listing, [
+  "status",
+  "priceTags",
+  "token",
+  "thing",
+  "user",
+  "tags",
+  "sellingType",
+  "product",
+  "type",
+  "value",
+  "sale",
+] as const) {
   // @Field(() => shared.LightToken)
   // override token: shared.LightToken | null;
+}
+
+@ObjectType("ListingSummary")
+export class ListingSummary {
+  @Field(() => Int)
+  totalListing: number;
 }
 
 export const listingGraphQL = createGraphQL("listing" as const, Listing, ListingInput, LightListing);
@@ -87,9 +133,11 @@ export const {
   removeListing,
   listingFragment,
   purifyListing,
+  crystalizeListing,
+  lightCrystalizeListing,
   defaultListing,
+  mergeListing,
 } = listingGraphQL;
-export type ListingSlice = SliceModel<"listing", Listing, LightListing>;
 
 // * Close Listing Mutation
 export type CloseListingMutation = { closeListing: Listing };

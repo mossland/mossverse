@@ -10,10 +10,11 @@ export type Input = TradeInput;
 export type Raw = Trade;
 export interface DocType extends Document<Types.ObjectId, QryHelps, Raw>, DocMtds, Omit<Raw, "id"> {}
 export type Doc = DocType & dbConfig.DefaultSchemaFields;
-export interface Mdl extends Model<Doc, QryHelps, DocMtds>, MdlStats {}
+export interface Mdl extends Model<Doc>, MdlStats {}
 export const schema: Sch<null, Mdl, DocMtds, QryHelps, null, MdlStats> = SchemaFactory.createForClass<Raw, Doc>(
   Trade
 ) as any;
+schema.index({ name: "text" });
 
 /**
  * * 5. 유틸리티 설계: 스키마를 손쉽게 사용할 유틸리티를 작성하세요.
@@ -47,7 +48,7 @@ schema.methods.makeExchange = function (
             input.token?.equals(i.token as Id) ||
             input.currency?.equals(i.currency as Id) ||
             input.product?.equals(i.product as Id)
-        )?.num ?? 0) / input.num
+        )?.value ?? 0) / input.value
     )
   );
   const inputs: gql.ExchangeInput[] = is.map((input) => {
@@ -59,7 +60,7 @@ schema.methods.makeExchange = function (
         input.product?.equals(executed.product as Id)
     );
     if (!executed) throw new Error("Insufficient Executed Inputs");
-    return { ...executed, ...input, num: input.num * -multiple };
+    return { ...executed, ...input, value: input.value * -multiple };
   });
   const outputs: gql.ExchangeInput[] = os.map((output) => {
     const desired = desiredOutputs.find(
@@ -70,7 +71,7 @@ schema.methods.makeExchange = function (
         output.product?.equals(desired.product as Id)
     );
     if (!desired) throw new Error("Insufficient Desired Outputs");
-    return { ...desired, ...output, num: output.num * multiple, wallet: desired.wallet };
+    return { ...desired, ...output, value: output.value * multiple, wallet: desired.wallet };
   });
   return [inputs, outputs];
 };
@@ -88,7 +89,7 @@ schema.statics.dumb = async function () {
 interface QryHelps extends dbConfig.DefaultQryHelps<Doc, QryHelps> {
   dumb: () => Query<any, Doc, QryHelps> & QryHelps;
 }
-schema.query.dumb = function (this: Mdl) {
+schema.query.dumb = function () {
   return this.find({});
 };
 
@@ -98,6 +99,10 @@ export const middleware = () => () => {
    * ? save 시 자동으로 적용할 알고리즘을 적용하세요.
    */
   schema.pre<Doc>("save", async function (next) {
+    const model = this.constructor as Mdl;
+    if (this.isNew) model.addSummary(["total", this.status]);
+    else if (this.status === "inactive" && this.isModified("status")) model.subSummary(["total", this.status]);
+    // else model.moveSummary(this.getChanges().$set?.status, this.status);
     next();
   });
   return schema;

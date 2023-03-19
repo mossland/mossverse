@@ -28,14 +28,14 @@ export class ReceiptResolver extends BaseResolver(
     super(receiptService);
   }
 
-  @Query(() => [gql.Receipt])
-  @UseGuards(Allow.User)
-  async myReceipts(
-    @Args({ name: "userId", type: () => ID }) userId: Id,
-    @Args({ name: "type", type: () => String }) type: cnst.ReceiptType
-  ) {
-    return this.receiptService.myReceipts(userId, type);
-  }
+  // @Query(() => [gql.Receipt])
+  // @UseGuards(Allow.User)
+  // async myReceipts(
+  //   @Args({ name: "userId", type: () => ID }) userId: Id,
+  //   @Args({ name: "type", type: () => String }) type: cnst.ReceiptType
+  // ) {
+  //   return this.receiptService.myReceipts(userId, type);
+  // }
 
   @ResolveField(() => gql.shared.User)
   async from(@Parent() receipt: gql.Receipt) {

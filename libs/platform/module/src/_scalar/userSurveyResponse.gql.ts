@@ -1,13 +1,13 @@
 import { Field, ObjectType, Int, InputType, ID, IntersectionType, Float, OmitType } from "@nestjs/graphql";
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import { BaseArrayField, Id, ObjectId } from "@shared/util-server";
-import * as gql from "../gql";
+import { gql as shared } from "@shared/module";
 
 @InputType({ isAbstract: true })
 @ObjectType({ isAbstract: true })
 @Schema()
 class Base extends BaseArrayField {
-  @Field(() => gql.shared.User)
+  @Field(() => shared.User)
   @Prop({ type: ObjectId, ref: "user", required: true })
   user: Id;
 

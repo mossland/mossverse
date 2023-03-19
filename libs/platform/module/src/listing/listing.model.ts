@@ -11,7 +11,7 @@ export type Input = ListingInput;
 export type Raw = Listing;
 export interface DocType extends Document<Types.ObjectId, QryHelps, Raw>, DocMtds, Omit<Raw, "id"> {}
 export type Doc = DocType & dbConfig.DefaultSchemaFields;
-export interface Mdl extends Model<Doc, QryHelps, DocMtds>, MdlStats {}
+export interface Mdl extends Model<Doc>, MdlStats {}
 export const schema: Sch<null, Mdl, DocMtds, QryHelps, null, MdlStats> = SchemaFactory.createForClass<Raw, Doc>(
   Listing
 ) as any;
@@ -35,7 +35,7 @@ schema.methods.isPurchaseWith = function (this: Doc, type: "thing" | "token", ta
   );
 };
 schema.methods.isPurchaseable = function (this: Doc) {
-  if (this.status !== "active" || this.closeAt.getTime() < Date.now()) return false;
+  if (this.status !== "active" || (this.closeAt && this.closeAt.getTime() < Date.now())) return false;
   return true;
 };
 // * 5. 2. Model Statics
@@ -57,7 +57,7 @@ schema.statics.isDuplicated = async function (data: Input) {
 interface QryHelps extends dbConfig.DefaultQryHelps<Doc, QryHelps> {
   dumb: () => Query<any, Doc, QryHelps> & QryHelps;
 }
-schema.query.dumb = function (this: Mdl) {
+schema.query.dumb = function () {
   return this.find({});
 };
 

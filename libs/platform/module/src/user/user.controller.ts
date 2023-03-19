@@ -10,7 +10,7 @@ import { User } from "./user.gql";
 export class UserController {
   constructor(
     private readonly securityService: srv.shared.SecurityService,
-    private readonly userService: UserService
+    private readonly keyringService: srv.shared.KeyringService
   ) {}
   @Get("whoAmI")
   @ApiOperation({
@@ -24,10 +24,8 @@ export class UserController {
     type: User,
   })
   async whoAmI(@Req() req: Request, @Res() res: Response) {
-    console.log(req.headers);
     const account = this.securityService.verifyToken(req.headers.authorization);
-    console.log(account?.keyring);
     if (!account) throw new HttpException("Unauthorized", HttpStatus.UNAUTHORIZED);
-    return res.json(await this.userService.whoAmI(new Id(account.keyring)));
+    return res.json(await this.keyringService.whoAmI(new Id(account.keyring)));
   }
 }

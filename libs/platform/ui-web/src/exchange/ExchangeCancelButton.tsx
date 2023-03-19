@@ -1,15 +1,14 @@
-import React, { ReactNode, useEffect } from "react";
-import styled from "styled-components";
-import { BiRightArrowAlt, BiChevronLeft } from "react-icons/bi";
-import { DefaultButton } from "../common";
 import Link from "next/link";
 
 export const ExchangeCancelButton = () => {
   return (
     <Link href="/exchange" passHref>
-      <DefaultButton onClick={() => null} block>
+      <button
+        onClick={() => null}
+        className="w-full min-h-[60px] p-[13px] rounded-[10px] border-[2px] border-black font-normal text-[22px] leading-[22px] "
+      >
         Cancel
-      </DefaultButton>
+      </button>
     </Link>
   );
 };

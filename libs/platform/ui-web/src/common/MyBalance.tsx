@@ -1,7 +1,3 @@
-import React, { useEffect } from "react";
-import { MyBalanceInfo } from "@platform/ui-web";
-import styled from "styled-components";
-import { gql, utils, store } from "@platform/data-access";
 import { Utils } from "@shared/util";
 import { Props } from "@shared/ui-web";
 
@@ -35,12 +31,12 @@ type MyBalanceProps = {
 };
 
 export const MyBalance = (props: MyBalanceProps) => {
-  const self = store.user.use.self();
-  const balancies = self && gql.User.getThings(self, props.things);
+  // const self = st.use.self();
+  const balancies: any[] = []; // ! refactor self && gql.User.getThings(self, props.things);
 
-  useEffect(() => {
-    if (!self?.keyring) return;
-  }, [self?.keyring]);
+  // useEffect(() => {
+  //   if (!self?.keyring) return;
+  // }, [self?.keyring]);
 
   return (
     <Balance>

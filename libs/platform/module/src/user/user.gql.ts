@@ -1,8 +1,6 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate, mixInputType, mixObjectType } from "@shared/util-server";
 import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
-import * as gql from "../gql";
-
 import { ApiProperty } from "@nestjs/swagger";
 import { gql as shared } from "@shared/module";
 
@@ -20,18 +18,27 @@ class InputOverwrite {}
 @ObjectType({ isAbstract: true })
 @InputType({ isAbstract: true })
 @Schema()
-class Tail {}
+class Tail extends Base {}
+
+export type PlatformUserInput = Base;
+export type PlatformUser = Tail;
 
 // * 최종 생성 모델
 export class UserInput {}
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface UserInput extends shared.UserInput, InputOverwrite, Base {}
 mixInputType(shared.UserInput, IntersectionType(InputOverwrite, Base, InputType));
 
 export class User {}
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface User extends shared.User, Base, Tail {}
 mixObjectType(shared.User, IntersectionType(Base, Tail));
 
 @Schema()
 export class UserSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class PlatformUserSummary {}
+export class UserSummary {}
+export interface UserSummary extends shared.UserSummary, PlatformUserSummary {}
+mixObjectType(shared.UserSummary, PlatformUserSummary);

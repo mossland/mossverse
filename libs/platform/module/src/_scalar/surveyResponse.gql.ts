@@ -1,13 +1,13 @@
 import { Field, ObjectType, Int, InputType, ID, IntersectionType, Float, OmitType } from "@nestjs/graphql";
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import { BaseArrayField, Id, ObjectId } from "@shared/util-server";
-import * as gql from "../gql";
+import { gql as shared } from "@shared/module";
 
 @InputType({ isAbstract: true })
 @ObjectType({ isAbstract: true })
 @Schema()
 class Base extends BaseArrayField {
-  @Field(() => gql.shared.Wallet)
+  @Field(() => shared.Wallet)
   @Prop({ type: ObjectId, ref: "wallet", required: true })
   wallet: Id;
 
@@ -27,7 +27,7 @@ class Base extends BaseArrayField {
   @Prop({ type: String, required: false, default: 0 })
   tokenNum: number;
 
-  @Field(() => [gql.shared.Token])
+  @Field(() => [shared.Token])
   @Prop([{ type: ObjectId, ref: "token" }])
   tokens: Id[];
 }

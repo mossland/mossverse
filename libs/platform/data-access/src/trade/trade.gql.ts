@@ -1,4 +1,4 @@
-import graphql from "graphql-tag";
+import graphql, { gql } from "graphql-tag";
 import { cnst } from "@shared/util";
 import {
   createGraphQL,
@@ -9,15 +9,20 @@ import {
   Int,
   Float,
   PickType,
-  SliceModel,
   mutate,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
-import { Exchange, ExchangeInput } from "../_scalar";
+import { Exchange, ExchangeInput } from "../_scalar/scalar.gql";
 import { Receipt, receiptFragment } from "../receipt/receipt.gql";
 
 @InputType("TradeInput")
 export class TradeInput {
+  @Field(() => shared.User, { nullable: true })
+  user: shared.User | null;
+
+  @Field(() => String, { nullable: true })
+  description: string | null;
+
   @Field(() => String)
   name: string;
 
@@ -38,7 +43,13 @@ export class Trade extends BaseGql(TradeInput) {
 }
 
 @ObjectType("LightTrade", { _id: "id", gqlRef: "Trade" })
-export class LightTrade extends PickType(Trade, ["name", "inputs", "outputs", "policy"] as const) {}
+export class LightTrade extends PickType(Trade, ["name", "inputs", "outputs", "policy", "description"] as const) {}
+
+@ObjectType("TradeSummary")
+export class TradeSummary {
+  @Field(() => Int)
+  totalTrade: number;
+}
 
 export const tradeGraphQL = createGraphQL("trade" as const, Trade, TradeInput, LightTrade);
 export const {
@@ -52,9 +63,11 @@ export const {
   tradeFragment,
   lightTradeFragment,
   purifyTrade,
+  crystalizeTrade,
+  lightCrystalizeTrade,
   defaultTrade,
+  mergeTrade,
 } = tradeGraphQL;
-export type TradeSlice = SliceModel<"trade", Trade, LightTrade>;
 
 export type MakeTradeMutation = { makeTrade: Receipt };
 export const makeTradeMutation = graphql`

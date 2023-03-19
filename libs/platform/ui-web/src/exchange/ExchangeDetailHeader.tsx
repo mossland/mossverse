@@ -1,5 +1,4 @@
 import React, { ReactNode, useEffect } from "react";
-import styled from "styled-components";
 import { BiRightArrowAlt, BiChevronLeft } from "react-icons/bi";
 import Link from "next/link";
 
@@ -10,66 +9,17 @@ type ExchangeDetailHeaderProps = {
 
 export const ExchangeDetailHeader = ({ from, to }: ExchangeDetailHeaderProps) => {
   return (
-    <ExchangeDetailHeaderContainer>
-      <Link href="/exchange" passHref>
-        <a className="back-button">
+    <div className="relative flex items-center justify-center md:h-[44px] md:border-b-[2px] md:border-black">
+      <div className="absolute text-black top-[16px] left-[12px] text-[34px] md:hidden">
+        <Link href="/exchange" passHref>
           <BiChevronLeft />
-        </a>
-      </Link>
-
-      <div className="title">
+        </Link>
+      </div>
+      <div className="my-[20px] flex items-center font-bold text-[26px] leading-[26px] [&_img]:w-[18px] [&_img]:h-[18px] [&_img]:mr-[4px] [&_svg]:mx-[8px] md:text-[22px] md:leading-[44px] md:font-normal">
         {from}
         <BiRightArrowAlt />
         {to}
       </div>
-    </ExchangeDetailHeaderContainer>
+    </div>
   );
 };
-
-const ExchangeDetailHeaderContainer = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  .title {
-    margin: 20px 0;
-    display: flex;
-    align-items: center;
-    font-weight: 700;
-    font-size: 26px;
-    line-height: 26px;
-    img {
-      width: 18px;
-      height: 18px;
-      margin-right: 4px;
-    }
-    svg {
-      margin: 0 8px;
-    }
-  }
-  .back-button {
-    position: absolute;
-    color: black;
-    /* top: 24px;
-    left: 22px; */
-    top: 16px;
-    left: 12px;
-    svg {
-      font-size: 34px;
-    }
-  }
-
-  @media screen and (min-width: 800px) {
-    height: 44px;
-    border-bottom: 2px solid ${(props) => props.theme.color.black};
-    .title {
-      margin: auto 0;
-      font-size: 22px;
-      line-height: 44px;
-      font-weight: 400;
-    }
-    .back-button {
-      display: none;
-    }
-  }
-`;

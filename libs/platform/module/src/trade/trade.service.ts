@@ -4,19 +4,22 @@ import { Id, LoadService } from "@shared/util-server";
 import * as Trade from "./trade.model";
 import * as gql from "../gql";
 import * as db from "../db";
-import * as srv from "../srv";
 import { ReceiptService } from "../receipt/receipt.service";
 import { UserService } from "../user/user.service";
-
+import { srv as shared } from "@shared/module";
+import { srv as external } from "@external/module";
 @Injectable()
 export class TradeService extends LoadService<Trade.Mdl, Trade.Doc, Trade.Input> {
   constructor(
     @InjectModel(Trade.name)
     private readonly Trade: Trade.Mdl,
-    private readonly contractService: srv.shared.ContractService,
-    private readonly keyringService: srv.shared.KeyringService,
+    private readonly contractService: shared.ContractService,
+    private readonly keyringService: shared.KeyringService,
+    private readonly ownershipService: shared.OwnershipService,
     private readonly receiptService: ReceiptService,
-    private readonly currencyService: srv.shared.CurrencyService,
+    private readonly currencyService: shared.CurrencyService,
+    private readonly thingService: shared.ThingService,
+    private readonly discordService: external.DiscordService,
     private readonly userService: UserService
   ) {
     super(TradeService.name, Trade);
@@ -33,7 +36,8 @@ export class TradeService extends LoadService<Trade.Mdl, Trade.Doc, Trade.Input>
       throw new Error("This trade Can be executed in once");
     const [inputs, outputs] = trade.makeExchange(executedinputs, desiredOutputs, reverse);
     const user = await this.userService.pick({ keyring: keyringId });
-    const root = this.userService.root;
+    //user가 있으면(trade 주최자가 유저면)
+    const to = trade.user ?? this.userService.root;
     const receipt = await this.receiptService.create({
       name: `${trade.name}`,
       type: "trade",
@@ -41,7 +45,7 @@ export class TradeService extends LoadService<Trade.Mdl, Trade.Doc, Trade.Input>
       inputs,
       outputs,
       from: user._id,
-      to: root?._id,
+      to: to?._id,
     });
     return await this.#processTradeReceipt(receipt);
   }
@@ -55,13 +59,16 @@ export class TradeService extends LoadService<Trade.Mdl, Trade.Doc, Trade.Input>
     const isValid =
       (await this.#validateInputs(user, keyring, receipt.inputs)) &&
       (await this.#validateOutputs(user, keyring, receipt.outputs));
+
     if (!isValid) throw new Error("The Input and Output is not Valid");
     await receipt.merge({ status: "inProgress" }).save();
     try {
       await this.#transferInputs(user, receipt.inputs);
       await this.#transferOutputs(user, receipt.outputs);
+      await this.discordService.log(`${user.nickname}'s ${receipt.name} trade is completed`);
       return await receipt.merge({ status: "success" }).save();
     } catch (err) {
+      await this.discordService.log(String(err));
       return await receipt.merge({ status: "failed", err }).save();
     }
   }
@@ -69,18 +76,19 @@ export class TradeService extends LoadService<Trade.Mdl, Trade.Doc, Trade.Input>
     let isValid = true;
     await Promise.all(
       exchanges.map(async (exchange) => {
-        if (exchange.thing && !user.hasItem(exchange.thing, -exchange.num)) isValid = false;
+        if (exchange.thing && !(await this.ownershipService.hasThing(user._id, exchange.thing, -exchange.value)))
+          isValid = false;
         else if (
           exchange.token &&
           (!exchange.wallet ||
             !exchange.hash ||
-            !(await this.contractService.validateTx(exchange.token, exchange.wallet, exchange.hash, exchange.num)))
+            !(await this.contractService.validateTx(exchange.token, exchange.wallet, exchange.hash, exchange.value)))
         )
           isValid = false;
         else if (
           exchange.currency &&
           (!exchange.hash ||
-            !(await this.currencyService.validateDeposit(exchange.currency, exchange.num, exchange.hash)))
+            !(await this.currencyService.validateDeposit(exchange.currency, exchange.value, exchange.hash)))
         )
           isValid = false;
       })
@@ -94,7 +102,7 @@ export class TradeService extends LoadService<Trade.Mdl, Trade.Doc, Trade.Input>
         if (exchange.token) {
           if (!exchange.wallet) isValid = false;
           else if (keyring.wallets.some((wallet) => wallet.equals(exchange.wallet as Id))) isValid = false;
-          else await this.contractService.checkApproval(exchange.token, "root", exchange.num);
+          else await this.contractService.checkApproval(exchange.token, "root", exchange.value);
         }
       })
     );
@@ -102,22 +110,49 @@ export class TradeService extends LoadService<Trade.Mdl, Trade.Doc, Trade.Input>
   }
   async #transferInputs(user: db.User.Doc, exchanges: gql.ExchangeInput[]) {
     const [thingInputs, tokenInputs, currencyInputs] = [
-      exchanges.filter((exchange) => exchange.thing),
+      exchanges
+        .filter((exchange) => exchange.thing)
+        .map((exc) => ({ value: exc.value, type: "thing" as const, user: user._id, thing: exc.thing as Id })),
       exchanges.filter((exchange) => exchange.token),
       exchanges.filter((exchange) => exchange.currency),
     ];
-    thingInputs.length && (await this.userService.changeItems(user._id, thingInputs));
+    thingInputs.length &&
+      (await this.ownershipService.deltaThings(
+        await Promise.all(
+          thingInputs.map(async (o) => ({
+            thing: (await this.thingService.load(o.thing)) as db.shared.Thing.Doc,
+            user: o.user,
+            value: o.value,
+          }))
+        )
+      ));
   }
   async #transferOutputs(user: db.User.Doc, exchanges: gql.ExchangeInput[]) {
     const [thingOutputs, tokenOutputs, currencyOutputs] = [
-      exchanges.filter((exchange) => exchange.thing),
+      exchanges
+        .filter((exchange) => exchange.thing)
+        .map((exc) => ({ value: exc.value, type: "thing" as const, user: user._id, thing: exc.thing as Id })),
       exchanges.filter((exchange) => exchange.token),
       exchanges.filter((exchange) => exchange.currency),
     ];
     // process thing outputs
-    thingOutputs.length && (await this.userService.changeItems(user._id, thingOutputs));
+    thingOutputs.length &&
+      (await this.ownershipService.deltaThings(
+        await Promise.all(
+          thingOutputs.map(async (o) => ({
+            thing: (await this.thingService.load(o.thing)) as db.shared.Thing.Doc,
+            user: o.user,
+            value: o.value,
+          }))
+        )
+      ));
     // process token outputs
     for (const output of tokenOutputs)
-      await this.contractService.transfer(output.token as Id, "root", output.wallet as Id, output.num);
+      await this.contractService.transfer(output.token as Id, "root", output.wallet as Id, output.value);
+  }
+  async summarize(): Promise<gql.TradeSummary> {
+    return {
+      totalTrade: await this.Trade.countDocuments({ status: { $ne: "inactive" } }),
+    };
   }
 }

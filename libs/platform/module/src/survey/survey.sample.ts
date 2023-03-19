@@ -7,7 +7,7 @@ import * as gql from "../gql";
 const c = new Chance();
 export const surveyInput = (contract: Id, creator: Id): gql.SurveyInput => ({
   title: c.sentence(),
-  description: c.sentence(),
+  content: c.sentence(),
   contract,
   type: "objective",
   selections: [c.sentence(), c.sentence(), c.sentence(), c.sentence()],

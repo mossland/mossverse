@@ -1,25 +1,34 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
-import { Field, ID, InputType, IntersectionType, ObjectType } from "@nestjs/graphql";
-import * as gql from "../gql";
+import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
 import { cnst } from "@shared/util";
+import { Exchange, ExchangeInput, ExchangeSchema } from "../_scalar/exchange.gql";
+import { gql as shared } from "@shared/module";
 
 // * 1. 보안필드를 제외한 모든 필드
 @ObjectType({ isAbstract: true })
 @InputType({ isAbstract: true })
 @Schema()
 class Base {
+  @Field(() => shared.User, { nullable: true })
+  @Prop({ type: ObjectId, ref: "user", required: false, index: true })
+  user?: Id;
+
+  @Field(() => String, { nullable: true })
+  @Prop({ type: String, required: false, index: true })
+  description?: string;
+
   @Field(() => String)
   @Prop({ type: String, required: true, index: true })
   name: string;
 
-  @Field(() => [gql.Exchange])
-  @Prop([{ type: gql.ExchangeSchema, required: true }])
-  inputs: gql.Exchange[];
+  @Field(() => [Exchange])
+  @Prop([{ type: ExchangeSchema, required: true }])
+  inputs: Exchange[];
 
-  @Field(() => [gql.Exchange])
-  @Prop([{ type: gql.ExchangeSchema, required: true }])
-  outputs: gql.Exchange[];
+  @Field(() => [Exchange])
+  @Prop([{ type: ExchangeSchema, required: true }])
+  outputs: Exchange[];
 
   @Field(() => [String])
   @Prop([{ type: String, enum: cnst.tradePolicies, required: true }])
@@ -29,11 +38,13 @@ class Base {
 // * 2. 다른 필드를 참조하는 값 Input형식으로 덮어씌우기
 @InputType({ isAbstract: true })
 class InputOverwrite {
-  @Field(() => [gql.ExchangeInput])
-  inputs: gql.ExchangeInput[];
+  @Field(() => ID, { nullable: true })
+  user?: Id;
+  @Field(() => [ExchangeInput])
+  inputs: ExchangeInput[];
 
-  @Field(() => [gql.ExchangeInput])
-  outputs: gql.ExchangeInput[];
+  @Field(() => [ExchangeInput])
+  outputs: ExchangeInput[];
 }
 
 // * 3. 보안필드, default 필드 생성 필수
@@ -53,3 +64,12 @@ export class TradeInput extends IntersectionType(InputOverwrite, Base, InputType
 export class Trade extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class TradeSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class TradeSummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalTrade: number;
+}

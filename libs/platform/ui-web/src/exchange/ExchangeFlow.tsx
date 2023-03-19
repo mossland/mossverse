@@ -1,4 +1,5 @@
 import { gql } from "@platform/data-access";
+import Image from "next/legacy/image";
 import { BiRightArrowAlt } from "react-icons/bi";
 
 type ExchangeFlowType = {
@@ -8,46 +9,67 @@ type ExchangeFlowType = {
 
 export const ExchangeFlow = ({ input, output }: ExchangeFlowType) => {
   return (
-    <>
+    <div className="flex items-center justify-center gap-2">
       {input &&
         (input.type === "currency" ? (
-          <>
-            <img src="/images/m_coin.png" />
-            MOC
-          </>
+          <div className="flex items-center justify-center">
+            <div className="flex mr-2 ">
+              <Image width={20} height={20} src="/images/m_coin.png" />
+            </div>
+            <div className="text-black text-[18px]">MOC</div>
+          </div>
         ) : input.type === "thing" ? (
-          <>
-            <img src={input.thing?.image.url} />
-            {input.thing?.name}
-          </>
+          <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center mr-2 ">
+              <Image width={20} height={20} src={input.thing?.image.url ?? ""} />
+            </div>
+            <div className="text-black text-[18px]">{input.thing?.name}</div>
+          </div>
         ) : input && input.type === "token" ? (
-          <>
-            <img src={(input && input.token && input.token.meta && input.token?.meta.image) ?? ""} />
-            {input.token?.meta?.name}
-          </>
+          <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center mr-2 ">
+              <Image
+                width={20}
+                height={20}
+                src={(input && input.token && input.token.meta && input.token?.meta.image) ?? ""}
+              />
+            </div>
+            <div className="text-black text-[18px]">{input.token?.meta?.name}</div>
+          </div>
         ) : (
           <></>
         ))}
       <BiRightArrowAlt />
       {output &&
         (output.type === "currency" ? (
-          <>
-            <img src="/images/m_coin.png" />
-            MOC
-          </>
+          <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center mr-2 ">
+              <Image className="w-[3px] h-[3px]" width={16} height={16} src="/images/m_coin.png" />
+            </div>
+            <div className="text-black text-[18px]">MOC</div>
+          </div>
         ) : output.type === "thing" ? (
-          <>
-            <img src={output.thing?.image.url} />
-            {output.thing?.name}
-          </>
+          <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center mr-2 ">
+              <Image className="w-[3px] h-[3px]" width={16} height={16} src={output.thing?.image.url ?? ""} />
+            </div>
+            <div className="text-black text-[18px]">{output.thing?.name}</div>
+          </div>
         ) : output && output.type === "token" ? (
-          <>
-            <img src={(output && output.token && output.token.meta && output.token.meta.image) ?? ""} />
-            {output.token?.meta?.name}
-          </>
+          <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center mr-2 ">
+              <Image
+                className="w-[3px] h-[3px]"
+                width={16}
+                height={16}
+                src={(output && output.token && output.token.meta && output.token.meta.image) ?? ""}
+              />
+            </div>
+            <div className="text-black text-[18px]">{output.token?.meta?.name}</div>
+          </div>
         ) : (
           <></>
         ))}
-    </>
+    </div>
   );
 };

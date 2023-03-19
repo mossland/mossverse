@@ -10,7 +10,8 @@ export class SurveyResolver extends BaseResolver(gql.Survey, gql.SurveyInput, Al
   constructor(
     private readonly surveyService: SurveyService,
     private readonly contractService: srv.shared.ContractService,
-    private readonly walletService: srv.shared.WalletService
+    private readonly walletService: srv.shared.WalletService,
+    private readonly snapshotService: srv.SnapshotService
   ) {
     super(surveyService);
   }
@@ -41,9 +42,10 @@ export class SurveyResolver extends BaseResolver(gql.Survey, gql.SurveyInput, Al
   ) {
     return await this.surveyService.respondSurvey(new Id(surveyId), response, address);
   }
-  @Query(() => [gql.shared.Ownership])
+  @Query(() => gql.Snapshot)
   async getSurveySnapshot(@Args({ type: () => ID, name: "surveyId" }) surveyId: string) {
-    return await this.surveyService.getSnapshot(new Id(surveyId));
+    const survey = await this.surveyService.get(new Id(surveyId));
+    return await this.snapshotService.load(survey.snapshot);
   }
 
   @ResolveField(() => gql.shared.Contract)

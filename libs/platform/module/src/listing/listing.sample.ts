@@ -10,6 +10,8 @@ export const tokenListingInput = (user: Id, wallet: Id, token: Id, currency: Id)
   user,
   wallet,
   token,
+  type: "token",
+  sellingType: "limited",
   priceTags: [
     {
       type: "thing",
@@ -17,12 +19,16 @@ export const tokenListingInput = (user: Id, wallet: Id, token: Id, currency: Id)
       price: Math.ceil(Math.random() * 10),
     },
   ],
+  tags: [],
+  value: 1,
   closeAt: Utils.getLastMonths(-3),
 });
 export const thingListingInput = (user: Id, wallet: Id, thing: Id, currency: Id): gql.ListingInput => ({
   user,
   wallet,
   thing,
+  type: "thing",
+  sellingType: "limited",
   priceTags: [
     {
       type: "thing",
@@ -30,12 +36,16 @@ export const thingListingInput = (user: Id, wallet: Id, thing: Id, currency: Id)
       price: Math.ceil(Math.random() * 10),
     },
   ],
+  tags: [],
+  value: 1,
   closeAt: Utils.getLastMonths(-3),
 });
 export const productListingInput = (user: Id, wallet: Id, product: Id, currency: Id): gql.ListingInput => ({
   user,
   wallet,
   product,
+  type: "product",
+  sellingType: "limited",
   priceTags: [
     {
       type: "thing",
@@ -43,6 +53,9 @@ export const productListingInput = (user: Id, wallet: Id, product: Id, currency:
       price: Math.ceil(Math.random() * 10),
     },
   ],
+  tags: [],
+  value: 1,
+
   closeAt: Utils.getLastMonths(-3),
 });
 export const createTokenListing = async (

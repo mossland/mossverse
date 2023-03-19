@@ -5,3 +5,7 @@ export * from "./listing/listing.gql";
 export * from "./receipt/receipt.gql";
 export * from "./survey/survey.gql";
 export * from "./trade/trade.gql";
+export * from "./summary/summary.gql";
+export * from "./snapshot/snapshot.gql";
+export * from "./raffle/raffle.gql";
+export * from "./shipInfo/shipInfo.gql";

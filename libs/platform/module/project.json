@@ -1,4 +1,5 @@
 {
+  "name": "platform/module",
   "sourceRoot": "libs/platform/module/src",
   "projectType": "library",
   "targets": {
@@ -22,7 +23,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/platform/module"],
+      "outputs": ["{workspaceRoot}/coverage/libs/platform/module"],
       "options": {
         "jestConfig": "libs/platform/module/jest.config.ts",
         "passWithNoTests": true
