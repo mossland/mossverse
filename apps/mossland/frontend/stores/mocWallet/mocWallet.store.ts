@@ -1,25 +1,33 @@
-import { StateCreator } from "zustand";
+import { SetGet, State } from "@shared/util-client";
+import type { RootState } from "../store";
 import * as gql from "../gql";
-import { createActions, createState, DefaultActions, DefaultState, makeStore, SetGet } from "@shared/util-client";
-import { mocWalletGraphQL, MocWallet, MocWalletInput } from "./mocWallet.gql";
+import * as slice from "../slice";
 
-const state = {
-  ...createState(mocWalletGraphQL),
-  depositAddress: "0x",
+// ? Store는 다른 store 내 상태와 상호작용을 정의합니다. 재사용성이 필요하지 않은 단일 기능을 구현할 때 사용합니다.
+// * 1. State에 대한 내용을 정의하세요.
+const state = ({ set, get, pick }: SetGet<slice.MocWalletSliceState>) => ({
+  ...slice.makeMocWalletSlice({ set, get, pick }),
+  depositAddress: "",
   depositAmount: 0,
   understand: false,
-};
+});
+
+// * 2. Action을 내용을 정의하세요. Action은 모두 void 함수여야 합니다.
+// * 다른 action을 참조 시 get() as <Model>State 또는 RootState 를 사용하세요.
 const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
-  ...createActions(mocWalletGraphQL, { get, set }),
-  deposit: async (selfId: string) => {
-    // const { mocWallet } = get();
-    // if (!mocWallet) return;
-    const newMocWallet = await gql.deposit(selfId);
-    set({ mocWallet: newMocWallet });
-  },
+  deposit: async (selfId: string) => set({ mocWallet: await gql.deposit(selfId) }),
   withdraw: async (selfId: string, address: string, amount: number) => {
-    await gql.withdraw(selfId, address, amount);
-    return; //! void만 리턴 가능
+    const { setReceipt, refreshReceipt, refreshOwnershipInMoney } = get() as RootState;
+    const receipt = await gql.withdraw(selfId, address, amount);
+    setReceipt(receipt);
+    await refreshReceipt({ invalidate: true });
+    await refreshOwnershipInMoney({ invalidate: true });
   },
 });
-export const mocWallet = makeStore(mocWalletGraphQL.refName, state, actions);
+
+export type MocWalletState = State<typeof state, typeof actions>;
+// * 3. ChildSlice를 추가하세요. Suffix 규칙은 일반적으로 "InModel" as const 로 작성합니다.
+export const addMocWalletToStore = ({ set, get, pick }: SetGet<MocWalletState>) => ({
+  ...state({ set, get, pick }),
+  ...actions({ set, get, pick }),
+});

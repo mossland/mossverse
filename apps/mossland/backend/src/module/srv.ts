@@ -1,8 +1,13 @@
 export { srv as shared } from "@shared/module";
+export { srv as social } from "@social/module";
 export { srv as platform } from "@platform/module";
 export { srv as decentverse } from "@decentverse/module";
-export * from "./luniverse/luniverse.service";
-export * from "./mocWallet/mocWallet.service";
-export * from "./mocSurvey/mocSurvey.service";
-export * from "./point/point.service";
-export * from "./user/user.service";
+export { LuniverseService } from "./luniverse/luniverse.service";
+export { MocWalletService } from "./mocWallet/mocWallet.service";
+export { MocSurveyService } from "./mocSurvey/mocSurvey.service";
+export { PointService } from "./point/point.service";
+export { UserService } from "./user/user.service";
+export { SummaryService } from "./summary/summary.service";
+export { StakePoolService } from "./stakePool/stakePool.service";
+export { AdvertiseService } from "./advertise/advertise.service";
+export { SkinManagerService } from "./skinManager/skinManager.service";

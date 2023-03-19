@@ -12,11 +12,11 @@ import {
   Int,
   InputOf,
   PickType,
-  SliceModel,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 import { gql as platform } from "@platform/data-access";
 import { MocOwnership, UserSurveyResponse, UserSurveyResponseInput } from "../_scalar/scalar.gql";
+import dayjs, { Dayjs } from "dayjs";
 
 @InputType("MocSurveyInput")
 export class MocSurveyInput {
@@ -29,8 +29,8 @@ export class MocSurveyInput {
   @Field(() => [String])
   selections: string[];
 
-  @Field(() => platform.User)
-  creator: platform.User;
+  @Field(() => shared.User)
+  creator: shared.User;
 
   @Field(() => String, { default: "objective" })
   type: cnst.SurveyType;
@@ -39,10 +39,10 @@ export class MocSurveyInput {
   policy: cnst.SurveyPolicy[];
 
   @Field(() => Date)
-  closeAt: Date;
+  closeAt: Dayjs;
 
   @Field(() => Date)
-  openAt: Date;
+  openAt: Dayjs;
 }
 
 @ObjectType("MocSurvey", { _id: "id" })
@@ -66,21 +66,46 @@ export class MocSurvey extends BaseGql(MocSurveyInput) {
   selectUserNum: number[];
 
   @Field(() => Date)
-  snapshotAt: Date;
-
-  @Field(() => Date)
-  createdAt: Date;
-
-  @Field(() => Date)
-  updatedAt: Date;
+  snapshotAt: Dayjs;
 
   @Field(() => String)
   status: cnst.SurveyStatus;
+
+  isVoted(self: shared.User) {
+    return this.responses.some((response) => response.user.id === self.id);
+  }
+
+  isExpired() {
+    return this.closeAt.isBefore(dayjs());
+  }
+
+  static creatable(mocSurvey: MocSurvey) {
+    return !!(
+      mocSurvey.title.length > 0 &&
+      mocSurvey.openAt &&
+      mocSurvey.closeAt &&
+      ((mocSurvey.type === "objective" &&
+        mocSurvey.selections.length > 1 &&
+        mocSurvey.selections.every((selection) => selection.length > 2)) ||
+        (mocSurvey.type === "subjective" && mocSurvey.description.length > 2))
+    );
+  }
 }
 
-// ! 라이트 모델 지정 필요
 @ObjectType("LightMocSurvey", { _id: "id", gqlRef: "MocSurvey" })
-export class LightMocSurvey extends PickType(MocSurvey, ["responses"] as const) {}
+export class LightMocSurvey extends PickType(MocSurvey, [
+  "title",
+  "responses",
+  "status",
+  "openAt",
+  "closeAt",
+] as const) {}
+
+@ObjectType("MocSurveySummary")
+export class MocSurveySummary {
+  @Field(() => Int)
+  totalMocSurvey: number;
+}
 
 export const mocSurveyGraphQL = createGraphQL("mocSurvey" as const, MocSurvey, MocSurveyInput, LightMocSurvey);
 export const {
@@ -94,9 +119,11 @@ export const {
   mocSurveyFragment,
   lightMocSurveyFragment,
   purifyMocSurvey,
+  crystalizeMocSurvey,
+  lightCrystalizeMocSurvey,
   defaultMocSurvey,
+  mergeMocSurvey,
 } = mocSurveyGraphQL;
-export type MocSurveySlice = SliceModel<"mocSurvey", MocSurvey, LightMocSurvey>;
 
 // * Generate MocSurvey Mutation
 export type GenerateMocSurveyMutation = { generateMocSurvey: MocSurvey };
@@ -135,7 +162,9 @@ export const respondMocSurveyMutation = graphql`
   }
 `;
 export const respondMocSurvey = async (mocSurveyId: string, response: InputOf<UserSurveyResponseInput>) =>
-  (await mutate<RespondMocSurveyMutation>(respondMocSurveyMutation, { mocSurveyId, response })).respondMocSurvey;
+  crystalizeMocSurvey(
+    (await mutate<RespondMocSurveyMutation>(respondMocSurveyMutation, { mocSurveyId, response })).respondMocSurvey
+  );
 
 // * Close MocSurvey Mutation
 export type CloseMocSurveyMutation = { closeMocSurvey: MocSurvey };

@@ -1,4 +1,5 @@
 import { option as shared } from "@shared/module";
+import { option as social } from "@social/module";
 import { option as platform } from "@platform/module";
 import { option as decentverse } from "@decentverse/module";
 export { option as shared } from "@shared/module";
@@ -6,6 +7,7 @@ export { option as platform } from "@platform/module";
 export { option as decentverse } from "@decentverse/module";
 export type ModulesOptions = shared.ModulesOptions &
   platform.ModulesOptions &
+  social.ModulesOptions &
   decentverse.ModulesOptions & {
     mossland: MocOptions;
   };

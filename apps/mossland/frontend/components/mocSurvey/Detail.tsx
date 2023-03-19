@@ -1,22 +1,21 @@
 import React from "react";
-import styled from "styled-components";
 import { DetailHeader, DetailBody, CreateBox } from "./";
-import { gql, utils, store } from "../../stores";
-import { useMocSurvey } from "./services/useMocSurvey";
+import { gql, st, store } from "../../stores";
 
 export const Detail = () => {
-  const mocSurverService = useMocSurvey();
-  if (mocSurverService.isWriteMode) {
+  const isWriteMode = st.use.isWriteMode();
+  const mocSurvey = st.use.mocSurvey();
+  if (isWriteMode) {
     return (
-      <SurveyDetailContainer className="only-pc">
+      <div className="hidden md:block pb-[650px] flex-1 border-l-[2px] border-black">
         <CreateBox />
-      </SurveyDetailContainer>
+      </div>
     );
   }
 
   return (
-    <SurveyDetailContainer className="only-pc">
-      {!mocSurverService.mocSurvey ? (
+    <div className="hidden md:block pb-[650px] flex-1 border-l-[2px] border-black">
+      {!mocSurvey ? (
         <></>
       ) : (
         <>
@@ -24,14 +23,6 @@ export const Detail = () => {
           <DetailBody />
         </>
       )}
-    </SurveyDetailContainer>
+    </div>
   );
 };
-
-const SurveyDetailContainer = styled.div`
-  /* padding: 22px 0; */
-  padding-bottom: 650px;
-  border-left: 2px solid ${(props) => props.theme.color.black};
-  /* border-bottom: 3px solid ${(props) => props.theme.color.black}; */
-  flex: 1;
-`;

@@ -1,47 +1,41 @@
 import React from "react";
-import styled from "styled-components";
 import { Utils } from "@shared/util";
 import { SurveyIcon } from "@shared/ui-web";
-import { useMocSurvey } from "./services/useMocSurvey";
-import { Survey } from "@platform/ui-web";
-import { gql } from "../../stores";
+import { st, gql } from "../../stores";
 import { MocSurveyItem } from "./MocSurveyItem";
+import { ActiveTag } from "./";
+
 type SurveyItemProps = {
-  mocSurvey: gql.MocSurvey;
-  onClick?: React.MouseEventHandler<HTMLDivElement> | undefined;
+  survey: gql.LightMocSurvey;
 };
 
-export const Item = ({ mocSurvey }: SurveyItemProps) => {
-  const mocSurveyService = useMocSurvey();
+export const Item = ({ survey }: SurveyItemProps) => {
+  const self = st.use.self();
+  const mocSurvey = st.use.mocSurvey();
+
   return (
-    <MocSurveyItem
-      selected={mocSurvey === mocSurveyService.mocSurvey}
-      active={
-        mocSurvey.status === "opened" &&
-        !mocSurveyService.isVoted(mocSurvey.id) &&
-        new Date(mocSurvey.closeAt).getTime() > Date.now()
-      }
-      onClick={() => mocSurveyService.openDetail(mocSurvey)}
-    >
-      <MocSurveyItem.TitleWrapper>
-        <SurveyIcon />
-        <MocSurveyItem.Title
-          selected={mocSurvey === mocSurveyService.mocSurvey}
-          active={
-            mocSurvey.status === "opened" &&
-            !mocSurveyService.isVoted(mocSurvey.id) &&
-            new Date(mocSurvey.closeAt).getTime() > Date.now()
-          }
-        >
-          {mocSurvey.title}
-        </MocSurveyItem.Title>
-      </MocSurveyItem.TitleWrapper>
-      <MocSurveyItem.SubTitleWrapper>
-        {mocSurvey.status === "opened" && new Date(mocSurvey.closeAt).getTime() > Date.now() && <Survey.ActiveTag />}
-        <MocSurveyItem.Period>
-          {Utils.toIsoString(mocSurvey.openAt, true)} ~ {Utils.toIsoString(mocSurvey.closeAt, true)}
-        </MocSurveyItem.Period>
-      </MocSurveyItem.SubTitleWrapper>
-    </MocSurveyItem>
+    <>
+      <MocSurveyItem
+        active={survey.status === "opened" && !survey.isVoted(self) && survey.isExpired()}
+        selected={mocSurvey !== "loading" && mocSurvey.id === survey.id}
+        onClick={() => st.do.viewMocSurvey(survey as gql.MocSurvey)}
+      >
+        <MocSurveyItem.TitleWrapper>
+          <SurveyIcon />
+          <MocSurveyItem.Title
+            active={survey.status === "opened" && !survey.isVoted(self) && survey.isExpired()}
+            selected={mocSurvey !== "loading" && mocSurvey.id === survey.id}
+          >
+            {survey.title}
+          </MocSurveyItem.Title>
+        </MocSurveyItem.TitleWrapper>
+        <MocSurveyItem.SubTitleWrapper>
+          {survey.status === "opened" && survey.isExpired() && <ActiveTag />}
+          <MocSurveyItem.Period>
+            {survey.openAt.format("YYYY-MM-DD")} ~ {survey.closeAt.format("YYYY-MM-DD")}
+          </MocSurveyItem.Period>
+        </MocSurveyItem.SubTitleWrapper>
+      </MocSurveyItem>
+    </>
   );
 };

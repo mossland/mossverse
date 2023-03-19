@@ -1,7 +1,5 @@
 import { WindowHeader } from "@shared/ui-web";
-import { kaikas, metamask } from "@shared/util-client";
 import React, { ReactNode } from "react";
-import styled from "styled-components";
 
 export type ModalType = {
   title: string;
@@ -13,36 +11,11 @@ export type ModalType = {
 export const Modal = ({ title, type = "close", onClose, children }: ModalType) => {
   return (
     <>
-      <ModalBackground />
-      <MarketDeliveryContainer>
+      <div className="fixed inset-0 bg-white/10 z-[0.9] backdrop-blur-md" />
+      <div className="border-[3px] border-black fixed top-1/2 left-1/2 w-[714px] h-[412px] bg-white rounded-lg overflow-hidden -translate-x-1/2 -translate-y-1/2">
         <WindowHeader title={title} close={onClose} type={type} />
         {children}
-      </MarketDeliveryContainer>
+      </div>
     </>
   );
 };
-
-const ModalBackground = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  z-index: 0.9;
-`;
-const MarketDeliveryContainer = styled.div`
-  /* padding: 23px; */
-  position: absolute;
-  width: 714px;
-  height: 412px;
-  /* background-color: red; */
-  top: 50%;
-  left: 50%;
-  background: #ffffff;
-  border: 3px solid #000000;
-  border-radius: 10px;
-  transform: translate(-50%, -50%);
-  overflow: hidden;
-`;

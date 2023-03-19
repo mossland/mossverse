@@ -1,80 +1,100 @@
 import React, { useEffect } from "react";
-import styled from "styled-components";
-import { Survey, DefaultButton } from "@platform/ui-web";
-import { gql, utils, store } from "../../stores";
-import { useMocSurvey } from "./services/useMocSurvey";
+import { gql, st, store } from "../../stores";
 import { MocSurveyDetailBody } from "./MocSurveyDetail";
 export const DetailBody = () => {
-  const mocSurveyService = useMocSurvey();
-  if (!mocSurveyService.mocSurvey) return null;
+  const self = st.use.self();
+  const mocSurvey = st.use.mocSurvey();
+  const response = st.use.response();
+
+  useEffect(() => {
+    if (mocSurvey === "loading") return;
+    const response = mocSurvey.responses.find((response) => response.user.id === self.id) ?? {
+      id: "",
+      num: 0,
+      user: self,
+      answer: "",
+      selection: null,
+      reason: "",
+    };
+
+    st.do.setMocSurveyResponse(response);
+  }, [mocSurvey]);
+
   return (
-    <MocSurveyDetailBody>
-      {mocSurveyService.mocSurvey.type === "objective" ? (
-        <MocSurveyDetailBody.ObjectiveForm
-          disabled={
-            utils.isVoted(mocSurveyService.mocSurveyList, mocSurveyService.mocSurvey.id, mocSurveyService.self?.id) ||
-            mocSurveyService.mocSurvey.status !== "opened" ||
-            new Date(mocSurveyService.mocSurvey.closeAt).getTime() < Date.now()
-          }
-          selections={mocSurveyService.mocSurvey.selections}
-          selection={mocSurveyService.selection}
-          onSelect={(selection) => store.mocSurvey.setState({ selection })}
-        />
+    <>
+      {mocSurvey === "loading" || !response ? (
+        <></>
       ) : (
-        <MocSurveyDetailBody.SubjectiveForm
-          answer={mocSurveyService.answer}
-          disabled={
-            utils.isVoted(mocSurveyService.mocSurveyList, mocSurveyService.mocSurvey.id, mocSurveyService.self?.id) ||
-            mocSurveyService.mocSurvey.status !== "opened" ||
-            new Date(mocSurveyService.mocSurvey.closeAt).getTime() < Date.now()
-          }
-          onChange={(answer) => store.mocSurvey.setState({ answer })}
-        />
+        <>
+          <div className="m-2">
+            <hr className="border-gray-500 " />
+            <div className="p-3 text-[16px] text-black">{mocSurvey.description}</div>
+          </div>
+          <MocSurveyDetailBody>
+            {mocSurvey.type === "objective" ? (
+              <MocSurveyDetailBody.ObjectiveForm
+                selection={response.selection}
+                selections={mocSurvey.selections}
+                disabled={
+                  mocSurvey.isVoted(self) ||
+                  mocSurvey.status !== "opened" ||
+                  !mocSurvey.isExpired() ||
+                  !response.selection
+                }
+                onSelect={(selection) => st.set({ response: { ...response, selection } })}
+              />
+            ) : (
+              <MocSurveyDetailBody.SubjectiveForm
+                answer={response.answer}
+                disabled={mocSurvey.isVoted(self) || mocSurvey.status !== "opened" || !mocSurvey.isExpired()}
+                onChange={(answer) => st.set({ response: { ...response, answer } })}
+              />
+            )}
+            <>
+              <MocSurveyDetailBody.Wrapper className="hidden md:block">
+                <MocSurveyDetailBody.ButtonWrapper>
+                  <MocSurveyDetailBody.SurveyButton onClick={() => st.do.setMocSurvey("loading")}>
+                    Close
+                  </MocSurveyDetailBody.SurveyButton>
+                  <MocSurveyDetailBody.SurveyButton
+                    className={"bg-[#66fef1]"}
+                    onClick={async () => await st.do.responseMocSurvey()}
+                    disabled={
+                      mocSurvey.isVoted(self) ||
+                      mocSurvey.status !== "opened" ||
+                      !mocSurvey.isExpired() ||
+                      (mocSurvey.type === "subjective" && (!response.answer || response.answer.length < 3)) ||
+                      (mocSurvey.type === "objective" && !response.selection)
+                    }
+                  >
+                    Submit
+                  </MocSurveyDetailBody.SurveyButton>
+                </MocSurveyDetailBody.ButtonWrapper>
+              </MocSurveyDetailBody.Wrapper>
+              <MocSurveyDetailBody.Wrapper className="block md:hidden">
+                <MocSurveyDetailBody.ButtonWrapper className="justify-between items-between">
+                  <MocSurveyDetailBody.SurveyButton onClick={() => st.do.setMocSurvey("loading")}>
+                    Close
+                  </MocSurveyDetailBody.SurveyButton>
+                  <MocSurveyDetailBody.SurveyButton
+                    className={"bg-[#66FEF1]"}
+                    onClick={async () => await st.do.responseMocSurvey()}
+                    disabled={
+                      mocSurvey.isVoted(self) ||
+                      mocSurvey.status !== "opened" ||
+                      !mocSurvey.isExpired() ||
+                      (mocSurvey.type === "subjective" && (!response.answer || response.answer.length < 3)) ||
+                      (mocSurvey.type === "objective" && !response.selection)
+                    }
+                  >
+                    Submit
+                  </MocSurveyDetailBody.SurveyButton>
+                </MocSurveyDetailBody.ButtonWrapper>
+              </MocSurveyDetailBody.Wrapper>
+            </>
+          </MocSurveyDetailBody>
+        </>
       )}
-      <>
-        <MocSurveyDetailBody.Wrapper className="only-pc">
-          <MocSurveyDetailBody.ButtonWrapper>
-            <MocSurveyDetailBody.SurveyButton onClick={mocSurveyService.closeDetail}>
-              Close
-            </MocSurveyDetailBody.SurveyButton>
-            <MocSurveyDetailBody.SurveyButton
-              className={"bg-[#66fef1]"}
-              onClick={() => mocSurveyService.responseMocSurvey()}
-              disabled={
-                mocSurveyService.isVoted(mocSurveyService.mocSurvey.id) ||
-                mocSurveyService.mocSurvey.status !== "opened" ||
-                new Date(mocSurveyService.mocSurvey.closeAt).getTime() < Date.now() ||
-                (mocSurveyService.mocSurvey.type === "subjective"
-                  ? mocSurveyService.answer === null || (mocSurveyService.answer && mocSurveyService.answer.length < 3)
-                  : mocSurveyService.mocSurvey.type === "objective" && mocSurveyService.selection === null)
-              }
-            >
-              Submit
-            </MocSurveyDetailBody.SurveyButton>
-          </MocSurveyDetailBody.ButtonWrapper>
-        </MocSurveyDetailBody.Wrapper>
-        <MocSurveyDetailBody.Wrapper className="only-mobile">
-          <MocSurveyDetailBody.ButtonWrapper>
-            <MocSurveyDetailBody.SurveyButton onClick={mocSurveyService.closeDetail}>
-              Close
-            </MocSurveyDetailBody.SurveyButton>
-            <MocSurveyDetailBody.SurveyButton
-              className={"bg-[#66FEF1]"}
-              onClick={() => mocSurveyService.responseMocSurvey()}
-              disabled={
-                mocSurveyService.isVoted(mocSurveyService.mocSurvey.id) ||
-                mocSurveyService.mocSurvey.status !== "opened" ||
-                new Date(mocSurveyService.mocSurvey.closeAt).getTime() < Date.now() ||
-                (mocSurveyService.mocSurvey.type === "subjective"
-                  ? mocSurveyService.answer && mocSurveyService.answer.length < 3
-                  : mocSurveyService.mocSurvey.type === "objective" && !mocSurveyService.selection)
-              }
-            >
-              Submit
-            </MocSurveyDetailBody.SurveyButton>
-          </MocSurveyDetailBody.ButtonWrapper>
-        </MocSurveyDetailBody.Wrapper>
-      </>
-    </MocSurveyDetailBody>
+    </>
   );
 };

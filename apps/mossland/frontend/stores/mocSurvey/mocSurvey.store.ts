@@ -1,55 +1,24 @@
-import { StateCreator } from "zustand";
+import { SetGet, State } from "@shared/util-client";
+import type { RootState } from "../store";
 import * as gql from "../gql";
-import { createActions, createState, Get, makeStore, SetGet } from "@shared/util-client";
+import * as slice from "../slice";
 import { cnst } from "@shared/util";
-import { mocSurveyGraphQL } from "../gql";
 
-const state = {
-  ...createState(mocSurveyGraphQL),
-  ...gql.defaultUserSurveyResponse,
-  filter: "all" as cnst.SurveyFilterType,
-  response: null as gql.UserSurveyResponse | null,
-  isWriteMode: false,
-  adminOperation: "sleep" as "sleep" | "idle" | "loading",
-};
-const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
-  // ...createActions(mocSurveyGraphQL, { get, set }),
-  createMocSurvey: async () => {
-    const { mocSurveyForm, mocSurveyList } = get(); // as Get<typeof state, typeof actions>;
-    if (mocSurveyList === "loading") return;
-    const input = mocSurveyGraphQL.purifyMocSurvey(mocSurveyForm);
-    if (!input) throw new Error("Invalid Input");
-    const mocSurvey = await gql.generateMocSurvey(input);
-    set({ mocSurveyList: [...mocSurveyList, mocSurvey] });
-    // return mocSurvey;
-  }, // 생성
-  findResponse: (mocSurveyId: string, userId: string) => {
-    const { mocSurveyList } = get();
-    if (mocSurveyList === "loading") return;
-    const mocSurvey = mocSurveyList.find((mocSurvey) => mocSurvey.id === mocSurveyId);
-    if (!mocSurvey) throw new Error("No MocSurvey");
-    const response = mocSurvey.responses.find((response) => response.user.id === userId);
-    // if (!response) throw new Error("No Response");
-    // return response; //! void 강제
-  },
-
-  filtermocSurveyList: () => {
-    //
-  },
-
-  responseMocSurvey: async () => {
-    const { mocSurveyList, mocSurvey, mocSurveyForm } = get();
-    if (mocSurvey === "loading" || mocSurveyList === "loading") return;
-    const response = gql.purifyUserSurveyResponse(get());
-    if (!mocSurvey || !response) return;
-    const newMocSurvey = await gql.respondMocSurvey(mocSurvey.id, response);
-    set({
-      mocSurveyList: mocSurveyList.map((sur) => (sur.id !== newMocSurvey.id ? sur : newMocSurvey)),
-      mocSurvey: newMocSurvey,
-    });
-  },
-  openMocSurvey: async (mocSurveyId) => {
-    await gql.openMocSurvey(mocSurveyId);
-  },
+// ? Store는 다른 store 내 상태와 상호작용을 정의합니다. 재사용성이 필요하지 않은 단일 기능을 구현할 때 사용합니다.
+// * 1. State에 대한 내용을 정의하세요.
+const state = ({ set, get, pick }: SetGet<slice.MocSurveySliceState>) => ({
+  ...slice.makeMocSurveySlice({ set, get, pick }),
 });
-export const mocSurvey = makeStore(mocSurveyGraphQL.refName, state, actions);
+
+// * 2. Action을 내용을 정의하세요. Action은 모두 void 함수여야 합니다.
+// * 다른 action을 참조 시 get() as <Model>State 또는 RootState 를 사용하세요.
+const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
+  //
+});
+
+export type MocSurveyState = State<typeof state, typeof actions>;
+// * 3. ChildSlice를 추가하세요. Suffix 규칙은 일반적으로 "InModel" as const 로 작성합니다.
+export const addMocSurveyToStore = ({ set, get, pick }: SetGet<MocSurveyState>) => ({
+  ...state({ set, get, pick }),
+  ...actions({ set, get, pick }),
+});

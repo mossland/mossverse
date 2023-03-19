@@ -1,5 +1,6 @@
 const { createGlobPatternsForDependencies } = require("@nrwl/next/tailwind");
 const { join } = require("path");
+const { generateColors } = require("../../../generateColors");
 
 module.exports = {
   content: [
@@ -11,7 +12,7 @@ module.exports = {
   theme: {
     screens: {
       sm: "640px",
-      md: "932px",
+      md: "800px",
       lg: "1024px",
       xl: "1280px",
       "2xl": "1736px",
@@ -21,7 +22,7 @@ module.exports = {
       padding: "1rem",
       screens: {
         sm: "600px",
-        md: "928px",
+        md: "800px",
         lg: "984px",
         xl: "1148px",
         "2xl": "1736px",
@@ -35,14 +36,10 @@ module.exports = {
     },
     extend: {
       colors: {
-        "main-red": "#c51c1e",
-        "main-red-dark": "#8d3435",
-        "main-purple": "#1B1E66",
-        "main-purple-dark": "#030028",
-        "belif-green-light": "#8EB47A",
-        "belif-green": "#1D331B",
-        "belif-green-line": "#629054",
-        "belif-green-dark": "#040804",
+        ...generateColors("color-main", "#66FEF0"),
+        ...generateColors("color-sub", "#c51c1e"),
+        ...generateColors("color-extra", "#FFE177"),
+        "color-sub-dark": "#8d3435",
       },
       transitionProperty: {
         all: "all",
@@ -203,42 +200,6 @@ module.exports = {
             opacity: 1,
           },
         },
-        // tedDeco1: {
-        //   "0%": {
-        //     transform: "translate(0em, 0em) rotate(0deg)",
-        //     opacity: 1,
-        //   },
-        //   "33%": {
-        //     transform: "translate(0em, 0.5em) rotate(-2deg)",
-        //     opacity: 0,
-        //   },
-        //   "66%": {
-        //     transform: "translate(0em, 0.5em) rotate(-2deg)",
-        //     opacity: 0,
-        //   },
-        //   "100%": {
-        //     transform: "translate(0em, 0em) rotate(0deg)",
-        //     opacity: 1,
-        //   },
-        // },
-        // tedDeco2: {
-        //   "0%": {
-        //     transform: "translate(0em, 0em) rotate(0deg)",
-        //     opacity: 0,
-        //   },
-        //   "33%": {
-        //     transform: "translate(0em, 0.5em) rotate(2deg)",
-        //     opacity: 1,
-        //   },
-        //   "66%": {
-        //     transform: "translate(0em, 0.5em) rotate(2deg)",
-        //     opacity: 1,
-        //   },
-        //   "100%": {
-        //     transform: "translate(0em, 0em) rotate(0deg)",
-        //     opacity: 0,
-        //   },
-        // },
         tedDeco3: {
           "0%": {
             transform: "translate(0em, 0em) rotate(0deg)",
@@ -257,98 +218,65 @@ module.exports = {
             transform: "translateY(2em) scale(1.1)",
           },
         },
-
-        // tedOut1: {
-        //   "0%": {
-        //     opacity: 0,
-        //   },
-        //   "25%": {
-        //     opacity: 1,
-        //   },
-        //   "75%": {
-        //     opacity: 1,
-        //   },
-        //   "99%": {
-        //     opacity: 0,
-        //     transform: "translateY(0%)",
-        //   },
-        //   "100%": {
-        //     opacity: 0,
-        //     transform: "translateY(100%)",
-        //   },
-        // },
-        // tedOut2: {
-        //   "9%": {
-        //     opacity: 0,
-        //   },
-        //   "10%": {
-        //     opacity: 1,
-        //   },
-        //   "75%": {
-        //     opacity: 1,
-        //   },
-        //   "99%": {
-        //     opacity: 0,
-        //     transform: "translateY(0%)",
-        //   },
-        //   "100%": {
-        //     opacity: 0,
-        //     transform: "translateY(100%)",
-        //   },
-        // },
-        // tedOut3: {
-        //   "9%": {
-        //     opacity: 0,
-        //   },
-        //   "10%": {
-        //     opacity: 1,
-        //   },
-        //   "99%": {
-        //     opacity: 1,
-        //     transform: "translateY(0%)",
-        //   },
-        //   "100%": {
-        //     opacity: 0,
-        //     transform: "translateY(100%)",
-        //   },
-        // },
-        // tedOut4: {
-        //   "9%": {
-        //     opacity: 0,
-        //   },
-        //   "10%": {
-        //     opacity: 1,
-        //   },
-        //   "25%": {
-        //     opacity: 1,
-        //   },
-        //   "100%": {
-        //     opacity: 1,
-        //   },
-        // },
-        // tedEffect1: {
-        //   "0%": {
-        //     transform: "translate(0, 0)",
-        //   },
-        //   "25%": {
-        //     transform: "translate(1em, 2em)",
-        //   },
-        //   "50%": {
-        //     transform: "translate(1em, 0)",
-        //   },
-        //   "75%": {
-        //     transform: "translate(0, 2em)",
-        //   },
-        //   "100%": {
-        //     transform: "translate(0, 0)",
-        //   },
-        // },
+        inventoryOpen: {
+          "0%": {
+            transform: "scale(0, 0)",
+            width: "0px",
+            opacity: 0.4,
+          },
+          "100%": {
+            transform: "scale(1, 1)",
+            width: "398px",
+            opacity: 1,
+          },
+        },
+        inventoryClose: {
+          "0%": {
+            transform: "scale(1, 1)",
+            width: "398px",
+            opacity: 0.4,
+          },
+          "100%": {
+            transform: "scale(0, 0)",
+            width: "0px",
+            height: "0px",
+            opacity: 0,
+          },
+        },
+        emojiOpen: {
+          "0%": {
+            transform: "scale(0, 0)",
+            width: "0px",
+            opacity: 0.4,
+          },
+          "100%": {
+            transform: "scale(1, 1)",
+            width: "282px",
+            opacity: 1,
+          },
+        },
+        emojiClose: {
+          "0%": {
+            transform: "scale(1, 1)",
+            width: "398px",
+            opacity: 0.4,
+          },
+          "100%": {
+            transform: "scale(0, 0)",
+            width: "0px",
+            height: "0px",
+            opacity: 0,
+          },
+        },
       },
+
       animation: {
-        fadeIn: "fadeIn 0.5s ease-in-out forwards",
+        fadeIn: "fadeIn 0.5s ease forwards",
         fadeOut: "fadeOut 0.5s ease-in-out forwards",
         flyOut: "flyOut 0.5s ease-in-out forwards",
         drop: "drop 0.5s ease-in-out forwards",
+        mainLogo: "fadeIn 1s ease-in-out forwards",
+        mainButtons: "fadeIn 0.5s ease-in-out 0.5s forwards",
         nextPageButton: "nextPageButton 0.5s ease-in-out forwards",
         homeLogo: "homeLogo 1s ease-in-out 1.2s forwards",
         homeLogoText1: "homeLogoText1 1s ease-in-out 0.8s forwards",
@@ -363,17 +291,18 @@ module.exports = {
         tedDeco2: "tedDeco2 1s ease-in-out infinite alternate",
         tedDeco3: "tedDeco3 1s ease-in-out infinite alternate",
         tedDeco4: "tedDeco4 1s ease-in-out forwards",
-
-        // tedOut1: "tedOut1 2s ease-in-out  forwards",
-        // tedOut2: "tedOut2 3s ease-in-out 1s forwards",
-        // tedOut3: "tedOut3 3s ease-in-out 2s forwards",
-        // tedOut4: "tedOut4 2s ease-in-out 4s forwards",
-        // tedEffect1: "tedEffect1 2s ease-in-out infinite",
+        inventoryOpen: "inventoryOpen 0.3s ease-in-out forwards",
+        inventoryClose: "inventoryClose 0.3s ease-in-out forwards",
+        emojiOpen: "emojiOpen 0.3s ease-in-out forwards",
+        emojiClose: "emojiClose 0.3s ease-in-out forwards",
       },
     },
   },
   variants: {
     extend: {},
   },
-  plugins: [require("@tailwindcss/aspect-ratio"), require("tailwind-scrollbar")],
+  plugins: [require("@tailwindcss/aspect-ratio"), require("tailwind-scrollbar"), require("daisyui")],
+  corePlugins: {
+    preflight: false,
+  },
 };

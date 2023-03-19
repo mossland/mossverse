@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Props } from "@shared/ui-web";
 
 export const MocSurveyFilter = ({ children, className }: Props.BaseProps) => {
-  return <div className={`flex absolute bottom-[14px] ${className}`}>{children}</div>;
+  return <div className={`flex mt-[20px] bottom-[14px] ${className}`}>{children}</div>;
 };
 
 const Button = ({ children, className, onClick, disabled }: Props.ButtonProps) => {

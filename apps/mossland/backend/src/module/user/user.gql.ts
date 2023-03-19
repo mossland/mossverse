@@ -1,10 +1,11 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate, mixInputType, mixObjectType } from "@shared/util-server";
 import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
-import * as gql from "../gql";
 
 import { ApiProperty } from "@nestjs/swagger";
 import { gql as shared } from "@shared/module";
+import { gql as platform } from "@platform/module";
+import { gql as decentverse } from "@decentverse/module";
 
 // * 1. 보안필드를 제외한 모든 필드
 @ObjectType({ isAbstract: true })
@@ -20,7 +21,10 @@ class InputOverwrite {}
 @ObjectType({ isAbstract: true })
 @InputType({ isAbstract: true })
 @Schema()
-class Tail {}
+class Tail extends Base {}
+
+export type MosslandUserInput = Base;
+export type MosslandUser = Tail;
 
 // * 최종 생성 모델
 export class UserInput {}
@@ -35,3 +39,15 @@ mixObjectType(shared.User, IntersectionType(Base, Tail));
 
 @Schema()
 export class UserSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class MosslandUserSummary {}
+export class UserSummary {}
+export interface UserSummary
+  extends shared.UserSummary,
+    platform.UserSummary,
+    decentverse.UserSummary,
+    MosslandUserSummary {}
+mixObjectType(shared.UserSummary, MosslandUserSummary);

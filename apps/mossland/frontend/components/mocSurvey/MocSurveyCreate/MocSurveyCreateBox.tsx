@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 import { DatePicker, Select } from "antd";
-import moment from "moment";
+import dayjs from "dayjs";
 import Link from "next/link";
 import { Props } from "@shared/ui-web";
 
@@ -12,11 +12,11 @@ type SelectorProps = Props.BaseProps & {
 
 type RangePickerProps = {
   className?: string;
-  min: Date;
-  max: Date;
-  openAt: Date;
-  closeAt: Date;
-  onChange: (openAt: Date | null, closeAt: Date | null) => void;
+  min: dayjs.Dayjs;
+  max: dayjs.Dayjs;
+  openAt: dayjs.Dayjs;
+  closeAt: dayjs.Dayjs;
+  onChange: (openAt: dayjs.Dayjs | null, closeAt: dayjs.Dayjs | null) => void;
 };
 
 type SelectionsProps = {
@@ -71,14 +71,27 @@ const Input = ({ className, onChange, placeholder, value }: Props.InputProps) =>
   );
 };
 
+const InputArea = ({ className, onChange, placeholder, value }: Props.InputProps) => {
+  return (
+    <div className={`mb-[14px]`}>
+      <textarea
+        className="resize-none w-full h-[200px] border-[1px]  rounded-[8px] p-[14px] text-[16px] font-normal disabled:bg-gray-300 disabled:opacity-50"
+        placeholder={placeholder}
+        value={value ?? ""}
+        onChange={(e) => onChange && onChange(e.target.value as string)}
+      ></textarea>
+    </div>
+  );
+};
+
 const RangePicker = ({ className, min, max, openAt, closeAt, onChange }: RangePickerProps) => {
   return (
     <DatePicker.RangePicker
       className={`w-full ${className}`}
-      value={openAt && closeAt ? [moment(openAt), moment(closeAt)] : [null, null]}
-      disabledDate={(d) => !d || d.isAfter(moment(max)) || d.isSameOrBefore(moment(min))}
+      value={[openAt, closeAt]}
+      disabledDate={(d) => !d || d.isAfter(max) || d.isBefore(min)}
       onChange={(e) => {
-        onChange(e?.[0] ? e[0].toDate() : null, e?.[1] ? e[1].toDate() : null);
+        onChange(e?.[0] ? e?.[0] : null, e?.[1] ? e?.[1] : null);
       }}
     />
   );
@@ -133,17 +146,17 @@ const TextArea = ({ className, onChange, placeholder, value }: Props.InputProps)
 
 const Selection = ({ itemIndex, removeItem, selection, updateItem }: SelectionProps) => {
   return (
-    <div className="flex items-center mb-[10px] mt-[10px]">
+    <div className="flex items-center mb-[10px] mt-[10px] ">
+      <div className="w-full">
+        <input className="w-full" value={selection} onChange={(e) => updateItem(e.target.value as string, itemIndex)} />
+      </div>
       <button
         disabled={itemIndex === 0}
-        className="mr-[10px] rounded-md disabled:bg-gray-400 disabled:opacity-50 px-4 py-2"
+        className="ml-[10px] rounded-md disabled:bg-gray-400 disabled:opacity-50 px-4 py-2"
         onClick={() => removeItem(itemIndex)}
       >
         <img className="" src="/images/remove.svg" alt="remove" />
       </button>
-      <div className="w-full">
-        <input className="w-full" value={selection} onChange={(e) => updateItem(e.target.value as string, itemIndex)} />
-      </div>
     </div>
   );
 };
@@ -164,7 +177,7 @@ const CreateButton = ({ children, className, onClick, disabled }: Props.ButtonPr
   return (
     <button
       className={`cursor-pointer w-full h-[50px] text-[22px] border-[2px] mt-[20px] font-normal bg-[#FFE177] border-solid border-black rounded-[6px] p-[8px] text-black 
-      disabled:bg-[#585858] disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+       disabled:opacity-50 disabled:cursor-default ${className}`}
       onClick={onClick}
       disabled={disabled}
     >
@@ -181,6 +194,7 @@ MocSurveyCreateBox.Title = Title;
 MocSurveyCreateBox.TextArea = TextArea;
 MocSurveyCreateBox.Label = Label;
 MocSurveyCreateBox.Input = Input;
+MocSurveyCreateBox.InputArea = InputArea;
 MocSurveyCreateBox.Wrapper = Wrapper;
 MocSurveyCreateBox.Selector = Selector;
 MocSurveyCreateBox.Selection = Selection;

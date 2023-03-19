@@ -1,17 +1,32 @@
 import { AppProps } from "next/app";
 import Head from "next/head";
-import "antd/dist/antd.css";
-import "react-toastify/dist/ReactToastify.css";
-import { useRouter } from "next/router";
-import { store } from "../stores";
+import { st, gql, locale as appLocale } from "../stores";
 import GlobalStyle from "../styles/GlobalStyle";
-import { useEffect, useState } from "react";
-import "../styles.css";
+import { ConfigProvider } from "antd";
+import locale from "antd/lib/locale/ko_KR";
 import { GqlProvider } from "@shared/ui-web";
 import { env } from "../env/env";
 import { PageMap } from "@shared/util-client";
+import { useI18n } from "@shared/util-client";
+import { locale as sharedLocale } from "@shared/data-access";
+import { locale as decentverseLocale } from "@decentverse/data-access";
+import { locale as platformLocale } from "@platform/data-access";
+import dayjs from "dayjs";
+import "../styles.css";
+import "antd/dist/reset.css";
+import "react-toastify/dist/ReactToastify.css";
+import "dayjs/locale/ko";
+import { Layout, Scene } from "@decentverse/ui-web";
+import { useRef } from "react";
+import { useRouter } from "next/router";
+dayjs.locale("ko");
 
 function CustomApp({ Component, pageProps }: AppProps) {
+  const self = st.use.self();
+  useI18n({ Component, locales: [sharedLocale, platformLocale, decentverseLocale, appLocale], defaultLng: "ko" });
+  const ref = useRef();
+  const router = useRouter();
+  const Canvas = (Component as any).canvas ? (Component as any).canvas : null;
   return (
     <>
       <Head>
@@ -20,7 +35,6 @@ function CustomApp({ Component, pageProps }: AppProps) {
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-
         <title>Welcome to Mossland!</title>
       </Head>
       <main className="app">
@@ -28,7 +42,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
           pageMap={
             new PageMap({
               public: {
-                paths: ["/market", "/survey"],
+                paths: ["/", "/listing", "character", "/survey", "/exchange"],
                 home: "/",
                 unauthorized: "/",
               },
@@ -38,23 +52,57 @@ function CustomApp({ Component, pageProps }: AppProps) {
                 unauthorized: "/admin",
               },
               user: {
-                paths: ["/", "/market", "/survey", "/exchange"],
+                paths: ["/", "/listing", "character", "/survey", "/exchange"],
                 home: "/",
                 unauthorized: "/",
               },
             })
           }
+          environment={env.environment}
           uri={env.endpoint}
           ws={env.ws}
           networkType={env.networkType}
-          whoAmI={store.platform.user.do.whoAmI}
-          useSelf={store.platform.user.use.self}
+          whoAmI={st.do.whoAmI}
+          useSelf={st.use.self}
           init={async () => {
-            store.shared.network.do.initNetwork({ query: { type: env.networkType } });
+            st.do.initNetwork({ query: { type: env.networkType } });
+          }}
+          userInit={async () => {
+            const thingList = await gql.shared.listThing({ name: { $in: ["MMOC", "Point"] } });
+            st.do.setThingList(thingList.listThing);
+            if (thingList.thingCount === 0) return;
+            st.do.initOwnershipInMoney({
+              query: {
+                thing: { $in: thingList.listThing.map((thing) => thing.id) },
+                ...(self.id ? { user: self.id } : {}),
+              },
+            });
+            st.do.initOwnershipInItem({
+              query: {
+                thing: { $nin: thingList.listThing.map((thing) => thing.id) },
+                ...(self.id ? { user: self.id } : {}),
+              },
+            });
           }}
         >
-          <GlobalStyle />
-          <Component {...pageProps} />
+          <ConfigProvider
+            theme={{
+              token: {
+                // colorPrimary: "blue",
+              },
+            }}
+            locale={locale}
+          >
+            <GlobalStyle />
+            <Layout className={router.pathname.startsWith("/map") ? "overflow-hidden" : "overflow-y-auto"} ref={ref}>
+              {Canvas && (
+                <Scene className="pointer-events-none -z-50" eventSource={ref} eventPrefix="client">
+                  <Canvas {...pageProps} />
+                </Scene>
+              )}
+              <Component {...pageProps} />
+            </Layout>
+          </ConfigProvider>
         </GqlProvider>
       </main>
     </>

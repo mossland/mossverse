@@ -1,7 +1,8 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
 import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
-import * as gql from "./../gql";
+import { gql as shared } from "@shared/module";
+import { gql as platform } from "@platform/module";
 import { cnst, Utils } from "@shared/util";
 
 // * 1. 보안필드를 제외한 모든 필드
@@ -13,7 +14,7 @@ class Base {
   @Prop({ type: String, required: true, immutable: true, unique: true, index: true })
   address: string;
 
-  @Field(() => gql.shared.User, { nullable: true })
+  @Field(() => shared.User, { nullable: true })
   @Prop({ type: ObjectId, required: false, unique: true, ref: "user", index: true })
   user?: Id;
 }
@@ -52,3 +53,12 @@ export class MocWalletInput extends IntersectionType(InputOverwrite, Base, Input
 export class MocWallet extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class MocWalletSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class MocWalletSummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalMocWallet: number;
+}

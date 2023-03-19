@@ -1,14 +1,11 @@
 import { forwardRef, Inject, Injectable, OnModuleInit } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import * as User from "./user.model";
-
 import * as db from "../db";
 import * as gql from "../gql";
-
 import { srv as shared } from "@shared/module";
 import { srv as platform } from "@platform/module";
 import { srv as decentverse } from "@decentverse/module";
-
 import { Id, LoadService } from "@shared/util-server";
 import { Utils, GetObject } from "@shared/util";
 
@@ -25,8 +22,19 @@ export class UserService<
     GetObject<decentverse.UserService<Mdl, Doc, Input>>
 {
   root: Doc;
-  constructor(@InjectModel(User.name) readonly User: Mdl) {
+  constructor(
+    @InjectModel(User.name) readonly User: Mdl,
+    // ================= Library Import Zone ================= //
+    private readonly keyringService: shared.KeyringService
+  ) // ================= Library Import Zone ================= //
+
+  {
     super(UserService.name, User);
+  }
+  async summarizeMossland(): Promise<gql.MosslandUserSummary> {
+    return {
+      //
+    };
   }
 }
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

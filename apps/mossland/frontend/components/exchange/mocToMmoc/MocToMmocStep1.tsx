@@ -1,7 +1,6 @@
 import React from "react";
-import styled from "styled-components";
-import { DefaultButton } from "@platform/ui-web";
 import { BiDownArrowAlt } from "react-icons/bi";
+import { MintButton } from "../../common";
 
 type MocToMMocStep1Type = {
   onClick: () => void;
@@ -9,27 +8,15 @@ type MocToMMocStep1Type = {
 };
 export const MocToMmocStep1 = ({ onClick, isDisabled }: MocToMMocStep1Type) => {
   return (
-    <MocToMmocStep1Container>
-      <p>No MOC deposit addresses have been applied for before. Please retrieve the deposit address.</p>
-      <img src="/images/qr_icon.svg" />
-      <DefaultButton disabled={isDisabled} onClick={onClick} block type="primary">
+    <div className="p-[23px] border-b-[2px] border-black">
+      <p className="text-[22px] leading-[1em]">
+        No MOC deposit addresses have been applied for before. Please retrieve the deposit address.
+      </p>
+      <img className="block text-center mx-auto my-[43px]" src="/images/qr_icon.svg" />
+      <MintButton disabled={isDisabled} onClick={onClick}>
         <BiDownArrowAlt />
         Get Address
-      </DefaultButton>
-    </MocToMmocStep1Container>
+      </MintButton>
+    </div>
   );
 };
-
-const MocToMmocStep1Container = styled.div`
-  padding: 23px 23px;
-  border-bottom: 2px solid ${(props) => props.theme.color.black};
-  p {
-    font-size: 22px;
-    line-height: 1em;
-  }
-  img {
-    display: block;
-    text-align: center;
-    margin: 43px auto;
-  }
-`;

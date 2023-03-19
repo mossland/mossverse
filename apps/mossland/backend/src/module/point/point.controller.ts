@@ -46,7 +46,7 @@ export class PointController {
     if (!account) throw new HttpException("Unauthorized", HttpStatus.UNAUTHORIZED);
     if (!["admin", "superAdmin"].includes(account.role) || account.status !== "active")
       throw new HttpException("Not Authorized Admin", HttpStatus.UNAUTHORIZED);
-    const exchange: gql.platform.ExchangeInput = { type: "thing", num: body.num, hash: body.hash };
+    const exchange: gql.platform.ExchangeInput = { type: "thing", value: body.value, hash: body.hash };
     return res.json(await this.pointService.updatePoint(new Id(userId), exchange));
   }
 }

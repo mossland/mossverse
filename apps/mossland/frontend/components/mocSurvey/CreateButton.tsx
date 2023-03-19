@@ -1,17 +1,26 @@
 import React from "react";
-import styled, { css } from "styled-components";
-import { DefaultButton } from "@platform/ui-web";
-import { gql, utils, store } from "../../stores";
-import { ExchangeItem, Survey } from "@platform/ui-web";
-import { darken } from "polished";
-import { useMocSurvey } from "./services/useMocSurvey";
+import { gql, st, store } from "../../stores";
 import { MocSurveyCreateButton } from "./MocSurveyCreate";
 export const CreateButton = () => {
-  const mocSurveyService = useMocSurvey();
-  if (mocSurveyService.isWriteMode || !mocSurveyService.self) return null;
+  const self = st.use.self();
+  const isWriteMode = st.use.isWriteMode();
+  const ownershipList = st.use.ownershipListInMoney();
+  //!need to change
   return (
-    <MocSurveyCreateButton onClick={mocSurveyService.openCreateBox} disabled={!mocSurveyService.hasMmoc()}>
-      Create a new propsal
-    </MocSurveyCreateButton>
+    <>
+      {isWriteMode || !self.id?.length || ownershipList === "loading" ? (
+        <></>
+      ) : (
+        <MocSurveyCreateButton
+          onClick={() => {
+            st.set({ isWriteMode: true });
+            st.do.newMocSurvey({ type: "objective" });
+          }}
+          disabled={!gql.shared.Ownership.get(ownershipList, "MMOC")}
+        >
+          Create a new propsal
+        </MocSurveyCreateButton>
+      )}
+    </>
   );
 };

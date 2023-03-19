@@ -2,6 +2,7 @@ type EnvType = "testing" | "debug" | "develop" | "main";
 export interface Env {
   environment: EnvType;
   networkType: "mainnet" | "testnet" | "debugnet";
+  origin: string;
   endpoint: string;
   ws: string;
   klaytn: {

@@ -2,23 +2,27 @@ import React, { ReactNode } from "react";
 import Link from "next/link";
 import { Radio } from "antd";
 import { Props } from "@shared/ui-web";
+import { twMerge } from "tailwind-merge";
 
 export const MocSurveyDetailBody = ({ children, className }: Props.BaseProps) => {
-  return <div className={`bg-[#e8e8e8] p-[23px] ${className}`}>{children}</div>;
+  return <div className={twMerge("bg-[#e8e8e8] p-[23px]", className)}>{children}</div>;
 };
 
 const Wrapper = ({ children, className }: Props.BaseProps) => {
-  return <div className={` ${className}`}>{children}</div>;
+  return <div className={twMerge("", className)}>{children}</div>;
 };
 
 const ButtonWrapper = ({ children, className }: Props.BaseProps) => {
-  return <div className={`flex justify-around ${className}`}>{children}</div>;
+  return <div className={twMerge("flex justify-between", className)}>{children}</div>;
 };
 
 const SurveyButton = ({ children, disabled, className, onClick }: Props.ButtonProps) => {
   return (
     <button
-      className={`min-h-[60px] mr-5 w-full text-[22px] border-solid border-[1px] border-black rounded-[10px] font-normal brightness-[1] bg-white disabled:opacity-30 disabled:cursor-not-allowed disabled:bg-[#fff] disabled:bg-opacity-80 ${className}`}
+      className={twMerge(
+        "min-h-[50px] mx-[4px] w-full text-[22px] border-solid border-[2px] border-black rounded-[10px] font-normal brightness-[1] bg-white disabled:opacity-30 disabled:cursor-not-allowed disabled:bg-opacity-80",
+        className
+      )}
       onClick={onClick}
       disabled={disabled}
     >
@@ -73,10 +77,10 @@ const SubjectiveForm = ({ answer, disabled, onChange }: SubjectiveFormProps) => 
   return (
     <div className={`mb-[16px]`}>
       <textarea
-        className="outline-none resize-none w-full h-[369px] border-[0px] border-black rounded-[6px] p-[14px] text-[16px] font-normal disabled:bg-[#b8b8b8]"
+        className="outline-none resize-none w-full h-[369px] border-[0px] border-black rounded-[6px] p-[14px] text-[16px] font-normal disabled:bg-white disabled:opacity-50"
         value={answer ?? ""}
         disabled={disabled}
-        placeholder="답변을 달아주세요."
+        placeholder={disabled ? "" : "답변을 달아주세요."}
         onChange={(e) => onChange(e.target.value as string)}
       ></textarea>
     </div>

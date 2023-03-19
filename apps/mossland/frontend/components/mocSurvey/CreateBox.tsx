@@ -1,81 +1,127 @@
 import React, { useEffect } from "react";
-import styled from "styled-components";
-import { DefaultButton, Survey } from "@platform/ui-web";
-import { Field } from "@shared/ui-web";
 import { AiOutlineLeft } from "react-icons/ai";
 import { cnst } from "@shared/util";
 import { darken } from "polished";
-import { gql, utils, store } from "../../stores";
-import { useMocSurvey } from "./services/useMocSurvey";
+import { gql, st, store } from "../../stores";
 import { MocSurveyCreateBox } from "./MocSurveyCreate";
+import { client } from "@shared/util-client";
+import dayjs from "dayjs";
 export const CreateBox = () => {
-  const mocSurveyService = useMocSurvey();
-
+  const today = dayjs();
+  const maxDay = dayjs().add(2, "month");
+  const self = st.use.self();
+  const me = st.use.me();
+  const isWriteMode = st.use.isWriteMode();
+  const mocSurveyForm = st.use.mocSurveyForm();
+  const ownershipList = st.use.ownershipListInMoney();
   useEffect(() => {
-    store.mocSurvey.set({ openAt: mocSurveyService.today, closeAt: mocSurveyService.maxDay });
+    if (ownershipList === "loading") return;
+    st.do.setMocSurveyForm({
+      ...mocSurveyForm,
+      selections: [""],
+      type: "objective",
+      openAt: today,
+      closeAt: maxDay,
+      // creator:
+      //   (me.wallets.find(async (w) => w.address === (await client.wallet.getAccount())) as gql.shared.Wallet) ?? null,
+      creator: self,
+      thing: gql.shared.Ownership.get(ownershipList, "MMOC")?.thing ?? null,
+    });
   }, []);
 
-  if (!mocSurveyService.isWriteMode) return null;
+  if (!isWriteMode || ownershipList === "loading") return null;
 
   return (
     <MocSurveyCreateBox>
       <MocSurveyCreateBox.Header>
         <MocSurveyCreateBox.Title>Create a new proposal</MocSurveyCreateBox.Title>
-        <MocSurveyCreateBox.BackButton onClick={mocSurveyService.closeCreateBox}>
+        <MocSurveyCreateBox.BackButton onClick={() => st.do.setIsWriteMode(false)}>
           <AiOutlineLeft />
         </MocSurveyCreateBox.BackButton>
       </MocSurveyCreateBox.Header>
       <MocSurveyCreateBox.Label>Proposal</MocSurveyCreateBox.Label>
       <MocSurveyCreateBox.Input
-        value={mocSurveyService.title}
-        onChange={(title: string) => store.mocSurvey.setState({ title })}
+        value={mocSurveyForm.title}
+        onChange={(title: string) => st.do.setMocSurveyForm({ ...mocSurveyForm, title })}
       />
       <MocSurveyCreateBox.Label>Until</MocSurveyCreateBox.Label>
       <MocSurveyCreateBox.RangePicker
-        min={mocSurveyService.today}
-        max={mocSurveyService.maxDay}
-        openAt={mocSurveyService.openAt}
-        closeAt={mocSurveyService.closeAt}
+        min={today}
+        max={maxDay}
+        openAt={mocSurveyForm.openAt}
+        closeAt={mocSurveyForm.closeAt}
         onChange={(o, c) =>
-          store.mocSurvey.setState({ openAt: o ?? mocSurveyService.openAt, closeAt: c ?? mocSurveyService.closeAt })
+          st.do.setMocSurveyForm({
+            ...mocSurveyForm,
+            openAt: o ?? mocSurveyForm.openAt,
+            closeAt: c ?? mocSurveyForm.closeAt,
+          })
         }
       />
-
-      <MocSurveyCreateBox.Wrapper className="flex justify-between mt-[10px]">
+      <MocSurveyCreateBox.Label>Description</MocSurveyCreateBox.Label>
+      <MocSurveyCreateBox.TextArea
+        value={mocSurveyForm.description}
+        onChange={(description: string) => st.do.setDescriptionOnMocSurvey(description)}
+      />
+      <MocSurveyCreateBox.Wrapper className="flex justify-between">
         <MocSurveyCreateBox.Label className="text-[24px]">
-          {mocSurveyService.type === "objective" ? "Answers" : "Answer"}
+          {mocSurveyForm.type === "objective" ? "Answers" : "Answer"}
         </MocSurveyCreateBox.Label>
-        <MocSurveyCreateBox.Wrapper className="items-center block mb-4">
-          <MocSurveyCreateBox.Label>Type:</MocSurveyCreateBox.Label>
+        <MocSurveyCreateBox.Wrapper className="flex">
+          <MocSurveyCreateBox.Label className="flex items-center justify-center mb-5">Type:</MocSurveyCreateBox.Label>
           <MocSurveyCreateBox.Selector
             items={[
               { id: "objective", label: "Multiple" },
               { id: "subjective", label: "Text Box" },
             ]}
-            value={mocSurveyService.type}
-            onChange={(type: cnst.SurveyType) => store.mocSurvey.setState({ type })}
+            value={mocSurveyForm.type}
+            onChange={(type: cnst.SurveyType) => st.do.setMocSurveyForm({ ...mocSurveyForm, type })}
           />
         </MocSurveyCreateBox.Wrapper>
       </MocSurveyCreateBox.Wrapper>
-      {mocSurveyService.type === "objective" && (
+      {mocSurveyForm.type === "objective" && (
         <MocSurveyCreateBox.Wrapper>
           <MocSurveyCreateBox.Selections
-            selections={mocSurveyService.selections}
-            updateItem={mocSurveyService.updateObjective}
-            removeItem={mocSurveyService.removeObjective}
+            selections={mocSurveyForm.selections}
+            updateItem={(value, idx) => {
+              st.do.setMocSurveyForm({
+                ...mocSurveyForm,
+                selections: mocSurveyForm.selections.map((cur, index) => (index === idx ? value : cur)),
+              });
+            }}
+            removeItem={(idx) =>
+              st.do.setMocSurveyForm({
+                ...mocSurveyForm,
+                selections: mocSurveyForm.selections.filter((cur, index) => index !== idx),
+              })
+            }
           />
-          <MocSurveyCreateBox.AddButton onClick={mocSurveyService.addObjective}>
+          <MocSurveyCreateBox.AddButton
+            onClick={() =>
+              st.do.setMocSurveyForm({
+                ...mocSurveyForm,
+                selections: [...mocSurveyForm.selections, ""],
+              })
+            }
+          >
             + Add New Answer
           </MocSurveyCreateBox.AddButton>
         </MocSurveyCreateBox.Wrapper>
       )}
-      {mocSurveyService.type === "subjective" && (
+      {mocSurveyForm.type === "subjective" && (
         <MocSurveyCreateBox.TextArea
-          value={mocSurveyService.description}
-          onChange={(description) => store.mocSurvey.setState({ description })}
+          value={mocSurveyForm.description}
+          onChange={(description) => st.do.setMocSurveyForm({ ...mocSurveyForm, description })}
         />
       )}
-      <MocSurveyCreateBox.CreateButton disabled={!mocSurveyService.creatable()} onClick={mocSurveyService.create}>
+      <MocSurveyCreateBox.CreateButton
+        disabled={
+          !gql.MocSurvey.creatable(mocSurveyForm as gql.MocSurvey) ||
+          !gql.shared.Ownership.get(ownershipList, "MMOC")?.value
+        }
+        // onClick={mocSurveyService.create}
+        onClick={() => st.do.createMocSurvey()}
+      >
         Create
       </MocSurveyCreateBox.CreateButton>
     </MocSurveyCreateBox>

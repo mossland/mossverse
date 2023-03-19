@@ -1,4 +1,11 @@
 export * from "./exchange";
-export * from "./common";
+export * as Common from "./common";
 export * from "./mocSurvey";
+export * as MocWallet from "./mocWallet";
 export * from "./market";
+export * from "./advertise";
+export * from "./building";
+export * from "./stakePool";
+export * from "./login";
+// export * from "./stakePool";
+export * from "./building";

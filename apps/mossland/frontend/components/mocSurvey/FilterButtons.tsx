@@ -1,47 +1,47 @@
-import { Survey } from "@platform/ui-web";
-import styled, { css } from "styled-components";
 import { cnst } from "@shared/util";
 import { CheckIcon } from "@shared/ui-web";
-import { gql, utils, store } from "../../stores";
-import { useMocSurvey } from "./services/useMocSurvey";
+import { gql, st, store } from "../../stores";
 import { MocSurveyFilter } from "./MocSurveyFilter";
+import { useEffect } from "react";
+import Router from "next/router";
 type CustomProps = { filter?: cnst.SurveyFilterType };
 
 export const FilterButtons = () => {
-  const mocSurveyService = useMocSurvey();
+  // const mocSurveyService = useMocSurvey();
+  const self = st.use.self();
+  const mocSurveyList = st.use.mocSurveyList();
+  const filter = Router.query.filter as cnst.SurveyFilterType;
+  // if (!self && !mocSurveyList) return <></>;
 
-  if (!mocSurveyService.self && !mocSurveyService.mocSurveyList) return <></>;
+  useEffect(() => {
+    if (!self) return;
+
+    if (filter === "all")
+      st.do.setQueryOfMocSurvey({
+        status: "opened",
+      });
+    if (filter === "active")
+      st.do.setQueryOfMocSurvey({
+        status: "opened",
+        // responses: { $elemMatch: { user: self.id } },
+      });
+  }, [filter]);
   return (
     <MocSurveyFilter>
       <MocSurveyFilter.Button
-        className={`bg-[#A0E3FF] ${mocSurveyService.filter !== "all" && "opacity-50"}`}
-        onClick={() => mocSurveyService.changeFilter("all")}
+        className={`bg-[#A0E3FF] ${filter !== "all" && "opacity-50"}`}
+        onClick={() => Router.push({ query: { filter: "all" } })}
       >
-        {mocSurveyService.filter === "all" && <CheckIcon />}
-        {`All(${mocSurveyService.allCount})`}
+        {filter === "all" && <CheckIcon />}
+        {`All${filter === "all" ? `(${mocSurveyList.length})` : ""}`}
       </MocSurveyFilter.Button>
       <MocSurveyFilter.Button
-        className={`bg-[#FFE177] ${mocSurveyService.filter !== "active" && "opacity-50"}`}
-        onClick={() => mocSurveyService.changeFilter("active")}
+        className={`bg-[#FFE177] ${filter !== "active" && "opacity-50"}`}
+        onClick={() => Router.push({ query: { filter: "active" } })}
       >
-        {mocSurveyService.filter === "active" && <CheckIcon />}
-        {`Active(${mocSurveyService.activeCount})`}
+        {filter === "active" && <CheckIcon />}
+        {`Active${filter === "active" ? `(${mocSurveyList.length})` : ""}`}
       </MocSurveyFilter.Button>
     </MocSurveyFilter>
   );
 };
-
-const Container = styled.div<CustomProps>`
-  display: flex;
-  position: absolute;
-  bottom: 14px;
-
-  .all-button {
-    border-color: ${(props) => (props.filter === "all" ? "black" : "gray")};
-    color: ${(props) => (props.filter === "all" ? "black" : "gray")};
-  }
-  .active-button {
-    border-color: ${(props) => (props.filter === "active" ? "black" : "gray")};
-    color: ${(props) => (props.filter === "active" ? "black" : "gray")};
-  }
-`;

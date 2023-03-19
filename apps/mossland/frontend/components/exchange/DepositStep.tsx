@@ -1,30 +1,31 @@
-import { gql, utils, store } from "../../stores";
+import { client } from "@shared/util-client";
+import { gql, st, store } from "../../stores";
 import { ExchangeAddressBar, MocToMmocStep1, MocToMmocStep2 } from "./mocToMmoc";
 
 export const DepositStep = () => {
-  const self = store.platform.user.use.self();
-  const wallet = store.shared.wallet.use.wallet();
-  const mocWallet = store.mocWallet.use.mocWallet();
-  const understand = store.mocWallet.use.understand();
-  const deposit = store.mocWallet.use.deposit();
-
+  const self = st.use.self();
+  // const wallet = st.use.wallet();
+  const myKeyring = st.use.myKeyring();
+  const mocWallet = st.use.mocWallet();
+  const understand = st.use.understand();
+  //!need to change
   const onDeposit = async () => {
     if (!self) return;
-    await deposit(self.id);
+    await st.do.deposit(self.id);
   };
 
   return (
     <>
       {!understand && (
         <MocToMmocStep1
-          isDisabled={!wallet}
+          isDisabled={!myKeyring.wallets.length}
           onClick={() => {
-            store.mocWallet.setState({ understand: true });
+            st.set({ understand: true });
           }}
         />
       )}
-      {!mocWallet && understand && <MocToMmocStep2 onClick={onDeposit} />}
-      {mocWallet && <ExchangeAddressBar address={mocWallet.address} />}
+      {(mocWallet === "loading" || !mocWallet) && understand && <MocToMmocStep2 onClick={onDeposit} />}
+      {mocWallet && mocWallet !== "loading" && <ExchangeAddressBar address={mocWallet.address} />}
     </>
   );
 };

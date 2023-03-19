@@ -1,3 +1,3 @@
 export * from "./MmocToMocHeader";
-export * from "./MmcoToMocFooter";
+export * from "./WithdrawButton";
 export * from "./MmocToMocForm";

@@ -1,7 +1,8 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
 import { Field, Float, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
-import * as gql from "../gql";
+import { gql as platform } from "@platform/module";
+import { gql as shared } from "@shared/module";
 import { cnst } from "@shared/util";
 
 // * 1. 보안필드를 제외한 모든 필드
@@ -21,7 +22,7 @@ class Base {
   @Prop([{ type: String, required: true }])
   selections: string[];
 
-  @Field(() => gql.shared.User)
+  @Field(() => shared.User)
   @Prop({ type: ObjectId, ref: "user", required: true, index: true, immutable: true })
   creator: Id;
 
@@ -61,7 +62,7 @@ class Tail extends Base {
   @Prop({ type: Number, required: true, default: 0 })
   userNum: number; // 몇개의 지갑이 참여했는지
 
-  @Field(() => gql.shared.Thing)
+  @Field(() => shared.Thing)
   @Prop({ type: ObjectId, ref: "thing", required: true, index: true, immutable: true })
   thing: Id;
 
@@ -77,13 +78,13 @@ class Tail extends Base {
   @Prop([{ type: Number, required: true, default: 0 }])
   selectUserNum: number[]; // 선택지별로 몇개의 지갑이 투표했는지 ( 예/아니오 [50,50] )
 
-  @Field(() => [gql.platform.UserSurveyResponse], { nullable: true })
-  @Prop([{ type: gql.platform.UserSurveyResponseSchema }])
-  responses: gql.platform.UserSurveyResponse[];
+  @Field(() => [platform.UserSurveyResponse], { nullable: true })
+  @Prop([{ type: platform.UserSurveyResponseSchema }])
+  responses: platform.UserSurveyResponse[];
 
-  @Field(() => [gql.platform.MocOwnership], { nullable: true }) //* 별도로 쿼리 진행
-  @Prop({ type: [gql.platform.MocOwnershipSchema], default: [], select: false })
-  snapshot: gql.platform.MocOwnership[];
+  @Field(() => [platform.MocOwnership], { nullable: true }) //* 별도로 쿼리 진행
+  @Prop({ type: [platform.MocOwnershipSchema], default: [], select: false })
+  snapshot: platform.MocOwnership[];
 
   @Field(() => Date)
   @Prop({ type: Date, required: true, index: true, default: () => new Date() })
@@ -101,3 +102,12 @@ export class MocSurveyInput extends IntersectionType(InputOverwrite, Base, Input
 export class MocSurvey extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class MocSurveySchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class MocSurveySummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalMocSurvey: number;
+}
