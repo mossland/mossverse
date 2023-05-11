@@ -23,7 +23,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/decentverse/data-access"],
+      "outputs": ["{workspaceRoot}/coverage/libs/decentverse/data-access"],
       "options": {
         "jestConfig": "libs/decentverse/data-access/jest.config.ts",
         "passWithNoTests": true

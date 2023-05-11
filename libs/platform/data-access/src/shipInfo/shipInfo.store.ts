@@ -1,59 +1,23 @@
-import create from "zustand";
+import { SetGet, State } from "@shared/util-client";
+import type { RootState } from "../store";
 import * as gql from "../gql";
-import { devtools } from "zustand/middleware";
-import { makeDefault, generateStore, Nullable } from "@shared/util-client";
-import { cnst } from "@shared/util";
-import { ShipInfo } from "../gql";
+import * as slice from "../slice";
 
-//! Need to be refactored
+// ? Store는 다른 store 내 상태와 상호작용을 정의합니다. 재사용성이 필요하지 않은 단일 기능을 구현할 때 사용합니다.
+// * 1. State에 대한 내용을 정의하세요.
+const state = ({ set, get, pick }: SetGet<slice.ShipInfoSliceState>) => ({
+  ...slice.makeShipInfoSlice({ set, get, pick }),
+});
 
-type State = Nullable<gql.ShipInfo> & {
-  shipInfo: gql.ShipInfo | null;
-};
+// * 2. Action을 내용을 정의하세요. Action은 모두 void 함수여야 합니다.
+// * 다른 action을 참조 시 get() as <Model>State 또는 RootState 를 사용하세요.
+const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
+  //
+});
 
-const initialState: State = {
-  ...gql.defaultShipInfo,
-  shipInfo: null,
-};
-
-type Action = {
-  init: () => Promise<void>; // 초기화
-  purify: () => gql.ShipInfoInput | null; // 유효성검사 및 Map => MapInput 변환
-  create: () => Promise<void>; // 생성
-  update: () => Promise<void>; // 수정
-  remove: (id: string) => Promise<void>; // 제거
-  reset: (shipInfo?: gql.ShipInfo) => void; // 수정필드 리셋
-};
-
-const store = create<State & Action>()(
-  devtools((set, get) => ({
-    ...initialState,
-    init: async () => {
-      // const shipInfos = await gql.shipInfos({});
-      // console.log(shipInfos);
-      // set({ shipInfos, operation: "idle" });
-    },
-    purify: () => {
-      const state = get();
-      try {
-        const shipInfo = gql.purifyShipInfo(state as gql.ShipInfo);
-        return shipInfo;
-      } catch (err) {
-        return null;
-      }
-    },
-
-    create: async () => {
-      //* not used
-    }, // 생성
-    update: async () => {
-      //* not used
-    }, // 수정
-    remove: async () => {
-      //* not used
-    }, // 제거
-    reset: (shipInfo?: gql.ShipInfo) => set({ ...gql.defaultShipInfo, shipInfo }),
-  }))
-);
-
-export const shipInfo = generateStore(store);
+export type ShipInfoState = State<typeof state, typeof actions>;
+// * 3. ChildSlice를 추가하세요. Suffix 규칙은 일반적으로 "InModel" as const 로 작성합니다.
+export const addShipInfoToStore = ({ set, get, pick }: SetGet<ShipInfoState>) => ({
+  ...state({ set, get, pick }),
+  ...actions({ set, get, pick }),
+});

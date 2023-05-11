@@ -9,8 +9,6 @@ import type * as erc1155Sol from "./ERC1155.sol";
 export type { erc1155Sol };
 import type * as erc721ASol from "./ERC721A.sol";
 export type { erc721ASol };
-import type * as erc721ATokenLegacySol from "./ERC721ATokenLegacy.sol";
-export type { erc721ATokenLegacySol };
 import type * as vaultFactorySol from "./VaultFactory.sol";
 export type { vaultFactorySol };
 import type * as extensions from "./extensions";

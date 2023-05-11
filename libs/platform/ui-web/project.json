@@ -1,4 +1,5 @@
 {
+  "name": "platform/ui-web",
   "sourceRoot": "libs/platform/ui-web/src",
   "projectType": "library",
   "tags": [],
@@ -32,7 +33,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/platform/ui-web"],
+      "outputs": ["{workspaceRoot}/coverage/libs/platform/ui-web"],
       "options": {
         "jestConfig": "libs/platform/ui-web/jest.config.ts",
         "passWithNoTests": true

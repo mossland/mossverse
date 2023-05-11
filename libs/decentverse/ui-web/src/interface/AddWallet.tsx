@@ -4,7 +4,7 @@ import { store, gql } from "@decentverse/data-access";
 
 export const AddWallet = () => {
   const onClickWalletButton = async (loginMethod: gql.shared.LoginMethod) => {
-    store.shared.wallet.setState({ modalOpen: true, newWalletOperation: "sleep", newActiveProvider: loginMethod });
+    store.shared.wallet.setState({ walletModal: "edit", newWalletOperation: "sleep", newActiveProvider: loginMethod });
   };
 
   return (

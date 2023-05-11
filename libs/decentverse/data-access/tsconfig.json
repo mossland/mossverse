@@ -4,9 +4,10 @@
     "module": "commonjs",
     "forceConsistentCasingInFileNames": true,
     "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "emitDecoratorMetadata": true,
+    "isolatedModules": true
   },
   "files": [],
   "include": [],

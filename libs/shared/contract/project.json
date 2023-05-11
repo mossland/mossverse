@@ -1,4 +1,5 @@
 {
+  "name": "shared/contract",
   "sourceRoot": "libs/shared/contract/src",
   "projectType": "library",
   "targets": {
@@ -18,6 +19,13 @@
         "commands": [
           "cross-env ENVIRONMENT={args.env} npx hardhat run --network {args.chain} ./scripts/{args.file}.ts"
         ],
+        "cwd": "libs/shared/contract"
+      }
+    },
+    "compile": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "commands": ["cross-env npx hardhat compile"],
         "cwd": "libs/shared/contract"
       }
     },

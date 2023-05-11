@@ -1,17 +1,20 @@
 import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { Cron, Interval, Timeout } from "@nestjs/schedule";
 import { LogService } from "@shared/util-server";
-// import * as srv from "../srv";
 import { PointService } from "../point/point.service";
+import { MocSurveyService } from "../mocSurvey/mocSurvey.service";
 import { MocWalletService } from "../mocWallet/mocWallet.service";
-import { SurveyService } from "libs/platform/module/src/srv";
+import { SummaryService } from "../summary/summary.service";
+import { srv as platform } from "@platform/module";
 
 @Injectable()
 export class BatchService extends LogService {
   constructor(
     private readonly pointService: PointService,
-    private readonly surveyService: SurveyService,
-    private readonly mocWalletService: MocWalletService
+    private readonly raffleService: platform.RaffleService,
+    private readonly mocServeyService: MocSurveyService,
+    private readonly mocWalletService: MocWalletService,
+    private readonly summaryService: SummaryService
   ) {
     super(BatchService.name);
   }
@@ -30,7 +33,18 @@ export class BatchService extends LogService {
   }
 
   @Cron("0 */5 * * * *")
-  async checkExpiredSurveyAll() {
-    await this.surveyService.checkExpiredSurveyAll();
+  async checkExpiredSurveys() {
+    // await this.mocServeyService.checkExpiredSurveyAll();
+  }
+  @Cron("* * * * * *")
+  async checkClosedRaffles() {
+    await this.raffleService.checkClosedRaffles();
+    await this.raffleService.checkRafflePlcksUser();
+  }
+  @Cron("0 * * * *")
+  async takePeriodicSnapshot() {
+    this.logger.verbose(`Taking summary of database...`);
+    await this.summaryService.getSummary();
+    this.logger.verbose(`Taking summary of database finished`);
   }
 }

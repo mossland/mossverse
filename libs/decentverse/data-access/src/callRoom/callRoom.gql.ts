@@ -2,40 +2,83 @@ import graphql from "graphql-tag";
 import { cnst } from "@shared/util";
 import {
   createGraphQL,
-  createFragment,
   Field,
   InputType,
-  mutate,
-  query,
   ObjectType,
   BaseGql,
   Int,
-  BaseArrayFieldGql,
-  makeDefault,
+  Float,
+  PickType,
+  SliceModel,
 } from "@shared/util-client";
+import { gql as shared } from "@shared/data-access";
+import { Map } from "../map/map.gql";
 
 @InputType("CallRoomInput")
 export class CallRoomInput {
+  @Field(() => Map)
+  map: Map;
+
   @Field(() => String, { nullable: true })
   message: string | null;
 
   @Field(() => String, { nullable: true })
   errorMessage: string | null;
 
-  @Field(() => [Int])
+  @Field(() => [Float])
   center: [number, number];
 
-  @Field(() => [Int])
+  @Field(() => [Float])
   wh: [number, number];
 
   @Field(() => Int)
   maxNum: number;
 
-  @Field(() => String, { nullable: true })
-  roomType: cnst.RoomType | null;
+  @Field(() => String, { default: "call" })
+  roomType: cnst.RoomType;
 }
 
-@ObjectType("CallRoom")
-export class CallRoom extends BaseArrayFieldGql(CallRoomInput) {}
-export const callRoomFragment = createFragment(CallRoom);
-export const defaultCallRoom = makeDefault<CallRoom>(CallRoom);
+@ObjectType("CallRoom", { _id: "id" })
+export class CallRoom extends BaseGql(CallRoomInput) {
+  @Field(() => String)
+  status: cnst.CallRoomStatus;
+}
+
+@ObjectType("LightCallRoom", { _id: "id", gqlRef: "CallRoom" })
+export class LightCallRoom extends PickType(CallRoom, [
+  "center",
+  "wh",
+  "maxNum",
+  "roomType",
+  "message",
+  "errorMessage",
+  "status",
+] as const) {}
+
+@ObjectType("CallRoomSummary")
+export class CallRoomSummary {
+  @Field(() => Int)
+  totalCallRoom: number;
+}
+
+export const callRoomQueryMap: { [key in keyof CallRoomSummary]: any } = {
+  totalCallRoom: { status: { $ne: "inactive" } },
+};
+
+export const callRoomGraphQL = createGraphQL("callRoom" as const, CallRoom, CallRoomInput, LightCallRoom);
+export const {
+  getCallRoom,
+  listCallRoom,
+  callRoomCount,
+  callRoomExists,
+  createCallRoom,
+  updateCallRoom,
+  removeCallRoom,
+  callRoomFragment,
+  lightCallRoomFragment,
+  purifyCallRoom,
+  crystalizeCallRoom,
+  lightCrystalizeCallRoom,
+  defaultCallRoom,
+  mergeCallRoom,
+} = callRoomGraphQL;

@@ -23,7 +23,7 @@ const _abi = [
     stateMutability: "view",
     type: "function",
   },
-];
+] as const;
 
 export class ISettings__factory {
   static readonly abi = _abi;

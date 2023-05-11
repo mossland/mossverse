@@ -1,9 +1,8 @@
 import { TestingModule } from "@nestjs/testing";
+import { FileService } from "../file/file.service";
 import * as Chance from "chance";
-import * as srv from "../srv";
 import * as fs from "fs";
 import * as gql from "../gql";
-import { FileService } from "../srv";
 const c = new Chance();
 export const fileStream = (): gql.FileStream => ({
   filename: "sample.jpg",

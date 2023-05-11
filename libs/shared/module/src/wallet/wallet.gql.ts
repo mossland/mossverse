@@ -1,7 +1,7 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
 import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
-import * as gql from "../gql";
+import { Network } from "../network/network.gql";
 import { cnst } from "@shared/util";
 
 // * 1. 보안필드를 제외한 모든 필드
@@ -9,7 +9,7 @@ import { cnst } from "@shared/util";
 @InputType({ isAbstract: true })
 @Schema()
 class Base {
-  @Field(() => gql.Network)
+  @Field(() => Network)
   @Prop({ type: ObjectId, ref: "network", required: true, index: true, immutable: true })
   network: Id;
 
@@ -34,17 +34,8 @@ class Tail extends Base {
   @Prop({ type: String, required: true, index: true, default: "user", enum: cnst.walletTypes })
   type: cnst.WalletType;
 
-  @Field(() => [gql.TokenItem])
-  @Prop([{ type: gql.TokenItemSchema }])
-  items: gql.TokenItem[];
-
   @Field(() => String)
-  @Prop({
-    type: String,
-    enum: cnst.walletStatuses,
-    required: true,
-    default: "active",
-  })
+  @Prop({ type: String, enum: cnst.walletStatuses, required: true, default: "active" })
   status: cnst.WalletStatus;
 }
 
@@ -55,3 +46,12 @@ export class WalletInput extends IntersectionType(InputOverwrite, Base, InputTyp
 export class Wallet extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class WalletSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class WalletSummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalWallet: number;
+}

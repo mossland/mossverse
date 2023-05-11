@@ -1,49 +1,41 @@
-import create from "zustand";
+import { client, SetGet, State } from "@shared/util-client";
+import type { RootState } from "../store";
 import * as gql from "../gql";
-import { setLink, createActions, createState, DefaultActions, DefaultState, generateStore } from "@shared/util-client";
-import { adminGraphQL, Admin, AdminInput } from "./admin.gql";
-import { subscribeWithSelector } from "zustand/middleware";
-import { ui } from "../store";
+import * as slice from "../slice";
 
-type State = DefaultState<"admin", gql.Admin> & {
-  me: gql.Admin | null;
-  adminMenu: string;
-  menuOpen: boolean;
-  viewMode: "signin" | "signup" | "info";
-};
-const initialState: State = {
-  ...createState<"admin", gql.Admin, gql.AdminInput>(adminGraphQL),
-  me: null,
-  adminMenu: "default",
-  menuOpen: false,
-  viewMode: "signin",
-};
-type Actions = DefaultActions<"admin", gql.Admin, gql.AdminInput> & {
-  initAuth: () => Promise<void>; // 초기화
-  signin: () => Promise<void>;
-  signout: () => void;
-};
-const store = create(
-  subscribeWithSelector<State & Actions>((set, get) => ({
-    ...initialState,
-    ...createActions<"admin", gql.Admin, gql.AdminInput>(adminGraphQL, { get, set }),
-    initAuth: async () => {
-      const me = await gql.me();
-      set({ me, viewMode: "info", adminOperation: "idle" });
-    },
-    signin: async () => {
-      try {
-        const { accountId, password } = get();
-        const token = (await gql.signinAdmin(accountId ?? "", password ?? "")).accessToken;
-        await ui.getState().login(token);
-      } catch (e) {
-        throw new Error("Auth Failed");
-      }
-    },
-    signout: () => {
-      if (localStorage) localStorage.removeItem("currentUser");
-      set({ me: null, viewMode: "signin" });
-    },
-  }))
-);
-export const admin = generateStore(store);
+// ? Store는 다른 store 내 상태와 상호작용을 정의합니다. 재사용성이 필요하지 않은 단일 기능을 구현할 때 사용합니다.
+// * 1. State에 대한 내용을 정의하세요.
+const state = ({ set, get, pick }: SetGet<slice.AdminSliceState>) => ({
+  ...slice.makeAdminSlice({ set, get, pick }),
+  me: gql.defaultAdmin as gql.Admin,
+});
+
+// * 2. Action을 내용을 정의하세요. Action은 모두 void 함수여야 합니다.
+// * 다른 action을 참조 시 get() as <Model>State 또는 RootState 를 사용하세요.
+const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
+  initAdminAuth: async () => {
+    const me = await gql.me();
+    set({ me });
+  },
+  signinAdmin: async () => {
+    try {
+      const { login } = get() as RootState;
+      const { accountId, password } = get().adminForm;
+      const jwt = (await gql.signinAdmin(accountId ?? "", password ?? "")).jwt;
+      await login({ auth: "admin", jwt, loginType: "signin" });
+    } catch (e) {
+      throw new Error("Auth Failed");
+    }
+  },
+  signoutAdmin: () => {
+    client.reset();
+    set({ me: gql.defaultAdmin as gql.Admin, adminForm: gql.adminGraphQL.defaultAdmin });
+  },
+});
+
+export type AdminState = State<typeof state, typeof actions>;
+// * 3. ChildSlice를 추가하세요. Suffix 규칙은 일반적으로 "InModel" as const 로 작성합니다.
+export const addAdminToStore = ({ set, get, pick }: SetGet<AdminState>) => ({
+  ...state({ set, get, pick }),
+  ...actions({ set, get, pick }),
+});

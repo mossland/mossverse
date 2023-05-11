@@ -1,13 +1,27 @@
 import { DynamicModule, Global, Module } from "@nestjs/common";
-import * as options from "./options";
-import * as modules from "./modules";
+import * as option from "./option";
+import { registerModules, registerBatches } from "./module";
+
 @Global()
 @Module({})
 export class AppModule {
-  static register(options: options.ModulesOptions): DynamicModule {
+  static register(options: option.ModulesOptions): DynamicModule {
     return {
       module: AppModule,
-      imports: [...modules.registerModules(options)],
+      imports: [...registerModules(options)],
+      controllers: [],
+      providers: [],
+    };
+  }
+}
+
+@Global()
+@Module({})
+export class BatchAppModule {
+  static register(options: option.ModulesOptions): DynamicModule {
+    return {
+      module: BatchAppModule,
+      imports: [...registerModules(options), ...registerBatches(options)],
       controllers: [],
       providers: [],
     };

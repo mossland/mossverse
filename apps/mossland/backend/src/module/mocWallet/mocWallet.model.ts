@@ -9,7 +9,7 @@ export type Input = MocWalletInput;
 export type Raw = MocWallet;
 export interface DocType extends Document<Types.ObjectId, QryHelps, Raw>, DocMtds, Omit<Raw, "id"> {}
 export type Doc = DocType & dbConfig.DefaultSchemaFields;
-export interface Mdl extends Model<Doc, QryHelps, DocMtds>, MdlStats {}
+export interface Mdl extends Model<Doc>, MdlStats {}
 export const schema: Sch<null, Mdl, DocMtds, QryHelps, null, MdlStats> = SchemaFactory.createForClass<Raw, Doc>(
   MocWallet
 ) as any;
@@ -43,7 +43,7 @@ interface MdlStats extends dbConfig.DefaultMdlStats<Doc, Raw> {
 interface QryHelps extends dbConfig.DefaultQryHelps<Doc, QryHelps> {
   dumb: () => Query<any, Doc, QryHelps> & QryHelps;
 }
-schema.query.dumb = function (this: Mdl) {
+schema.query.dumb = function () {
   return this.find({});
 };
 
@@ -53,8 +53,10 @@ export const middleware = () => () => {
    * ? save 시 자동으로 적용할 알고리즘을 적용하세요.
    */
   schema.pre<Doc>("save", async function (next) {
-    // if (!this.type) this.type = this.thing ? "thing" : this.token ? "token" : this.product ? "product" : undefined;
-    // if (!this.type) throw new Error("Unknown MocWallet Type");
+    const model = this.constructor as Mdl;
+    if (this.isNew) model.addSummary(["total", this.status]);
+    else if (this.status === "inactive" && this.isModified("status")) model.subSummary(["total", this.status]);
+    // else model.moveSummary(this.getChanges().$set?.status, this.status);
     next();
   });
   return schema;

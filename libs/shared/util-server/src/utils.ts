@@ -112,15 +112,10 @@ export const getAddrFromSig = async (
     const address = crypto.AES.decrypt(hash, aeskey).toString(crypto.enc.Utf8).toLowerCase();
     const msgHash = ethers.utils.hashMessage(signmessage);
     const msgHashBytes = ethers.utils.arrayify(msgHash);
-    // const recoveredAddress = ethers.utils.recoverAddress(msgHashBytes, { v, r, s }).toLowerCase();
-    let recoveredAddress;
-    if (signchain === "kaikas") {
-      // ! chain은 카이카스가 아님.
-      const caver = new Caver();
-      recoveredAddress = await caver.klay.accounts.recover(signmessage, signaddress).toLowerCase();
-    } else {
-      recoveredAddress = ethers.utils.recoverAddress(msgHashBytes, signaddress).toLowerCase();
-    }
+
+    const recoveredAddress = ["1001", "8217"].includes(signchain)
+      ? await new Caver().klay.accounts.recover(signmessage, signaddress).toLowerCase()
+      : ethers.utils.recoverAddress(msgHashBytes, signaddress).toLowerCase();
     if (address !== recoveredAddress) return null;
     return address;
   } catch (err) {

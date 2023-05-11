@@ -3,20 +3,19 @@ import * as mongoose from "mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { MongooseModule } from "@nestjs/mongoose";
 import { DynamicModule, ForwardReference, Logger, Type } from "@nestjs/common";
-import { env } from "./environment";
 export class TestSystem {
   mongod = new MongoMemoryServer();
   dbUri = "";
-  env = env;
-  app?: TestingModule;
-  async init(
-    registerModules: (options: any) => (Type<any> | DynamicModule | Promise<DynamicModule> | ForwardReference)[]
-  ) {
+  app: TestingModule;
+  async init(modules: (Type<any> | DynamicModule | Promise<DynamicModule> | ForwardReference)[]) {
     await this.mongod.start();
     this.dbUri = this.mongod.getUri();
     await mongoose.connect(this.dbUri);
     this.app = await Test.createTestingModule({
-      imports: [MongooseModule.forRootAsync({ useFactory: () => ({ uri: this.dbUri }) }), ...registerModules(env)],
+      imports: [
+        MongooseModule.forRootAsync({ useFactory: () => ({ uri: this.dbUri }) }),
+        ...modules.filter((m: any) => m.module !== MongooseModule),
+      ],
     }).compile();
     return await this.app.init();
   }
@@ -32,5 +31,6 @@ export class TestSystem {
     await mongoose.disconnect();
     await this.mongod.stop();
     Logger.log("System Terminated");
+    process.exit(0);
   }
 }

@@ -1,24 +1,7 @@
-import { useEffect } from "react";
-import styled from "styled-components";
-
 export const Kicked = () => {
   return (
-    <Container>
-      <div className="text">You are kicked</div>
-    </Container>
+    <div className="bg-[#4b4947] w-full h-screen flex justify-center items-center">
+      <p className="text-white text-[40px]">You are kicked</p>
+    </div>
   );
 };
-
-const Container = styled.div`
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #4b4947;
-
-  .text {
-    color: white;
-    font-size: 40px;
-  }
-`;

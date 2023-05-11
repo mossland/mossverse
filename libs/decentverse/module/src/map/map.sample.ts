@@ -4,19 +4,21 @@ import * as Chance from "chance";
 import * as srv from "../srv";
 import * as gql from "../gql";
 const c = new Chance();
-export const mapInput = (file: Id): gql.MapInput => {
+export const mapInput = (file: Id): any => {
   return {
     name: c.word(),
-    tileSize: 250,
-    top: file,
-    bottom: file,
-    lighting: file,
-    placements: [],
-    collisions: [],
-    webviews: [],
-    lives: [],
-    callRooms: [],
-    dialogues: [],
+    startPosition: [0, 0],
+    // tileSize: 250,
+    // top: file,
+    // bottom: file,
+    // lighting: file,
+    // billboards: [],
+    // placements: [],
+    // collisions: [],
+    // webviews: [],
+    // lives: [],
+    // callRooms: [],
+    // dialogues: [],
     config: {
       dayNight: true,
     },

@@ -1,5 +1,4 @@
 import { ERC721A, ERC721AToken, SaleInfo } from "@shared/contract";
-import * as serverUtils from "../utils";
 import { BigNumber, Contract, ethers, Event } from "ethers";
 import { ContractSettings } from "./multicall";
 import { Utils } from "@shared/util";
@@ -50,29 +49,82 @@ export class Erc721 {
         calls: contracts.map((address) => ({ address, fn: "balanceOf", args: [owner] })),
         settings: this.settings,
       })
-    ).map((ret, idx) => ({ address: owner, contract: contracts[idx], num: parseInt(ret[0].toString()), bn: ret[1] }));
-    const calls = balanceMap.reduce(
-      (acc, map) => [
-        ...acc,
-        ...new Array(map.num)
-          .fill(0)
-          .map((_, idx) => ({ address: map.contract, fn: "tokenOfOwnerByIndex", args: [owner, idx] })),
-      ],
-      []
-    );
-    const inventory = (await this.settings.multicall.view({ calls, settings: this.settings })).map((ret, idx) => ({
+    ).map((ret, idx) => ({ address: owner, contract: contracts[idx], value: parseInt(ret[0].toString()), bn: ret[1] }));
+    const tokenMap: { address: string; contract: string; tokenId: number; value: number; uri: string; bn: number }[][] =
+      await Promise.all(
+        balanceMap.map(async (b) => {
+          // 1. ERC721AQueryable
+          try {
+            const [tokenIds, bn] = (
+              await this.settings.multicall.view({
+                calls: [{ address: b.contract, fn: "tokensOfOwner", args: [owner] }],
+                settings: this.settings,
+              })
+            )[0];
+            const tokens = tokenIds.map((tokenId) => ({
+              address: owner,
+              contract: b.contract,
+              tokenId: parseInt(tokenId.toString()),
+              value: 1,
+              bn,
+            }));
+            const uris = await this.tokenURIs(
+              tokens.map((inv) => inv.tokenId),
+              b.contract
+            );
+            return tokens.map((t, idx) => ({ ...t, uri: uris[idx].uri }));
+          } catch (e) {
+            console.log(e);
+          }
+          try {
+            const calls = balanceMap.reduce(
+              (acc, map) => [
+                ...acc,
+                ...new Array(map.value)
+                  .fill(0)
+                  .map((_, idx) => ({ address: map.contract, fn: "tokenOfOwnerByIndex", args: [owner, idx] })),
+              ],
+              []
+            );
+            const tokens = (await this.settings.multicall.view({ calls, settings: this.settings })).map((ret, idx) => ({
+              address: owner,
+              contract: calls[idx].address,
+              tokenId: parseInt(ret[0].toString()),
+              value: 1,
+              bn: ret[1],
+            }));
+            const uris = await this.tokenURIs(
+              tokens.map((inv) => inv.tokenId),
+              b.contract
+            );
+            return tokens.map((t, idx) => ({ ...t, uri: uris[idx].uri }));
+            return tokens;
+          } catch (e) {
+            return [];
+          }
+        })
+      );
+
+    return tokenMap.reduce((acc, t) => [...acc, ...t], []);
+  }
+  async inventory2TempForMib(owner: string) {
+    const supply = await this.#totalSupply();
+    const owners = await this.#ownersOf(new Array(supply).fill(0).map((_, idx) => idx));
+    const tokenIds = owners
+      .map((o, i) => (o.address.toLowerCase() === owner ? i : null))
+      .filter((id) => !!id) as number[];
+    const inventory = tokenIds.map((tokenId, idx) => ({
       address: owner,
-      contract: calls[idx].address,
-      tokenId: parseInt(ret[0].toString()),
-      num: 1,
-      bn: ret[0],
+      contract: this.address,
+      tokenId,
+      value: 1,
+      bn: 0,
     }));
-    const uris = await this.tokenURIs(inventory.map((inv) => inv.tokenId));
+    const uris = await this.tokenURIs(tokenIds);
     return inventory.map((inv, idx) => ({ ...inv, uri: uris[idx].uri }));
   }
   async getSaleInfo(key: number) {
     const ret = await this.contract.saleInfos(key);
-    console.log(ret[1]);
     return {
       amount: parseInt(ret[0].toString()),
       price: Utils.weiToEther(ret[1].toString()),
@@ -94,10 +146,10 @@ export class Erc721 {
     ).map((ret) => parseInt(ret[0].toString()));
     return balances;
   }
-  async tokenURIs(tokenIds: number[]) {
+  async tokenURIs(tokenIds: number[], address = this.address) {
     const uris: { tokenId: number; uri: string }[] = (
       await this.settings.multicall.view({
-        calls: tokenIds.map((tokenId) => ({ address: this.address, fn: "tokenURI", args: [tokenId] })),
+        calls: tokenIds.map((tokenId) => ({ address, fn: "tokenURI", args: [tokenId] })),
         settings: this.settings,
       })
     ).map((ret, idx) => ({ tokenId: tokenIds[idx], uri: ret[0] }));
@@ -141,34 +193,53 @@ export class Erc721 {
     return await this.contract.ownerOf(tokenId);
   }
   async #ownersOf(tokenIds: number[]) {
-    const owners: { address: string; num: number; bn: number }[] = (
+    const owners: { address: string; value: number; bn: number }[] = (
       await this.settings.multicall.view({
         calls: tokenIds.map((tokenId) => ({ address: this.address, fn: "ownerOf", args: [tokenId] })),
         settings: this.settings,
       })
-    ).map((ret) => ({ address: ret[0], bn: ret[1], num: 1 }));
+    ).map((ret) => ({ address: ret[0].toLowerCase(), bn: ret[1], value: 1 }));
     return owners;
   }
   async #tokenIdsOfOwner(owner: string): Promise<number[]> {
-    const balance = await this.#balanceOf(owner);
-    const tokenIds = (
-      await this.settings.multicall.view({
-        calls: new Array(balance)
-          .fill(0)
-          .map((_, idx) => ({ address: this.address, fn: "tokenOfOwnerByIndex", args: [owner, idx] })),
-        settings: this.settings,
-      })
-    ).map((ret) => parseInt(ret[0].toString()));
-    return tokenIds;
+    try {
+      const tokenIds = (await this.contract.tokensOfOwner(owner)).map((id) => parseInt(id.toString()));
+      return tokenIds;
+    } catch (e) {
+      //
+    }
+    try {
+      const balance = await this.#balanceOf(owner);
+      const tokenIds = (
+        await this.settings.multicall.view({
+          calls: new Array(balance)
+            .fill(0)
+            .map((_, idx) => ({ address: this.address, fn: "tokenOfOwnerByIndex", args: [owner, idx] })),
+          settings: this.settings,
+        })
+      ).map((ret) => parseInt(ret[0].toString()));
+      return tokenIds;
+    } catch (e) {
+      return [];
+    }
+    // use contract api
   }
   async #tokenIdsAll(): Promise<number[]> {
-    const supply = await this.#totalSupply();
-    const tokenIds = (
-      await this.settings.multicall.view({
-        calls: new Array(supply).fill(0).map((_, idx) => ({ address: this.address, fn: "tokenByIndex", args: [idx] })),
-        settings: this.settings,
-      })
-    ).map((ret) => parseInt(ret[0].toString()));
-    return tokenIds;
+    try {
+      const supply = await this.#totalSupply();
+      const tokenIds = (
+        await this.settings.multicall.view({
+          calls: new Array(supply)
+            .fill(0)
+            .map((_, idx) => ({ address: this.address, fn: "tokenByIndex", args: [idx] })),
+          settings: this.settings,
+        })
+      ).map((ret) => parseInt(ret[0].toString()));
+      return tokenIds;
+    } catch (e) {
+      const supply = await this.#totalSupply();
+      return new Array(supply).fill(0).map((_, idx) => idx);
+    }
+    // use contract api
   }
 }

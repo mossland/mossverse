@@ -1,7 +1,7 @@
 import React from "react";
 import { ExchangeDetailHeader } from "@platform/ui-web";
 
-export const McoToMmocHeader = () => {
+export const MocToMmocHeader = () => {
   return (
     <ExchangeDetailHeader
       from={

@@ -11,7 +11,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const reqType = req?.parentType?.name;
     const reqName = req?.fieldName;
     const before = Date.now();
-    const ip = GqlExecutionContext.create(context).getContext().req.ip;
+    const ip = GqlExecutionContext.create(context).getContext().req?.ip;
     this.logger.debug(`Before ${reqType} / ${reqName} / ${ip} / ${before}`);
     return next.handle().pipe(
       tap(() => {

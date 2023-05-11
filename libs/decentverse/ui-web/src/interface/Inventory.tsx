@@ -12,7 +12,6 @@ export type InventoryProps = {
 };
 
 export const Inventory = ({ socket }: InventoryProps) => {
-  const initMyItems = store.user.use.initMyItems();
   const myItems = store.user.use.myItems();
   const isInventoryOpen = store.user.use.isInventoryOpen();
   const self = store.user.use.self();

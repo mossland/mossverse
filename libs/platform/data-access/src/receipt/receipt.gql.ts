@@ -10,16 +10,22 @@ import {
   ObjectType,
   BaseGql,
   InputOf,
+  PickType,
+  Int,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
-import { User } from "../user/user.gql";
+import { LightUser, User } from "../user/user.gql";
 import { Listing } from "../listing/listing.gql";
-import { Exchange, PriceTagInput, ShipInfo, ShipInfoInput } from "../_scalar";
+import { Raffle } from "../raffle/raffle.gql";
+import { Exchange, PriceTagInput } from "../_scalar/scalar.gql";
 
 @InputType("ReceiptInput")
 export class ReceiptInput {
+  @Field(() => String)
+  name: string;
+
   @Field(() => User, { nullable: true })
-  from: User | null;
+  from: User | LightUser | null;
 
   @Field(() => shared.Wallet, { nullable: true })
   fromWallet: shared.Wallet | null;
@@ -39,17 +45,32 @@ export class ReceiptInput {
   @Field(() => [Exchange])
   outputs: Exchange[];
 
-  @Field(() => ShipInfo, { nullable: true })
-  shipInfo: ShipInfo | null;
+  // @Field(() => ShipInfo, { nullable: true })
+  // shipInfo: ShipInfo | null;
 }
 
 @ObjectType("Receipt", { _id: "id" })
 export class Receipt extends BaseGql(ReceiptInput) {
+  @Field(() => [String])
+  tags: string[];
+
+  @Field(() => String, { nullable: true })
+  err?: string;
+
   @Field(() => String)
   status: cnst.ReceiptStatus;
 }
 
-export const receiptGraphQL = createGraphQL<"receipt", Receipt, ReceiptInput>(Receipt, ReceiptInput);
+@ObjectType("LightReceipt", { _id: "id", gqlRef: "Receipt" })
+export class LightReceipt extends PickType(Receipt, ["name", "status", "inputs", "outputs"] as const) {}
+
+@ObjectType("ReceiptSummary")
+export class ReceiptSummary {
+  @Field(() => Int)
+  totalReceipt: number;
+}
+
+export const receiptGraphQL = createGraphQL("receipt" as const, Receipt, ReceiptInput, LightReceipt);
 export const {
   getReceipt,
   listReceipt,
@@ -60,28 +81,17 @@ export const {
   removeReceipt,
   receiptFragment,
   purifyReceipt,
+  crystalizeReceipt,
+  lightCrystalizeReceipt,
   defaultReceipt,
+  mergeReceipt,
 } = receiptGraphQL;
-
-// * MyReceipts Query
-export type MyReceiptsQuery = { myReceipts: Receipt[] };
-export const myReceiptsQuery = graphql`
-  ${receiptFragment}
-  query myReceipts($userId: ID!, $type: String!) {
-    myReceipts(userId: $userId, type: $type) {
-      ...receiptFragment
-    }
-  }
-`;
-
-export const myReceipts = async (userId: string, type: cnst.ReceiptType) =>
-  (await query<MyReceiptsQuery>(myReceiptsQuery, { userId, type })).myReceipts;
 
 export type PurchaseListingMutation = { purchaseListing: Receipt };
 export const purchaseListingMutation = graphql`
   ${receiptFragment}
-  mutation purchaseListing($listingId: ID!, $priceTag: PriceTagInput!, $num: Float!, $shipInfo: ShipInfoInput) {
-    purchaseListing(listingId: $listingId, priceTag: $priceTag, num: $num, shipInfo: $shipInfo) {
+  mutation purchaseListing($listingId: ID!, $priceTag: PriceTagInput!, $value: Float!, $shipInfo: ShipInfoInput) {
+    purchaseListing(listingId: $listingId, priceTag: $priceTag, value: $value, shipInfo: $shipInfo) {
       ...receiptFragment
     }
   }
@@ -89,8 +99,21 @@ export const purchaseListingMutation = graphql`
 export const purchaseListing = async (
   listingId: string,
   priceTag: InputOf<PriceTagInput>,
-  num: number,
-  shipInfo?: InputOf<ShipInfoInput>
+  value: number,
+  shipInfo?: any
 ) =>
-  (await mutate<PurchaseListingMutation>(purchaseListingMutation, { listingId, priceTag, num, shipInfo }))
+  (await mutate<PurchaseListingMutation>(purchaseListingMutation, { listingId, priceTag, value, shipInfo }))
     .purchaseListing;
+
+export type RaffleMutation = { raffle: Raffle };
+export const raffleMutation = graphql`
+  ${receiptFragment}
+  mutation raffle($raffleId: ID!, $priceTag: PriceTagInput!) {
+    raffle(raffleId: $raffleId, priceTag: $priceTag) {
+      ...receiptFragment
+    }
+  }
+`;
+
+export const raffle = async (raffleId: string, priceTag: InputOf<PriceTagInput>) =>
+  (await mutate<RaffleMutation>(raffleMutation, { raffleId, priceTag })).raffle;

@@ -1,58 +1,23 @@
-import create from "zustand";
+import { SetGet, State } from "@shared/util-client";
+import type { RootState } from "../store";
 import * as gql from "../gql";
-import { devtools } from "zustand/middleware";
-import { createState, generateStore, Nullable } from "@shared/util-client";
-import { cnst } from "@shared/util";
-import { receiptGraphQL } from "./receipt.gql";
+import * as slice from "../slice";
 
-type State = Nullable<gql.Receipt> & {
-  receipt: gql.Receipt | null;
-  receipts: gql.Receipt[];
-};
+// ? Store는 다른 store 내 상태와 상호작용을 정의합니다. 재사용성이 필요하지 않은 단일 기능을 구현할 때 사용합니다.
+// * 1. State에 대한 내용을 정의하세요.
+const state = ({ set, get, pick }: SetGet<slice.ReceiptSliceState>) => ({
+  ...slice.makeReceiptSlice({ set, get, pick }),
+});
 
-const initialState: State = {
-  ...createState<"receipt", gql.Receipt, gql.ReceiptInput>(receiptGraphQL),
-  receipt: null,
-  receipts: [],
-  operation: "sleep",
-};
+// * 2. Action을 내용을 정의하세요. Action은 모두 void 함수여야 합니다.
+// * 다른 action을 참조 시 get() as <Model>State 또는 RootState 를 사용하세요.
+const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
+  //
+});
 
-type Action = {
-  init: (selfId: string) => Promise<void>; // 초기화
-  // purify: () => gql.ReceiptInput | null; // 유효성검사 및 Map => MapInput 변환
-  // create: () => Promise<void>; // 생성
-  // update: () => Promise<void>; // 수정
-  // remove: (id: string) => Promise<void>; // 제거
-  // reset: (receipt?: gql.Receipt) => void; // 수정필드 리셋
-  // buyItem: () => void;
-};
-
-const store = create<State & Action>()(
-  devtools((set, get) => ({
-    ...initialState,
-    init: async (selfId: string) => {
-      const receipts = await gql.myReceipts(selfId, "trade");
-
-      set({ receipts: receipts });
-    },
-  }))
-);
-// purify: () => {
-//   const state = get();
-//   //
-// },
-
-// create: async () => {
-//   //
-// }, // 생성
-// update: async () => {
-//   //
-// }, // 수정
-// remove: async () => {
-//   //
-// }, // 제거
-// reset: (listing?: gql.Listing) => {
-//   //
-// },
-
-export const receipt = generateStore(store);
+export type ReceiptState = State<typeof state, typeof actions>;
+// * 3. ChildSlice를 추가하세요. Suffix 규칙은 일반적으로 "InModel" as const 로 작성합니다.
+export const addReceiptToStore = ({ set, get, pick }: SetGet<ReceiptState>) => ({
+  ...state({ set, get, pick }),
+  ...actions({ set, get, pick }),
+});

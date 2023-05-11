@@ -13,7 +13,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/decentverse/module"],
+      "outputs": ["{workspaceRoot}/coverage/libs/decentverse/module"],
       "options": {
         "jestConfig": "libs/decentverse/module/jest.config.ts",
         "passWithNoTests": true

@@ -1,7 +1,20 @@
 import graphql from "graphql-tag";
 import { cnst } from "@shared/util";
-import { createGraphQL, Field, InputType, mutate, query, ObjectType, BaseGql } from "@shared/util-client";
+import {
+  createGraphQL,
+  Field,
+  InputType,
+  mutate,
+  query,
+  ObjectType,
+  BaseGql,
+  PickType,
+  Int,
+} from "@shared/util-client";
 import { gql as platform } from "@platform/data-access";
+import { Dayjs } from "dayjs";
+// import { User } from "./../user/user.gql";
+// import { gql as shared } from "@shared/data-access";
 
 @InputType("MocWalletInput")
 export class MocWalletInput {
@@ -18,13 +31,23 @@ export class MocWallet extends BaseGql(MocWalletInput) {
   type: cnst.MocWalletType;
 
   @Field(() => Date)
-  expireAt: Date;
+  expireAt: Dayjs;
 
   @Field(() => String)
   status: cnst.MocWalletStatus;
 }
+@ObjectType("LightMocWallet", { _id: "id", gqlRef: "MocWallet" })
 
-export const mocWalletGraphQL = createGraphQL<"mocWallet", MocWallet, MocWalletInput>(MocWallet, MocWalletInput);
+// ! 라이트 모델 지정 필요
+export class LightMocWallet extends PickType(MocWallet, ["status"] as const) {}
+
+@ObjectType("MocWalletSummary")
+export class MocWalletSummary {
+  @Field(() => Int)
+  totalMocWallet: number;
+}
+
+export const mocWalletGraphQL = createGraphQL("mocWallet" as const, MocWallet, MocWalletInput, LightMocWallet);
 export const {
   getMocWallet,
   listMocWallet,
@@ -35,7 +58,10 @@ export const {
   removeMocWallet,
   mocWalletFragment,
   purifyMocWallet,
+  crystalizeMocWallet,
+  lightCrystalizeMocWallet,
   defaultMocWallet,
+  mergeMocWallet,
 } = mocWalletGraphQL;
 
 // * GetActiveMocWallet Mutation

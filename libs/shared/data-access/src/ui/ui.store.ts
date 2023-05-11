@@ -1,97 +1,104 @@
-import create from "zustand";
-import * as gql from "../gql";
 import {
-  createActions,
-  createState,
-  DefaultActions,
-  DefaultState,
-  generateStore,
-  setLink,
-  setToken,
+  defaultInitClientForm,
+  Get,
+  InitClientForm,
+  createSlicer,
+  SetGet,
+  client,
+  LoginForm,
+  getGeolocation,
+  Geolocation,
+  pageMap,
+  logger,
 } from "@shared/util-client";
 import Router, { NextRouter } from "next/router";
-import { cnst } from "@shared/util";
-import { getRequiredAuth } from "./ui.util";
-import { admin, keyring } from "../store";
+import type { RootState } from "../store";
+import * as gql from "../gql";
+import { Utils } from "@shared/util";
 
-type State = {
-  router: NextRouter | null;
-  pageMap: cnst.PageMap;
-  entryPath: string;
-  uri: string;
-  ws: string | null;
-  token: string | null;
-  networkType: cnst.NetworkType;
-  uiOperation: "sleep" | "loading" | "idle";
+// * 1. State에 대한 내용을 정의하세요.
+const state = {
+  ...defaultInitClientForm,
+  innerWidth: 0,
+  innerHeight: 0,
+  uiOperation: "sleep" as "sleep" | "loading" | "idle",
 };
-const initialState: State = {
-  router: null,
-  pageMap: cnst.defaultPageMap,
-  entryPath: "/",
-  uri: "http://localhost:8080/graphql",
-  ws: null,
-  token: null,
-  networkType: "ganache",
-  uiOperation: "sleep",
-};
-type Actions = {
-  initUi: (router: NextRouter, pageMap: cnst.PageMap) => void;
-  initGql: (uri: string, ws: string | null, networkType: cnst.NetworkType) => Promise<void>;
-  login: (token: string) => Promise<void>;
-  logout: () => void;
-  goto(path: string): void;
-  checkAuth: () => void;
-};
-const store = create<State & Actions>((set, get) => ({
-  ...initialState,
-  initUi: (router: NextRouter, pageMap: cnst.PageMap) => {
-    set({ router, pageMap, entryPath: router.pathname });
+
+// * 2. Action을 내용을 정의하세요. Action은 모두 void 함수여야 합니다.
+// * 다른 action을 참조 시 get() as <Model>State 또는 RootState 를 사용하세요.
+const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
+  initClient: async ({ uri, ws, networkType = "debugnet", jwt, whoAmI }: InitClientForm) => {
+    console.log(jwt);
+    const { login, whereAmI } = get() as Get<typeof state, typeof actions>;
+    set({ networkType, whoAmI });
+    await client.init(uri, ws, { networkType, jwt });
+    logger.debug(`Client initialized, jwt: ${client.jwt}`);
+    if (client.jwt) await login({ auth: pageMap.getAuth(), loginType: "autoLogin" });
+    // whereAmI();
+    set({ uiOperation: "idle" });
   },
-  initGql: async (uri: string, ws: string | null, networkType: cnst.NetworkType = "ganache") => {
-    const token = localStorage.getItem("currentUser");
-    setLink(uri);
-    if (token) setToken(token);
-    return new Promise((resolve) => {
-      setTimeout(async () => {
-        if (token) await get().login(token);
-        else get().checkAuth();
-        set({ uri, ws, token, networkType, uiOperation: "idle" });
-        resolve();
-      }, 100);
-    });
+  whereAmI: async () => {
+    let geolocation: Geolocation | undefined = undefined;
+    while (!geolocation) {
+      try {
+        geolocation = await getGeolocation();
+        break;
+      } catch (e) {
+        Utils.sleep(3000);
+        console.log("Failed to get geolocation. Retrying...");
+      }
+    }
+    if (!geolocation) return;
+    if (Router.asPath.includes("skipBlocks=true") ?? localStorage.getItem("skipBlocks"))
+      localStorage.setItem("skipBlocks", "true");
+    else if (pageMap.blockCountries.includes(geolocation.countryCode)) {
+      window.alert(`This site is not accessible in ${geolocation.countryName}.`);
+      window.close();
+    }
+    client.setGeolocation(geolocation);
   },
-  login: async (token: string) => {
-    setToken(token);
-    const { router, pageMap, entryPath } = get();
-    if (!router) return;
-    const requiredAuth = getRequiredAuth(pageMap, router.pathname);
+  login: async ({ auth, loginType, jwt }: LoginForm) => {
+    const { whoAmI, initAdminAuth, initUserAuth } = get() as RootState;
+    if (jwt) client.setJwt(jwt);
     try {
-      if (requiredAuth === "user") await keyring.getState().initAuth();
-      else if (requiredAuth === "admin") await admin.getState().initAuth();
-      localStorage.setItem("currentUser", token);
-      const entryAuth = getRequiredAuth(pageMap, entryPath);
-      router.push(entryAuth === "public" ? pageMap[requiredAuth].home : entryPath);
+      // 1. Auth Process
+      if (auth === "admin") await initAdminAuth();
+      else {
+        await initUserAuth();
+        await whoAmI();
+      }
+      // 2. Redirect
+      pageMap.redirectAfterLogin(loginType, auth);
     } catch (err) {
-      localStorage.removeItem("currentUser");
+      logger.debug(`Login failed: ${err}`);
+      if (auth !== "public") pageMap.unauthorize();
+      await client.reset();
     }
   },
   logout: () => {
-    localStorage.removeItem("currentUser");
+    const { whoAmI } = get() as RootState;
+    client.reset();
+    whoAmI({ reset: true });
+    set({ me: gql.defaultAdmin as gql.Admin, myKeyring: gql.defaultKeyring } as any);
+    Router.push(pageMap.public.home);
   },
   goto(path: string) {
-    const { router, pageMap } = get();
-    if (!router) return;
-    const requiredAuth = getRequiredAuth(pageMap, router.pathname);
-    if (path === "home") router.push(pageMap[requiredAuth].home);
-    else if (path === "unauthorized") router.push(pageMap[requiredAuth].unauthorized);
-    else router.push(path);
+    Router.push(path);
   },
   checkAuth: () => {
-    const { router, pageMap, goto } = get();
-    if (!router) return;
-    const requiredAuth = getRequiredAuth(pageMap, router.pathname);
-    if (requiredAuth === "admin" && !admin.getState().me) router.push(pageMap[requiredAuth].unauthorized);
-    else if (requiredAuth === "user" && !keyring.getState().me) router.push(pageMap[requiredAuth].unauthorized);
+    const { uiOperation, me, myKeyring } = get() as RootState;
+    if (uiOperation !== "idle") return;
+    const auth = pageMap.getAuth();
+    logger.debug(`Current Page's required auth: ${auth}`);
+    if (auth === "admin" && !me.id?.length) pageMap.unauthorize();
+    else if (auth === "user" && !myKeyring.id?.length) pageMap.unauthorize();
   },
-}));
-export const ui = generateStore(store);
+});
+
+export type UiState = Get<typeof state, typeof actions>;
+
+// * 3. ChildSlice를 추가하세요. Suffix 규칙은 일반적으로 "InModel" as const 로 작성합니다.
+export const addUiToStore = ({ set, get, pick }: SetGet<UiState>) => ({
+  ...state,
+  ...actions({ set, get, pick }),
+});

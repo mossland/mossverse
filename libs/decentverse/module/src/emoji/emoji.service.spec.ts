@@ -1,8 +1,9 @@
+import { environment } from "../_environments/environment";
 import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 import { EmojiService } from "./emoji.service";
 import { TestSystem } from "@shared/test-server";
 import { EmojiModule } from "./emoji.module";
@@ -13,7 +14,7 @@ describe("Emoji Service", () => {
   let keyring: db.shared.Keyring.Doc;
   let user: db.User.Doc;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     emojiService = app.get<EmojiService>(EmojiService);
     file = await sample.shared.createFile(app);
     keyring = await sample.shared.createKeyring(app);

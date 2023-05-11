@@ -10,13 +10,14 @@ import {
   ObjectType,
   Int,
   BaseGql,
+  PickType,
 } from "@shared/util-client";
-import { Network } from "../network/network.gql";
+import { LightNetwork, Network } from "../network/network.gql";
 
 @InputType("ContractInput")
 export class ContractInput {
   @Field(() => Network)
-  network: Network;
+  network: Network | LightNetwork;
 
   @Field(() => String)
   address: string;
@@ -42,14 +43,33 @@ export class Contract extends BaseGql(ContractInput) {
   @Field(() => Int)
   bn: number;
 
-  @Field(() => Date)
-  snapshotAt: Date;
-
   @Field(() => String)
   status: cnst.ContractStatus;
+
+  static getByName(contractList: LightContract[], name: string) {
+    return contractList.find((contract) => contract.name === name);
+  }
 }
 
-export const contractGraphQL = createGraphQL<"contract", Contract, ContractInput>(Contract, ContractInput);
+@ObjectType("LightContract", { _id: "id", gqlRef: "Contract" })
+export class LightContract extends PickType(Contract, [
+  "displayName",
+  "name",
+  "network",
+  "address",
+  "status",
+] as const) {
+  @Field(() => LightNetwork)
+  override network: LightNetwork;
+}
+
+@ObjectType("ContractSummary")
+export class ContractSummary {
+  @Field(() => Int)
+  totalContract: number;
+}
+
+export const contractGraphQL = createGraphQL("contract" as const, Contract, ContractInput, LightContract);
 export const {
   getContract,
   listContract,
@@ -60,31 +80,8 @@ export const {
   removeContract,
   contractFragment,
   purifyContract,
+  crystalizeContract,
+  lightCrystalizeContract,
   defaultContract,
+  mergeContract,
 } = contractGraphQL;
-
-// * Snapshot Contract Query
-export type SnapshotContractMutation = { snapshotContract: Contract };
-export const snapshotContractMutation = graphql`
-  ${contractFragment}
-  mutation snapshotContract($contractId: ID!) {
-    snapshotContract(contractId: $contractId) {
-      ...contractFragment
-    }
-  }
-`;
-export const snapshotContract = async (contractId: string) =>
-  (await query<SnapshotContractMutation>(snapshotContractMutation, { contractId })).snapshotContract;
-
-// * Get Contract Snapshot Query
-export type GetContractSnapshotQuery = { getContractSnapshot: Contract };
-export const getContractSnapshotQuery = graphql`
-  ${contractFragment}
-  mutation getContractSnapshot($contractId: ID!) {
-    getContractSnapshot(contractId: $contractId) {
-      ...contractFragment
-    }
-  }
-`;
-export const getContractSnapshot = async (contractId: string) =>
-  (await query<GetContractSnapshotQuery>(getContractSnapshotQuery, { contractId })).getContractSnapshot;

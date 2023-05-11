@@ -1,116 +1,67 @@
-import React, { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
-import styled from "styled-components";
-import { ToolOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Modal, Button, Table, Space, Input, Radio, Col, Row, Select, List, Card } from "antd";
-import { store, gql } from "@shared/data-access";
-import { Field, Img } from "../index";
+import { st, gql, slice, useLocale } from "@shared/data-access";
 import { cnst, Utils } from "@shared/util";
+import { DataEditModal, DataItem, DataListContainer, Field, Img } from "../index";
+import { DataMenuItem, DefaultOf, ModelEditProps, ModelProps, ModelsProps } from "@shared/util-client";
+import { RadarChartOutlined } from "@ant-design/icons";
 
-export const Networks = ({ networkType }: { networkType: cnst.NetworkType }) => {
-  const initNetwork = store.network.use.initNetwork();
-  const networkList = store.network.use.networkList();
-  const networkModal = store.network.use.networkModal();
-  const newNetwork = store.network.use.newNetwork();
-  useEffect(() => {
-    initNetwork({ networkType });
-  }, []);
-
+export const NetworkMenuItem: DataMenuItem = {
+  key: "network",
+  label: "Network",
+  icon: <RadarChartOutlined />,
+  render: () => <Networks />,
+};
+export const Networks = ({ slice = st.slice.network, init }: ModelsProps<slice.NetworkSlice, gql.Network>) => {
   return (
-    <div>
-      <Header>
-        <h2>Networks</h2>
-        <Button onClick={newNetwork} icon={<PlusOutlined />}>
-          Add
-        </Button>
-      </Header>
-      <List
-        grid={{ gutter: 16, column: 5 }}
-        dataSource={networkList}
-        renderItem={(network) => <Network key={network.id} network={network} />}
-      ></List>
-      <NetworkEdit />
-    </div>
+    <DataListContainer
+      init={init}
+      slice={slice}
+      edit={<NetworkEdit slice={slice} />}
+      renderItem={Network}
+      columns={["name", "networkId", "provider", "type"]}
+      actions={["edit"]}
+    />
   );
 };
-
-interface NetworkProps {
-  network: gql.Network;
-}
-export const Network = React.memo(({ network }: NetworkProps) => {
-  const editNetwork = store.network.use.editNetwork();
-  return (
-    <Card hoverable actions={[<EditOutlined key="edit" onClick={() => editNetwork(network)} />]}>
-      <Card.Meta title={network.name} />
-    </Card>
-  );
-});
-export const NetworkEdit = () => {
-  const networkModal = store.network.use.networkModal();
-  const id = store.network.use.id();
-  const name = store.network.use.name();
-  const networkId = store.network.use.networkId();
-  const provider = store.network.use.provider();
-  const type = store.network.use.type();
-  const endPoint = store.network.use.endPoint();
-  const purifyNetwork = store.network.use.purifyNetwork();
-  const createNetwork = store.network.use.createNetwork();
-  const updateNetwork = store.network.use.updateNetwork();
-  const resetNetwork = store.network.use.resetNetwork();
-  return (
-    <Modal
-      title={id ? "New Network" : `Network - ${name}`}
-      open={!!networkModal}
-      onOk={() => (id ? updateNetwork() : createNetwork())}
-      onCancel={() => resetNetwork()}
-      okButtonProps={{ disabled: !purifyNetwork() }}
-    >
-      <Field.Container>
-        <Field.Text label="Name" value={name} onChange={(name) => store.network.setState({ name })} />
-        <Select
-          value={provider}
-          style={{ width: "100%" }}
-          onChange={(provider) => store.network.setState({ provider })}
-          disabled={!!id}
-        >
-          {cnst.networkProviders.map((provider) => (
-            <Select.Option key={provider} value={provider}>
-              {provider}
-            </Select.Option>
-          ))}
-        </Select>
-        <Select
-          value={type}
-          style={{ width: "100%" }}
-          onChange={(type) => store.network.setState({ type })}
-          disabled={!!id}
-        >
-          {cnst.networkTypes.map((type) => (
-            <Select.Option key={type} value={type}>
-              {type}
-            </Select.Option>
-          ))}
-        </Select>
-        <Field.Number
-          label="Network ID"
-          value={networkId}
-          onChange={(networkId) => store.network.setState({ networkId })}
-        />
-        <Field.Text
-          label="End Point"
-          value={endPoint}
-          onChange={(endPoint) => store.network.setState({ endPoint })}
-          disabled={!!id}
-        />
-      </Field.Container>
-    </Modal>
-  );
+export const Network = ({
+  network,
+  slice = st.slice.network,
+  actions,
+  columns,
+}: ModelProps<slice.NetworkSlice, gql.LightNetwork>) => {
+  return <DataItem title={network.name} model={network} slice={slice} actions={actions} columns={columns} />;
 };
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin: 60px 0 10px 0;
-  h2 {
-    font-size: 20px;
-  }
-`;
+export const NetworkEdit = ({ slice }: ModelEditProps<slice.NetworkSlice>) => {
+  const { l } = useLocale();
+  const networkForm = slice.use.networkForm();
+
+  return (
+    <DataEditModal slice={slice} renderTitle={(network: DefaultOf<gql.Network>) => `${network.name}`}>
+      <Field.Text label={l("network.name")} value={networkForm.name} onChange={slice.do.setNameOnNetwork} />
+      <Field.SelectItem
+        label={l("network.provider")}
+        items={cnst.networkProviders}
+        value={networkForm.provider}
+        onChange={slice.do.setProviderOnNetwork}
+        disabled={!!networkForm.id}
+      />
+      <Field.SelectItem
+        label={l("network.type")}
+        items={cnst.networkTypes}
+        value={networkForm.type}
+        onChange={slice.do.setTypeOnNetwork}
+      />
+      <Field.Number
+        label={l("network.networkId")}
+        value={networkForm.networkId}
+        onChange={slice.do.setNetworkIdOnNetwork}
+      />
+      <Field.Text
+        label={l("network.endPoint")}
+        value={networkForm.endPoint}
+        onChange={slice.do.setEndPointOnNetwork}
+        disabled={!!networkForm.id}
+      />
+    </DataEditModal>
+  );
+};

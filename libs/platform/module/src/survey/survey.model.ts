@@ -2,6 +2,7 @@ import { Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Model, Types, Query, Schema as Sch } from "mongoose";
 import { dbConfig, Id } from "@shared/util-server";
 import { SurveySchema, SurveyInput } from "./survey.gql";
+import * as Snapshot from "../snapshot/snapshot.model";
 import * as gql from "../gql";
 @Schema(dbConfig.defaultSchemaOptions)
 class Survey extends SurveySchema {}
@@ -10,10 +11,11 @@ export type Input = SurveyInput;
 export type Raw = Survey;
 export interface DocType extends Document<Types.ObjectId, QryHelps, Raw>, DocMtds, Omit<Raw, "id"> {}
 export type Doc = DocType & dbConfig.DefaultSchemaFields;
-export interface Mdl extends Model<Doc, QryHelps, DocMtds>, MdlStats {}
+export interface Mdl extends Model<Doc>, MdlStats {}
 export const schema: Sch<null, Mdl, DocMtds, QryHelps, null, MdlStats> = SchemaFactory.createForClass<Raw, Doc>(
   Survey
 ) as any;
+schema.index({ title: "text", content: "text" });
 
 /**
  * * 5. 유틸리티 설계: 스키마를 손쉽게 사용할 유틸리티를 작성하세요.
@@ -26,7 +28,7 @@ export const schema: Sch<null, Mdl, DocMtds, QryHelps, null, MdlStats> = SchemaF
 interface DocMtds extends dbConfig.DefaultDocMtds<Doc> {
   addResponse: (response: gql.SurveyResponse) => Doc;
   removeResponse: (response: gql.SurveyResponse) => Doc;
-  close: (ownerships: gql.shared.Ownership[]) => Doc;
+  close: (snapshot: Snapshot.Doc) => Doc;
 }
 schema.methods.addResponse = function (this: Doc, response: gql.SurveyResponse) {
   const res = this.responses.find((res) => res.wallet.equals(response.wallet));
@@ -50,12 +52,12 @@ schema.methods.removeResponse = function (this: Doc, response: gql.SurveyRespons
   }
   return this;
 };
-schema.methods.close = function (this: Doc, ownerships: gql.shared.Ownership[]) {
+schema.methods.close = function (this: Doc, snapshot: Snapshot.Doc) {
   const selectNum = new Array(this.selections.length).fill(0);
   this.merge({ walletNum: 0, tokenNum: 0, selectTokenNum: selectNum, selectWalletNum: selectNum, responses: [] });
   const ownerMap = new Map<string, gql.shared.Ownership[]>();
-  ownerships.map((ownership) => {
-    const wid = ownership.wallet.toString();
+  snapshot.ownerships.map((ownership) => {
+    const wid = ownership.wallet?.toString() ?? "";
     const ownerships = ownerMap.get(wid) ?? [];
     ownerMap.set(wid, [...ownerships, ownership]);
   });
@@ -63,7 +65,7 @@ schema.methods.close = function (this: Doc, ownerships: gql.shared.Ownership[]) 
     const ownerships = ownerMap.get(response.wallet.toString()) ?? [];
     const res: gql.SurveyResponse = {
       ...response,
-      tokenNum: ownerships.reduce((acc, ownership) => acc + ownership.num, 0),
+      tokenNum: ownerships.reduce((acc, ownership) => acc + ownership.value, 0),
       tokens: ownerships.map((ownership) => ownership.token as Id),
     };
     if (res.selection) {
@@ -74,7 +76,7 @@ schema.methods.close = function (this: Doc, ownerships: gql.shared.Ownership[]) 
     this.walletNum += 1;
     return res;
   });
-  Object.assign(this, { snapshot: ownerships, snapshotAt: new Date(), status: "closed" });
+  Object.assign(this, { snapshot: snapshot._id, status: "closed" });
   return this;
 };
 
@@ -91,7 +93,7 @@ schema.statics.dumb = async function () {
 interface QryHelps extends dbConfig.DefaultQryHelps<Doc, QryHelps> {
   dumb: () => Query<any, Doc, QryHelps> & QryHelps;
 }
-schema.query.dumb = function (this: Mdl) {
+schema.query.dumb = function () {
   return this.find({});
 };
 

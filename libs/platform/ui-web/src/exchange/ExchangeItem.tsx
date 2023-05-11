@@ -1,6 +1,6 @@
 import React from "react";
 import { InputNumber, Input, Button } from "antd";
-import { gql, utils } from "@platform/data-access";
+import { gql } from "@platform/data-access";
 import { ExchangeFlow } from "@platform/ui-web";
 import styled from "styled-components";
 import { BiRightArrowAlt } from "react-icons/bi";
@@ -21,18 +21,17 @@ export const ExchangeItem = ({ receipt }: ExchangeItemProps) => {
           <ExchangeFlow input={input} output={output} />
         </div>
         <div className="before">
-          {input.num} {utils.getExchangeName(input)}
+          {input.value} {input.getName()}
         </div>
         {/* <BiRightArrowAlt /> */}
       </div>
 
       <div className="line-2">
-        <div className="date">{Utils.toIsoString(receipt.updatedAt, false)}</div>
+        <div className="date">{Utils.toIsoString(receipt.updatedAt.toDate(), false)}</div>
         <div className="after">
           <BiRightArrowAlt />
-
-          {output.num}
-          {utils.getExchangeName(output)}
+          {output.value}
+          {output.getName()}
         </div>
       </div>
     </ExchangeItemContainer>
@@ -41,7 +40,7 @@ export const ExchangeItem = ({ receipt }: ExchangeItemProps) => {
 
 const ExchangeItemContainer = styled.div`
   padding: 12px 22px;
-  border-bottom: 2px solid ${(props) => props.theme.color.grayD};
+  border-bottom: 2px solid black; //grayD
   .line-1 {
     display: flex;
     justify-content: space-between;
@@ -70,7 +69,8 @@ const ExchangeItemContainer = styled.div`
     margin-top: 11px;
     display: flex;
     justify-content: space-between;
-    color: ${(props) => props.theme.color.grayDD};
+
+    color: black; //grayDD
     font-weight: 400;
     font-size: 16px;
     line-height: 16px;

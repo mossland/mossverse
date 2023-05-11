@@ -1,43 +1,27 @@
 import React, { useEffect } from "react";
-import styled from "styled-components";
 import { ExchangeItem } from "@platform/ui-web";
-import { gql, utils, store } from "../../stores";
+import { gql, st, store } from "../../stores";
 
 export const ExchangeList = () => {
-  const self = store.platform.user.use.self();
-  const initReceipt = store.platform.receipt.use.init();
-  const receipts = store.platform.receipt.use.receipts();
-
-  useEffect(() => {
-    if (!self) return;
-    initReceipt(self.id);
-  }, [self]);
+  const receiptList = st.use.receiptList();
 
   return (
-    <ExchangeListContainer>
-      {receipts.length ? (
-        [...receipts].reverse().map((receipt) => <ExchangeItem key={receipt.id} receipt={receipt} />)
+    <div
+      className={`h-[calc(100vh-220px)] ${
+        receiptList === "loading" || !receiptList.length
+          ? "md:h-screen md:overflow-hidden"
+          : "md:h-[calc(100vh-144px)] overflow-auto"
+      } overflow-auto mr-[-2px] md:border-r-[2px] md:border-r-solid border-r-black`}
+    >
+      {receiptList === "loading" || !receiptList.length ? (
+        <div className="w-full h-[100vh] text-[22px] flex items-center justify-center">There is no exchage history</div>
       ) : (
-        <div className="empty">There is no exchage history</div>
+        <div className="">
+          {receiptList.map((receipt) => (
+            <ExchangeItem key={receipt.id} receipt={receipt as gql.platform.Receipt} />
+          ))}
+        </div>
       )}
-    </ExchangeListContainer>
+    </div>
   );
 };
-
-const ExchangeListContainer = styled.div`
-  /* border-top: 2px solid ${(props) => props.theme.color.black}; */
-  padding: 10px 0;
-  margin-right: -2px;
-  border-right: 2px solid ${(props) => props.theme.color.black};
-  .empty {
-    height: 100%;
-    width: 100%;
-    font-size: 22px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    /* text-align:center; */
-  }
-`;

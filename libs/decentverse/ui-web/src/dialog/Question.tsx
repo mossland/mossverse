@@ -1,6 +1,5 @@
 console.log();
 // import React, { memo } from "react";
-// import styled from "styled-components";
 // import { Handle, Position } from "react-flow-renderer";
 // import { useEditor, types } from "../../stores";
 // import { QuestionInputModal } from "./index";

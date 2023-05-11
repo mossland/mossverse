@@ -1,15 +1,14 @@
 import { TestingModule } from "@nestjs/testing";
+import { AdminService } from "./admin.service";
 import * as Chance from "chance";
-import * as srv from "../srv";
 import * as gql from "../gql";
 const c = new Chance();
 export const adminInput = (): gql.AdminInput => ({
-  accountId: c.word(),
+  accountId: c.email(),
   password: c.word(),
-  email: c.email(),
 });
 export const createAdmin = async (app: TestingModule) => {
-  const adminService = app.get<srv.AdminService>(srv.AdminService);
+  const adminService = app.get<AdminService>(AdminService);
   const admin = await adminService.create(adminInput());
   return admin;
 };

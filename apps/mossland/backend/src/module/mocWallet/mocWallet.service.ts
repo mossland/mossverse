@@ -4,9 +4,11 @@ import { Erc20, Id, LoadService } from "@shared/util-server";
 import { UserService } from "../user/user.service";
 import * as gql from "./../gql";
 import * as db from "./../db";
-import * as srv from "./../srv";
-import axios, { AxiosInstance } from "axios";
+import { srv as shared } from "@shared/module";
+import { srv as platform } from "@platform/module";
+import { LuniverseService } from "../luniverse/luniverse.service";
 import * as MocWallet from "./mocWallet.model";
+import { v4 as uuidv4 } from "uuid";
 
 @Injectable()
 export class MocWalletService extends LoadService<MocWallet.Mdl, MocWallet.Doc, MocWallet.Input> {
@@ -16,9 +18,10 @@ export class MocWalletService extends LoadService<MocWallet.Mdl, MocWallet.Doc, 
     @InjectModel(MocWallet.name)
     private readonly MocWallet: MocWallet.Mdl,
     private readonly userService: UserService,
-    private readonly thingService: srv.shared.ThingService,
-    private readonly receiptService: srv.platform.ReceiptService,
-    private readonly luniverseService: srv.LuniverseService
+    private readonly thingService: shared.ThingService,
+    private readonly ownershipService: shared.OwnershipService,
+    private readonly receiptService: platform.ReceiptService,
+    private readonly luniverseService: LuniverseService
   ) {
     super(MocWalletService.name, MocWallet);
   }
@@ -45,20 +48,21 @@ export class MocWalletService extends LoadService<MocWallet.Mdl, MocWallet.Doc, 
 
   async withdraw(userId: Id, address: string, amount: number) {
     const user = await this.userService.get(userId);
-    if (!user.hasItem(this.mmoc._id, amount)) throw new Error("Not enouth MMOC.");
+    const hasThing = await this.ownershipService.hasThing(user._id, this.mmoc._id, amount);
+    if (!hasThing) throw new Error("Not enouth MMOC.");
     //* transfer address
-    const hash = await this.luniverseService.transfer(this.root.address, address, amount);
-    const inputs: gql.platform.ExchangeInput[] = [{ type: "thing", thing: this.mmoc.id, num: amount }];
-    const outputs: gql.platform.ExchangeInput[] = [{ type: "etc", num: amount, hash }];
-
-    await user.decItems(inputs).save();
+    const inputs = [{ type: "thing" as const, user: user._id, thing: this.mmoc._id, value: amount }];
+    const outputs = [{ type: "currency" as const, user: user._id, value: amount, hash: uuidv4() }];
+    await this.ownershipService.deltaThings(inputs.map((i) => ({ ...i, thing: this.mmoc, value: -i.value })));
     const receipt = await this.receiptService.create({
+      name: "Withdraw MMOC",
       type: "trade",
       from: user._id,
       inputs,
       outputs,
     });
-    return await receipt.merge({ status: "success", tag: ["MMOC to MOC"] }).save();
+    await this.luniverseService.transfer(this.root.address, address, amount);
+    return await receipt.merge({ status: "success", tags: ["MMOC to MOC"] }).save();
   }
 
   async confirmDeposit(wallet: MocWallet.Doc) {
@@ -67,10 +71,11 @@ export class MocWalletService extends LoadService<MocWallet.Mdl, MocWallet.Doc, 
     await wallet.merge({ status: "inProgress" }).save();
     const hash = await this.luniverseService.getTxHash(wallet.address);
     const user = await this.userService.get(wallet.user);
-    const inputs: gql.platform.ExchangeInput[] = [{ type: "etc", num: amount, hash }];
-    const outputs: gql.platform.ExchangeInput[] = [{ type: "thing", thing: this.mmoc.id, num: amount }];
-    await user.incItems(outputs).save();
+    const inputs = [{ type: "currency" as const, user: user._id, value: amount, hash }];
+    const outputs = [{ type: "thing" as const, user: user._id, thing: this.mmoc._id, value: amount }];
+    await this.ownershipService.deltaThings(outputs.map((o) => ({ ...o, thing: this.mmoc })));
     const receipt = await this.receiptService.create({
+      name: "Deposit MMOC",
       type: "trade",
       from: user._id,
       inputs,
@@ -79,7 +84,7 @@ export class MocWalletService extends LoadService<MocWallet.Mdl, MocWallet.Doc, 
 
     await this.luniverseService.transfer(wallet.address, this.root.address, amount);
     await wallet.merge({ status: "active" }).save();
-    return await receipt.merge({ status: "success", tag: ["MOC to MMOC"] }).save();
+    return await receipt.merge({ status: "success", tags: ["MOC to MMOC"] }).save();
   }
 
   async confirmDepositAll() {
@@ -99,5 +104,10 @@ export class MocWalletService extends LoadService<MocWallet.Mdl, MocWallet.Doc, 
       if (wallet.expireAt.getTime() < new Date().getTime()) await wallet.merge({ status: "active" }).save();
     }
     this.logger.verbose(`moc wallet check reserve end`);
+  }
+  async summarize(): Promise<gql.MocWalletSummary> {
+    return {
+      totalMocWallet: await this.MocWallet.countDocuments({ status: { $ne: "inactive" } }),
+    };
   }
 }

@@ -1,61 +1,46 @@
-import create from "zustand";
+import { client, SetGet, State } from "@shared/util-client";
+import type { RootState } from "../store";
 import * as gql from "../gql";
-import { createActions, createState, DefaultActions, DefaultState, generateStore, InputOf } from "@shared/util-client";
-import { Listing, listingGraphQL, ListingInput } from "./listing.gql";
+import * as slice from "../slice";
 
-type State = DefaultState<"listing", gql.Listing> & {
-  priceTag: gql.PriceTag | null;
-  num: number;
-  filter: gql.ListingFilter;
-  myTokensFilter: gql.MyTokensFilter;
-  marketAddr: string | null;
-};
-const initialState: State = {
-  ...createState<"listing", gql.Listing, gql.ListingInput>(listingGraphQL),
-  priceTag: null,
-  num: 0,
-  marketAddr: null,
-  filter: "all",
-  myTokensFilter: "all",
-};
-type Actions = DefaultActions<"listing", gql.Listing, gql.ListingInput> & {
-  generateListing: () => Promise<gql.Listing>;
-  purifyPriceTag: () => InputOf<gql.PriceTagInput> | null; // 유효성검사 및 Map => MapInput 변환
-  cancel: () => Promise<void>; // 제거
-  buyItem: (shipInfo?: gql.ShipInfo) => Promise<gql.Receipt | undefined>;
-};
-const store = create<State & Actions>((set, get) => ({
-  ...initialState,
-  ...createActions<"listing", gql.Listing, gql.ListingInput>(listingGraphQL, { get, set }),
-  purifyPriceTag: () => {
-    const { priceTag } = get();
-    if (!priceTag) return null;
-    try {
-      const priceTagInput = gql.purifyPriceTag(priceTag);
-      return priceTagInput;
-    } catch (err) {
-      console.log(err);
-      return null;
-    }
+// ? Store는 다른 store 내 상태와 상호작용을 정의합니다. 재사용성이 필요하지 않은 단일 기능을 구현할 때 사용합니다.
+// * 1. State에 대한 내용을 정의하세요.
+const state = ({ set, get, pick }: SetGet<slice.ListingSliceState>) => ({
+  ...slice.makeListingSlice({ set, get, pick }),
+  ...slice.makeListingSlice({ set, get, pick }, "InSelf" as const),
+});
+
+// * 2. Action을 내용을 정의하세요. Action은 모두 void 함수여야 합니다.
+// * 다른 action을 참조 시 get() as <Model>State 또는 RootState 를 사용하세요.
+const actions = ({ set, get, pick }: SetGet<typeof state>) => ({
+  buyListing: async () => {
+    const { listing, refreshListing, queryOfListing, whoAmI, refreshOwnershipInItem, refreshOwnershipInMoney } =
+      get() as RootState;
+    if (listing === "loading") return;
+    //? 어떻게 해야하는가?
+    await whoAmI();
+    const priceTag = await gql.purifyPriceTag(listing.priceTags[0]);
+    if (!priceTag) throw new Error("No PriceTag or Listing");
+    await client.setWallet("kaikas");
+    await gql.purchaseListing(listing.id, priceTag, 1);
+    // await st.do.initAuth();
+    await refreshOwnershipInItem({ invalidate: true });
+    await refreshOwnershipInMoney({ invalidate: true });
+    await refreshListing({ query: queryOfListing });
+    set({ listingModal: "" });
   },
-  generateListing: async () => {
-    const { purifyListing, listings, id } = get();
-    const input = purifyListing();
-    if (!input) throw new Error("Invalid Input");
-    const listing = await gql.generateListing(input);
-    set({ listings: [...listings, listing], listing });
-    return listing;
-  }, // 생성
-  cancel: async () => {
-    const { listing } = get();
-    if (!listing) return;
-    await gql.closeListing(listing.id);
+  sellListing: async () => {
+    const { listing, listingForm, marketAddr, createListing } = get() as RootState;
+    await client.setWallet("kaikas");
+    if (listingForm.token && marketAddr)
+      await (client.wallet as any).setApprovalForAll(listingForm.token.contract.address, marketAddr);
+    await createListing();
   },
-  buyItem: async (shipInfo?: gql.ShipInfo) => {
-    const { purifyPriceTag, listing, num } = get();
-    const priceTag = purifyPriceTag();
-    if (!priceTag || !listing) throw new Error("No PriceTag or Listing");
-    return await gql.purchaseListing(listing.id, priceTag, num, shipInfo);
-  },
-}));
-export const listing = generateStore(store);
+});
+
+export type ListingState = State<typeof state, typeof actions>;
+// * 3. ChildSlice를 추가하세요. Suffix 규칙은 일반적으로 "InModel" as const 로 작성합니다.
+export const addListingToStore = ({ set, get, pick }: SetGet<ListingState>) => ({
+  ...state({ set, get, pick }),
+  ...actions({ set, get, pick }),
+});

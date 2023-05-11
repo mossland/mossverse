@@ -20,6 +20,9 @@ const store = create<ExchangeState>()(
     inputBefore: 0,
     after: 0,
     inputConfirm: "",
+    // withdraw:(userId:string, address:string, depositAmount) => {
+    //   return gql.withdraw(userId, address, depositAmount);
+    // },
     updateInputBefore: (before, limit) => {
       let beforeNumber = Number(before);
       if (isNaN(beforeNumber) || beforeNumber > limit) return;

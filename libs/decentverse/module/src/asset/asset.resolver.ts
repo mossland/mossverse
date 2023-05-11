@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, ResolveField, Parent } from "@nestjs/graphql";
+import { Resolver, Query, Mutation, Args, ResolveField, Parent, ID } from "@nestjs/graphql";
 import { AssetService } from "./asset.service";
 import { Allow, Account, BaseResolver } from "@shared/util-server";
 import { UseGuards } from "@nestjs/common";
@@ -15,7 +15,7 @@ export class AssetResolver extends BaseResolver(gql.Asset, gql.AssetInput, Allow
   @UseGuards(Allow.Admin)
   async addAssetFiles(
     @Args({ name: "files", type: () => [gql.shared.FileUpload] }) files: gql.shared.FileUpload[],
-    @Args({ name: "assetId", type: () => String, nullable: true }) assetId?: string
+    @Args({ name: "assetId", type: () => ID, nullable: true }) assetId?: string
   ) {
     return await this.fileService.addFiles(files, "asset", assetId);
   }
@@ -23,6 +23,10 @@ export class AssetResolver extends BaseResolver(gql.Asset, gql.AssetInput, Allow
   @ResolveField(() => gql.shared.File)
   async top(@Parent() asset: gql.Asset) {
     return await this.fileService.load(asset.top);
+  }
+  @ResolveField(() => gql.shared.File)
+  async wall(@Parent() asset: gql.Asset) {
+    return await this.fileService.load(asset.wall);
   }
   @ResolveField(() => gql.shared.File)
   async bottom(@Parent() asset: gql.Asset) {

@@ -1,22 +1,36 @@
 import graphql from "graphql-tag";
 import { cnst } from "@shared/util";
-import { Field, InputType, mutate, query, ObjectType, BaseGql, Int, createGraphQL } from "@shared/util-client";
+import {
+  Field,
+  InputType,
+  mutate,
+  query,
+  ObjectType,
+  BaseGql,
+  Int,
+  createGraphQL,
+  PickType,
+  InputOf,
+} from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 import { Sprite } from "../_scalar/scalar.gql";
 
 @InputType("CharacterInput")
 export class CharacterInput {
-  @Field(() => shared.Token, { nullable: true })
-  token: shared.Token | null;
-
-  @Field(() => shared.Thing, { nullable: true })
-  thing: shared.Thing | null;
-
   @Field(() => shared.File, { nullable: true })
   file: shared.File;
 
-  @Field(() => String, { nullable: true })
-  name: string | null;
+  @Field(() => shared.User, { nullable: true })
+  creator?: shared.User | null;
+
+  @Field(() => shared.Thing, { nullable: true })
+  thing?: shared.Thing | null;
+
+  @Field(() => String)
+  name: string;
+
+  @Field(() => String)
+  description: string;
 
   @Field(() => [Int])
   tileSize: [number, number];
@@ -45,7 +59,29 @@ export class Character extends BaseGql(CharacterInput) {
   @Field(() => String)
   status: cnst.CharacterStatus;
 }
-export const characterGraphQL = createGraphQL<"character", Character, CharacterInput>(Character, CharacterInput);
+
+@ObjectType("LightCharacter", { _id: "id", gqlRef: "Character" })
+export class LightCharacter extends PickType(Character, [
+  "status",
+  "name",
+  "description",
+  "file",
+  "size",
+  "left",
+  "up",
+  "down",
+  "right",
+  "tileSize",
+  "totalSize",
+] as const) {}
+
+@ObjectType("CharacterSummary")
+export class CharacterSummary {
+  @Field(() => Int)
+  totalCharacter: number;
+}
+
+export const characterGraphQL = createGraphQL("character" as const, Character, CharacterInput, LightCharacter);
 export const {
   getCharacter,
   listCharacter,
@@ -56,18 +92,61 @@ export const {
   removeCharacter,
   characterFragment,
   purifyCharacter,
-  // defaultCharacter,
+  crystalizeCharacter,
+  lightCrystalizeCharacter,
+  defaultCharacter,
+  addCharacterFiles,
+  mergeCharacter,
 } = characterGraphQL;
 
-// * Add CharacterFiles Mutation
-export type AddCharacterFilesMutation = { addCharacterFiles: shared.File[] };
-export const addCharacterFilesMutation = graphql`
-  ${shared.fileFragment}
-  mutation addCharacterFiles($files: [Upload!]!, $characterId: String) {
-    addCharacterFiles(files: $files, characterId: $characterId) {
-      ...fileFragment
+export type ApplyCharacterMutation = { applyCharacter: Character };
+export const applyCharacterMutation = graphql`
+  ${characterFragment}
+  mutation applyCharacter($data: CharacterInput!) {
+    applyCharacter(data: $data) {
+      ...characterFragment
     }
   }
 `;
-export const addCharacterFiles = async (files: FileList, characterId?: string | null) =>
-  (await mutate<AddCharacterFilesMutation>(addCharacterFilesMutation, { files, characterId })).addCharacterFiles;
+
+export const applyCharacter = async (data: InputOf<CharacterInput>) =>
+  (await mutate<ApplyCharacterMutation>(applyCharacterMutation, { data })).applyCharacter;
+
+export type ReapplyCharacterMutation = { reapplyCharacter: Character };
+export const reapplyCharacterMutation = graphql`
+  ${characterFragment}
+  mutation reapplyCharacter($characterId: ID!, $data: CharacterInput!) {
+    reapplyCharacter(characterId: $characterId, data: $data) {
+      ...characterFragment
+    }
+  }
+`;
+
+export const reapplyCharacter = async (characterId: string, data: InputOf<CharacterInput>) =>
+  (await mutate<ReapplyCharacterMutation>(reapplyCharacterMutation, { characterId, data })).reapplyCharacter;
+
+export type RejectCharacterMutation = { rejectCharacter: Character };
+export const rejectCharacterMutation = graphql`
+  ${characterFragment}
+  mutation rejectCharacter($characterId: ID!) {
+    rejectCharacter(characterId: $characterId) {
+      ...characterFragment
+    }
+  }
+`;
+
+export const rejectCharacter = async (characterId: string) =>
+  (await mutate<RejectCharacterMutation>(rejectCharacterMutation, { characterId })).rejectCharacter;
+
+export type ApproveCharacterMutation = { approveCharacter: Character };
+export const approveCharacterMutation = graphql`
+  ${characterFragment}
+  mutation approveCharacter($characterId: ID!) {
+    approveCharacter(characterId: $characterId) {
+      ...characterFragment
+    }
+  }
+`;
+
+export const approveCharacter = async (characterId: string) =>
+  (await mutate<ApproveCharacterMutation>(approveCharacterMutation, { characterId })).approveCharacter;

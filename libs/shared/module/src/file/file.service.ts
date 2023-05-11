@@ -10,24 +10,21 @@ import * as sharp from "sharp";
 import * as fs from "fs";
 import * as File from "./file.model";
 import * as gql from "../gql";
-import { S3Service } from "./s3/s3.service";
-import { IpfsService } from "./ipfs/ipfs.service";
-import axios from "axios";
-import { StorageOptions } from "../options";
+import { srv as external } from "@external/module";
+import axios, { AxiosRequestConfig } from "axios";
 import { Utils } from "@shared/util";
 
 @Injectable()
 export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
   localDir = `./data`;
   constructor(
-    @Inject("STORAGE_OPTIONS") private options: StorageOptions,
     @InjectModel(File.name) private readonly File: File.Mdl,
-    private readonly s3Service: S3Service,
-    private readonly ipfsService: IpfsService
+    private readonly s3Service: external.S3Service,
+    private readonly ipfsService: external.IpfsService
   ) {
     super(FileService.name, File);
   }
-  async generate() {
+  async generate(): Promise<File.Doc> {
     const fileStream = (): gql.FileStream => ({
       filename: "sample.jpg",
       mimetype: "image/jpeg",
@@ -39,17 +36,23 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
       (await this.#addFile(fileStream(), "generate", "generate"))
     );
   }
-  async addFiles(fileStreams: FileStream[], purpose: string, group = "default") {
+  async addFiles(fileStreams: FileStream[], purpose: string, group = "default"): Promise<File.Doc[]> {
     const files = await Promise.all(
       fileStreams.map(async (fileStream) => await this.#addFile(fileStream, purpose, group))
     );
     return files;
   }
-  async addFileFromUri(uri: string, purpose: string, group: string, forceUpdate = false): Promise<File.Doc | null> {
+  async addFileFromUri(
+    uri: string,
+    purpose: string,
+    group: string,
+    header: AxiosRequestConfig = {},
+    forceUpdate = false
+  ): Promise<File.Doc | null> {
     try {
       const file = forceUpdate && (await this.File.findOne({ origin: uri }));
       if (file) return file;
-      const localFile = await this.saveImageFromUri(uri);
+      const localFile = await this.saveImageFromUri(uri, { header });
       return await this.addFileFromLocal(localFile, purpose, group, uri);
     } catch (err) {
       this.logger.warn(`Failed to add file from URI - ${uri}`);
@@ -91,11 +94,15 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
     );
     return files;
   }
-  async #addFile(fileStream: FileStream, purpose: string, group: string) {
+  async #addFile(fileStream: FileStream, purpose: string, group: string | null) {
     const localFile = await this.#saveLocalStorage(fileStream);
-    return await this.addFileFromLocal(localFile, purpose, group);
+    return await this.addFileFromLocal(
+      localFile,
+      purpose?.length ? purpose : "default",
+      group?.length ? group : "default"
+    );
   }
-  async addFileFromLocal(localFile: LocalFile, purpose: string, group = "default", origin?: string) {
+  async addFileFromLocal(localFile: LocalFile, purpose: string, group = "default", origin?: string): Promise<File.Doc> {
     const url = await this.s3Service.uploadFile({
       path: `${purpose}/${group}/${localFile.filename}`,
       localPath: localFile.localPath,
@@ -107,10 +114,11 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
   }
   async saveImageFromUri(
     uri: string,
-    { cache, rename }: { cache?: boolean; rename?: string } = {}
+
+    { cache, rename, header }: { cache?: boolean; rename?: string; header?: AxiosRequestConfig } = {}
   ): Promise<LocalFile> {
     if (uri.indexOf("data:") === 0) return this.#saveEncodedData(uri);
-    const response = await axios.get(this.ipfsService.getHttpsUri(uri), { responseType: "stream" });
+    const response = await axios.get(this.ipfsService.getHttpsUri(uri), { ...header, responseType: "stream" });
     const filename = rename ?? this.#convertFileName(`${uri.split("/").at(-1)?.split("?")[0]}`);
     const dirname = `${this.localDir}/uriDownload`;
     const localPath = `${dirname}/${filename}`;
@@ -163,17 +171,24 @@ export class FileService extends LoadService<File.Mdl, File.Doc, File.Input> {
       ? "image/jpeg"
       : filename.includes(".jpeg")
       ? "image/jpeg"
+      : filename.includes(".jfif")
+      ? "image/jfif"
       : filename.includes(".gif")
       ? "image/gif"
       : "unknown";
   }
   async migrate(file: File.Doc) {
-    const root = this.options.objectStorage?.root;
+    const root = this.s3Service.root;
     const localFile = await this.saveImageFromUri(file.url);
     await Utils.sleep(100);
     const cloudPath = file.url.split("/").slice(3).join("/").split("?")[0];
     const path = root ? cloudPath.replace(`${root}/`, "") : cloudPath;
     const url = await this.s3Service.uploadFile({ path, localPath: localFile.localPath });
     return await file.merge({ url }).save();
+  }
+  async summarize(): Promise<gql.FileSummary> {
+    return {
+      totalFile: await this.File.countDocuments({ status: { $ne: "inactive" } }),
+    };
   }
 }

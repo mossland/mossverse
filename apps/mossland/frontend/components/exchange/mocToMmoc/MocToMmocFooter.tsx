@@ -1,22 +1,13 @@
 import React from "react";
-import styled from "styled-components";
 import { ExchangeCancelButton, CopyAddressButton } from "@platform/ui-web";
-import { gql, utils, store } from "../../../stores";
+import { gql, st, store } from "../../../stores";
 
 export const MocToMmocFooter = () => {
-  const copyAddressCallback = store.platform.exchange.use.copyAddressCallback();
+  // const copyAddressCallback = store.platform.exchange.use.copyAddressCallback();
   return (
-    <McoToMmocFooterContainer>
+    <div className="flex justify-center items-center py-[13px] px-[22px] gap-[10px]">
       <ExchangeCancelButton />
-      <CopyAddressButton address={""} onClick={copyAddressCallback} type="defaultButton" />
-    </McoToMmocFooterContainer>
+      {/* <CopyAddressButton address={""} onClick={copyAddressCallback} type="defaultButton" /> */}
+    </div>
   );
 };
-
-const McoToMmocFooterContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 13px 22px;
-  gap: 10px;
-`;

@@ -1,55 +1,23 @@
-import { MyBalance, ExchangeButtons } from "../../components";
-import { gql, utils, store } from "../../stores";
-import styled from "styled-components";
-import { Connect, MyAddress } from "../";
+import { ExchangeButtons } from "./";
+import { gql, st, store } from "../../stores";
+// import { Connect, MyAddress } from "../";
+import { Common } from "@mossland/frontend/components";
 
 export const ExchangeHeader = () => {
-  const wallet = store.shared.wallet.use.wallet();
-
+  const self = st.use.self();
+  // if (me === "loading") return null;
   return (
-    <StyledExchangeHeader>
-      <div className="header-menu">
-        <div className="header-item">
-          <h2 className="only-pc">Exchange</h2>
-          <MyBalance />
+    <div className="px-[22px] py-[12px] ">
+      <div className="flex flex-col-reverse md:flex-row gap-0 md:flex  md:gap-[53px]">
+        <div className="flex-1 py-[10px] ">
+          <h2 className="font-bold text-[26px] leading-[1em] md:block hidden">Exchange</h2>
+          <Common.MyBalance />
         </div>
-        <div className="header-item">{wallet ? <MyAddress /> : <Connect />}</div>
+        <div className="flex-1 py-[10px]">{self.id ? <Common.MyAddress /> : <Common.Connect />}</div>
       </div>
-      <div className="only-mobile">
+      <div className="md:hidden">
         <ExchangeButtons />
       </div>
-    </StyledExchangeHeader>
+    </div>
   );
 };
-
-const StyledExchangeHeader = styled.div`
-  padding: 12px 22px;
-  padding-bottom: 0px;
-  h2 {
-    font-weight: bold;
-    font-size: 26px;
-    margin-bottom: 0px;
-    line-height: 1em;
-  }
-  @media screen and (min-width: 800px) {
-    height: 102px;
-
-    /* height: 154px; */
-  }
-
-  .header-menu {
-    display: flex;
-    gap: 53px;
-    @media screen and (max-width: 800px) {
-      gap: 0px;
-      flex-direction: column-reverse;
-    }
-    .header-item {
-      flex: 1;
-      /* padding: 20px 0px; */
-      @media screen and (max-width: 800px) {
-        padding: 10px 0px;
-      }
-    }
-  }
-`;

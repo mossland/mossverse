@@ -11,9 +11,11 @@ import {
   BaseGql,
   Int,
   InputOf,
+  PickType,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
-import { Ownership, SurveyResponse, SurveyResponseInput } from "../_scalar";
+import { Ownership, SurveyResponse, SurveyResponseInput } from "../_scalar/scalar.gql";
+import dayjs, { Dayjs } from "dayjs";
 
 @InputType("SurveyInput")
 export class SurveyInput {
@@ -21,7 +23,7 @@ export class SurveyInput {
   title: string;
 
   @Field(() => String)
-  description: string;
+  content: string;
 
   @Field(() => [String])
   selections: string[];
@@ -39,10 +41,10 @@ export class SurveyInput {
   policy: cnst.SurveyPolicy[];
 
   @Field(() => Date)
-  closeAt: Date;
+  closeAt: Dayjs;
 
   @Field(() => Date)
-  openAt: Date;
+  openAt: Dayjs;
 }
 
 @ObjectType("Survey", { _id: "id" })
@@ -63,13 +65,26 @@ export class Survey extends BaseGql(SurveyInput) {
   selectWalletNum: number[];
 
   @Field(() => Date)
-  snapshotAt: Date;
+  snapshotAt: Dayjs;
 
   @Field(() => String)
   status: cnst.SurveyStatus;
+
+  isActive() {
+    return this.status === "opened" && this.closeAt.isAfter(dayjs());
+  }
 }
 
-export const surveyGraphQL = createGraphQL<"survey", Survey, SurveyInput>(Survey, SurveyInput);
+@ObjectType("LightSurvey", { _id: "id", gqlRef: "Survey" })
+export class LightSurvey extends PickType(Survey, ["status"] as const) {}
+
+@ObjectType("SurveySummary")
+export class SurveySummary {
+  @Field(() => Int)
+  totalSurvey: number;
+}
+
+export const surveyGraphQL = createGraphQL("survey" as const, Survey, SurveyInput, LightSurvey);
 export const {
   getSurvey,
   listSurvey,
@@ -80,7 +95,10 @@ export const {
   removeSurvey,
   surveyFragment,
   purifySurvey,
+  crystalizeSurvey,
+  lightCrystalizeSurvey,
   defaultSurvey,
+  mergeSurvey,
 } = surveyGraphQL;
 
 // * Generate Survey Mutation

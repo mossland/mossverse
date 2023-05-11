@@ -11,33 +11,43 @@ import {
   BaseGql,
   Int,
   InputOf,
+  PickType,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 import { User } from "../user/user.gql";
-import { PriceTag, PriceTagInput, ShipInfoInput } from "../_scalar";
-
-@InputType("ListingInput")
+import { PriceTag, PriceTagInput } from "../_scalar/scalar.gql";
+import { Dayjs } from "dayjs";
+InputType("ListingInput");
 export class ListingInput {
   @Field(() => User)
   user: User;
 
+  @Field(() => String, { nullable: false })
+  type: cnst.ListingType;
+
   @Field(() => shared.Wallet, { nullable: true })
-  wallet: shared.Wallet | null;
+  wallet: shared.Wallet | shared.LightWallet | null;
 
   @Field(() => shared.Token, { nullable: true })
-  token: shared.Token | null;
+  token: shared.Token | shared.LightToken | null;
 
   @Field(() => shared.Thing, { nullable: true })
-  thing: shared.Thing | null;
+  thing: shared.Thing | shared.LightThing | null;
 
   @Field(() => shared.Product, { nullable: true })
-  product: shared.Product | null;
+  product: shared.Product | shared.LightProduct | null;
+
+  @Field(() => String, { nullable: false })
+  sellingType: cnst.SellingType;
 
   @Field(() => Int)
-  limit: number;
+  value: number;
 
-  @Field(() => Date)
-  closeAt: Date;
+  @Field(() => Date, { nullable: true })
+  closeAt: Dayjs | null;
+
+  @Field(() => [String])
+  tags: string[];
 
   @Field(() => [PriceTag])
   priceTags: PriceTag[];
@@ -47,9 +57,72 @@ export class ListingInput {
 export class Listing extends BaseGql(ListingInput) {
   @Field(() => String)
   status: cnst.ListingStatus;
+
+  //매출량
+  @Field(() => Int)
+  sale: number;
+  getName() {
+    if (this.token?.meta?.name) return this.token.meta.name;
+    if (this.thing?.name) return this.thing.name;
+    if (this.product?.name) return this.product.name;
+    else return `Unknown ${this.token ? `#${this.token.tokenId}` : ""}`;
+  }
+  getImage() {
+    if (this.token?.image) return this.token.image;
+    if (this.thing?.image) return this.thing.image;
+    if (this.product?.image) return this.product.image;
+    else return "";
+  }
+  getImageUrl() {
+    if (this.token?.image?.url) return this.token.image.url;
+    if (this.thing?.image?.url) return this.thing.image.url;
+    if (this.product?.image?.url) return this.product.image.url;
+    else return "";
+  }
+  getDescription() {
+    if (this.token?.meta?.description) return this.token.meta.description;
+    if (this.thing?.description) return this.thing.description;
+    if (this.product?.description) return this.product.description;
+    else return "";
+  }
+
+  getRemain() {
+    return this.value - this.sale;
+  }
+  totalValue() {
+    return this.value + this.sale;
+  }
+
+  filterMyListing(self: User) {
+    return this.user.id === self.id;
+  }
 }
 
-export const listingGraphQL = createGraphQL<"listing", Listing, ListingInput>(Listing, ListingInput);
+@ObjectType("LightListing", { _id: "id", gqlRef: "Listing" })
+export class LightListing extends PickType(Listing, [
+  "status",
+  "priceTags",
+  "token",
+  "thing",
+  "user",
+  "tags",
+  "sellingType",
+  "product",
+  "type",
+  "value",
+  "sale",
+] as const) {
+  // @Field(() => shared.LightToken)
+  // override token: shared.LightToken | null;
+}
+
+@ObjectType("ListingSummary")
+export class ListingSummary {
+  @Field(() => Int)
+  totalListing: number;
+}
+
+export const listingGraphQL = createGraphQL("listing" as const, Listing, ListingInput, LightListing);
 export const {
   getListing,
   listListing,
@@ -60,7 +133,10 @@ export const {
   removeListing,
   listingFragment,
   purifyListing,
+  crystalizeListing,
+  lightCrystalizeListing,
   defaultListing,
+  mergeListing,
 } = listingGraphQL;
 
 // * Close Listing Mutation
@@ -96,5 +172,5 @@ export const generateListingMutation = graphql`
     }
   }
 `;
-export const generateListing = async (data: ListingInput) =>
+export const generateListing = async (data: InputOf<ListingInput>) =>
   (await mutate<GenerateListingMutation>(generateListingMutation, { data })).generateListing;

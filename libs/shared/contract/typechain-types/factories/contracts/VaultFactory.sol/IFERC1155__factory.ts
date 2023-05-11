@@ -345,7 +345,7 @@ const _abi = [
     stateMutability: "view",
     type: "function",
   },
-];
+] as const;
 
 export class IFERC1155__factory {
   static readonly abi = _abi;

@@ -1,6 +1,5 @@
 import React from "react";
 import { BiRightArrowAlt } from "react-icons/bi";
-import { DefaultButton } from "../common";
 import styled from "styled-components";
 
 type MmocToMocButtonProps = {
@@ -10,12 +9,15 @@ type MmocToMocButtonProps = {
 
 export const MmocToMocButton = ({ disabled, onClick }: MmocToMocButtonProps) => {
   return (
-    <MmocToMocButtonContainer disabled={disabled}>
-      <DefaultButton block disabled={disabled} onClick={onClick} type="primary">
-        MMOC <BiRightArrowAlt /> <img src="/images/m_coin.png" />
-        MOC
-      </DefaultButton>
-    </MmocToMocButtonContainer>
+    <button
+      className="flex w-full bg-gradient-to-l from-color-main rounded-[10px] p-[13px] items-center justify-center font-normal text-[22px] leading-[22px] border-[2px] border-solid border-black disabled:from-gray-400 disabled:to-gray-400 disabled:opacity-40 disabled:cursor-auto"
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <img className="w-[18px] inline-block mr-[4px] align-baseline" src="/images/mm_coin.png" />
+      MMOC <BiRightArrowAlt className="mx-[3px]" />{" "}
+      <img className="w-[18px] inline-block mr-[4px] align-baseline" src="/images/m_coin.png" /> MOC
+    </button>
   );
 };
 

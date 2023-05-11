@@ -1,20 +1,15 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
-import {
-  addFieldMetadata,
-  Field,
-  Float,
-  ID,
-  InputType,
-  IntersectionType,
-  ObjectType,
-  PartialType,
-  TypeMetadataStorage,
-} from "@nestjs/graphql";
-import * as gql from "../gql";
+import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
 import { cnst } from "@shared/util";
 import { v4 as uuidv4 } from "uuid";
 import { ApiProperty } from "@nestjs/swagger";
+import { gql as shared } from "@shared/module";
+import { Listing } from "../listing/listing.gql";
+import { Trade } from "../trade/trade.gql";
+import { Raffle } from "../raffle/raffle.gql";
+import { Exchange, ExchangeInput, ExchangeSchema } from "../_scalar/exchange.gql";
+// import { ShipInfo, ShipInfoInput, ShipInfoSchema } from "../_scalar/scalar.gql";
 
 // * 1. 보안필드를 제외한 모든 필드
 @ObjectType({ isAbstract: true })
@@ -22,46 +17,54 @@ import { ApiProperty } from "@nestjs/swagger";
 @Schema()
 class Base {
   @Field(() => String)
+  @Prop({ type: String, required: true, index: true })
+  name: string;
+
+  @Field(() => String)
   @Prop({ type: String, required: true, enum: cnst.receiptTypes, index: true })
   type: cnst.ReceiptType;
 
-  @Field(() => gql.shared.User)
+  @Field(() => shared.User)
   @Prop({ type: ObjectId, ref: "user", required: true, index: true })
   @ApiProperty({ example: "630e2588121191ca4b2e3ea9", description: "ID of user" })
   from: Id;
 
-  @Field(() => gql.shared.Wallet, { nullable: true })
+  @Field(() => shared.Wallet, { nullable: true })
   @Prop({ type: ObjectId, ref: "wallet", required: false, index: true })
   fromWallet?: Id;
 
-  @Field(() => gql.shared.User, { nullable: true })
+  @Field(() => shared.User, { nullable: true })
   @Prop({ type: ObjectId, ref: "user", required: false, index: true })
   to?: Id;
 
-  @Field(() => gql.shared.Wallet, { nullable: true })
+  @Field(() => shared.Wallet, { nullable: true })
   @Prop({ type: ObjectId, ref: "wallet", required: false, index: true })
   toWallet?: Id;
 
-  @Field(() => gql.Listing, { nullable: true })
+  @Field(() => Listing, { nullable: true })
   @Prop({ type: ObjectId, required: false, ref: "listing", index: true })
   listing?: Id;
 
-  @Field(() => gql.Trade, { nullable: true })
+  @Field(() => Raffle, { nullable: true })
+  @Prop({ type: ObjectId, required: false, ref: "raffle", index: true })
+  raffle?: Id;
+
+  @Field(() => Trade, { nullable: true })
   @Prop({ type: ObjectId, required: false, ref: "trade", index: true })
   trade?: Id;
 
-  @Field(() => [gql.Exchange])
-  @Prop([{ type: gql.ExchangeSchema, required: true }])
-  inputs: gql.Exchange[];
+  @Field(() => [Exchange])
+  @Prop([{ type: ExchangeSchema, required: true }])
+  inputs: Exchange[];
 
-  @Field(() => [gql.Exchange])
-  @Prop([{ type: gql.ExchangeSchema, required: true }])
-  @ApiProperty({ type: [gql.Exchange], description: "ID of user" })
-  outputs: gql.Exchange[];
+  @Field(() => [Exchange])
+  @Prop([{ type: ExchangeSchema, required: true }])
+  @ApiProperty({ type: [Exchange], description: "ID of user" })
+  outputs: Exchange[];
 
-  @Field(() => gql.ShipInfo, { nullable: true })
-  @Prop({ type: gql.ShipInfoSchema, required: false })
-  shipInfo?: gql.ShipInfo;
+  // @Field(() => ShipInfo, { nullable: true })
+  // @Prop({ type: ShipInfoSchema, required: false })
+  // shipInfo?: ShipInfo;
 }
 
 // * 2. 다른 필드를 참조하는 값 Input형식으로 덮어씌우기
@@ -79,12 +82,14 @@ class InputOverwrite {
   listing?: Id;
   @Field(() => ID, { nullable: true })
   trade?: Id;
-  @Field(() => [gql.ExchangeInput])
-  inputs: gql.ExchangeInput[];
-  @Field(() => [gql.ExchangeInput])
-  outputs: gql.ExchangeInput[];
-  @Field(() => gql.ShipInfoInput, { nullable: true })
-  shipInfo?: gql.ShipInfoInput;
+  @Field(() => ID, { nullable: true })
+  raffle?: Id;
+  @Field(() => [ExchangeInput])
+  inputs: ExchangeInput[];
+  @Field(() => [ExchangeInput])
+  outputs: ExchangeInput[];
+  // @Field(() => ShipInfoInput, { nullable: true })
+  // shipInfo?: ShipInfoInput;
 }
 
 // * 3. 보안필드, default 필드 생성 필수
@@ -94,7 +99,11 @@ class InputOverwrite {
 class Tail extends Base {
   @Field(() => [String])
   @Prop([{ type: String, required: true, index: true }])
-  tag: string[];
+  tags: string[];
+
+  @Field(() => String, { nullable: true })
+  @Prop({ type: String, required: false })
+  err?: string;
 
   @Field(() => String)
   @Prop({ type: String, enum: cnst.receiptStatuses, required: true, default: "active" })
@@ -108,3 +117,12 @@ export class ReceiptInput extends IntersectionType(InputOverwrite, Base, InputTy
 export class Receipt extends BaseGql(Tail) {}
 @Schema()
 export class ReceiptSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class ReceiptSummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalReceipt: number;
+}

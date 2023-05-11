@@ -10,66 +10,31 @@ import {
   ObjectType,
   BaseGql,
   Int,
-  BaseArrayFieldGql,
+  Float,
+  PickType,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
-import { Collision, MapConfig } from "../_scalar/scalar.gql";
-import { Webview } from "../webview/webview.gql";
-import { Placement } from "../asset/asset.gql";
-import { Live } from "../live/live.gql";
-import { Dialogue } from "../dialog/dialog.gql";
-import { CallRoom } from "../callRoom/callRoom.gql";
-
-@InputType("TileInput")
-export class TileInput {
-  @Field(() => shared.File, { nullable: true })
-  top: shared.File | null;
-
-  @Field(() => shared.File, { nullable: true })
-  bottom: shared.File | null;
-
-  @Field(() => shared.File, { nullable: true })
-  lighting: shared.File | null;
-}
-
-@ObjectType("Tile")
-export class Tile extends BaseArrayFieldGql(TileInput) {}
-export const tileFragment = createFragment(Tile);
+import { MapConfig, MapPosition } from "../_scalar/scalar.gql";
 
 @InputType("MapInput")
 export class MapInput {
   @Field(() => String)
   name: string;
 
-  @Field(() => Int, { default: 200 })
-  tileSize: number;
+  @Field(() => shared.File, { nullable: true })
+  splash: shared.File | null;
 
   @Field(() => shared.File, { nullable: true })
-  top: shared.File | null;
+  logo: shared.File | null;
 
   @Field(() => shared.File, { nullable: true })
-  bottom: shared.File | null;
+  miniView: shared.File | null;
 
-  @Field(() => shared.File, { nullable: true })
-  lighting: shared.File | null;
+  @Field(() => [Float])
+  startPosition: [number, number];
 
-  @Field(() => [Placement])
-  placements: Placement[];
-
-  @Field(() => [Collision])
-  collisions: Collision[];
-
-  @Field(() => [Webview])
-  webviews: Webview[];
-
-  @Field(() => [Live])
-  lives: Live[];
-
-  @Field(() => [CallRoom])
-  callRooms: CallRoom[];
-
-  @Field(() => [Dialogue])
-  dialogues: Dialogue[];
+  @Field(() => [MapPosition])
+  spawnPositions: MapPosition[];
 
   @Field(() => MapConfig)
   config: MapConfig;
@@ -77,17 +42,34 @@ export class MapInput {
 
 @ObjectType("Map", { _id: "id" })
 export class Map extends BaseGql(MapInput) {
-  @Field(() => [Tile]) // ! 2단계 이상 Array 처리 필요
-  tiles: Tile[][];
-
-  @Field(() => [Int])
+  @Field(() => [Float])
   wh: [number, number];
 
   @Field(() => String)
   status: cnst.MapStatus;
+
+  getSpawnPosition(key?: string) {
+    const matchingPosition =
+      this.spawnPositions.find((p) => p.key === key)?.position ??
+      (this.startPosition.length ? this.startPosition : [500, 500]);
+    return matchingPosition;
+  }
 }
 
-export const mapGraphQL = createGraphQL<"map", Map, MapInput>(Map, MapInput);
+@ObjectType("LightMap", { _id: "id", gqlRef: "Map" })
+export class LightMap extends PickType(Map, ["name"] as const) {}
+
+@ObjectType("MapSummary")
+export class MapSummary {
+  @Field(() => Int)
+  totalMap: number;
+}
+
+export const mapQueryMap: { [key in keyof MapSummary]: any } = {
+  totalMap: { status: { $ne: "inactive" } },
+};
+
+export const mapGraphQL = createGraphQL("map" as const, Map, MapInput, LightMap);
 export const {
   getMap,
   listMap,
@@ -98,7 +80,10 @@ export const {
   removeMap,
   mapFragment,
   purifyMap,
+  crystalizeMap,
+  lightCrystalizeMap,
   defaultMap,
+  mergeMap,
 } = mapGraphQL;
 
 // * Add MapFiles Mutation
@@ -113,8 +98,3 @@ export const addMapFilesMutation = graphql`
 `;
 export const addMapFiles = async (files: FileList, mapId?: string) =>
   (await mutate<AddMapFilesMutation>(addMapFilesMutation, { files, mapId })).addMapFiles;
-
-export const mainTools = ["assets", "interaction", "dialog"] as const;
-export type MainTool = typeof mainTools[number];
-export const editModes = ["select", "add", "modify", "option"] as const;
-export type EditMode = typeof editModes[number];

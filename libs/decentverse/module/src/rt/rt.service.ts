@@ -16,35 +16,35 @@ export class RtService extends LogService implements OnModuleInit, OnModuleDestr
   async onModuleDestroy() {
     await this.client.disconnect();
   }
-  async updatePlayer(id: string, score: string, data: string) {
+  async updatePlayer(mapId: string, id: string, score: string, data: string) {
     await Promise.all([
-      this.client.hSet("players", id, data),
-      this.client.zAdd("lastConnected", { score: new Date().getTime(), value: id }),
-      this.client.zAdd("world", { score: <any>score, value: id }),
+      this.client.hSet(`${mapId}:players`, id, data),
+      this.client.zAdd(`${mapId}:lastConnected`, { score: new Date().getTime(), value: id }),
+      this.client.zAdd(`${mapId}:world`, { score: <any>score, value: id }),
     ]);
   }
-  async expirePlayers(expireSeconds = 5) {
+  async expirePlayers(mapId: string, expireSeconds = 5) {
     const time = new Date();
     time.setSeconds(time.getSeconds() - expireSeconds);
-    const playerIds = await this.client.zRangeByScore("lastConnected", 0, time.getTime());
-    return await this.removePlayers(playerIds);
+    const playerIds = await this.client.zRangeByScore(`${mapId}:lastConnected`, 0, time.getTime());
+    return await this.removePlayers(mapId, playerIds);
   }
-  async removePlayers(playerIds: string | string[]) {
+  async removePlayers(mapId: string, playerIds: string | string[]) {
     if (!playerIds.length) return 0;
     await Promise.all([
-      this.client.hDel("players", playerIds),
-      this.client.zRem("world", playerIds),
-      this.client.zRem("lastConnected", playerIds),
-      this.client.hDel("characters", playerIds),
+      this.client.hDel(`${mapId}:players`, playerIds),
+      this.client.zRem(`${mapId}:world`, playerIds),
+      this.client.zRem(`${mapId}:lastConnected`, playerIds),
+      this.client.hDel(`characters`, playerIds),
     ]);
     return playerIds.length;
   }
-  async getRange(min: string, max: string) {
-    const res = await this.client.zRangeByScore("world", min, max);
-    return res.length ? await this.client.hmGet("players", res) : [];
+  async getRange(mapId: string, min: string, max: string) {
+    const res = await this.client.zRangeByScore(`${mapId}:world`, min, max);
+    return res.length ? await this.client.hmGet(`${mapId}:players`, res) : [];
   }
   async registerCharacter(id: string, data: string) {
-    await this.client.hSet("characters", id, data);
+    await this.client.hSet(`characters`, id, data);
     return true;
   }
   async characters(ids: string[]) {

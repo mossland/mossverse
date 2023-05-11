@@ -1,7 +1,15 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
-import { Field, ID, InputType, Int, IntersectionType, ObjectType, PartialType } from "@nestjs/graphql";
-import * as gql from "../gql";
+import { Field, Float, ID, InputType, Int, IntersectionType, ObjectType, PartialType } from "@nestjs/graphql";
+import { gql as shared } from "@shared/module";
+import {
+  MapConfig,
+  MapConfigInput,
+  MapConfigSchema,
+  MapPosition,
+  MapPositionSchema,
+  MapPositionInput,
+} from "../_scalar/scalar.gql";
 
 // * 1. 보안필드를 제외한 모든 필드
 @ObjectType({ isAbstract: true })
@@ -9,77 +17,47 @@ import * as gql from "../gql";
 @Schema()
 class Base {
   @Field(() => String)
-  @Prop({ type: String, required: true, unique: true })
+  @Prop({ type: String, required: true })
   name: string;
 
-  @Field(() => Int)
-  @Prop({ type: Number, required: true, default: 2000 })
-  tileSize: number;
+  @Field(() => shared.File, { nullable: true })
+  @Prop({ type: ObjectId, required: false })
+  splash?: Id;
 
-  @Field(() => gql.shared.File, { nullable: true })
-  @Prop({ type: ObjectId, ref: "file", required: false })
-  top?: Id;
+  @Field(() => shared.File, { nullable: true })
+  @Prop({ type: ObjectId, required: false })
+  logo?: Id;
 
-  @Field(() => gql.shared.File)
-  @Prop({ type: ObjectId, ref: "file", required: true })
-  bottom: Id;
+  @Field(() => shared.File, { nullable: true })
+  @Prop({ type: ObjectId, required: false })
+  miniView?: Id;
 
-  @Field(() => gql.shared.File, { nullable: true })
-  @Prop({ type: ObjectId, ref: "file", required: false })
-  lighting?: Id;
+  @Field(() => [Float])
+  @Prop({ type: [Number], required: true, default: [0, 0] })
+  startPosition: number[];
 
-  @Field(() => [gql.Placement], { nullable: true })
-  @Prop([{ type: gql.PlacementSchema }])
-  placements: gql.Placement[];
+  @Field(() => [MapPosition])
+  @Prop([{ type: MapPositionSchema, required: true }])
+  spawnPositions: MapPosition[];
 
-  @Field(() => [gql.Collision])
-  @Prop([{ type: gql.CollisionSchema }])
-  collisions: gql.Collision[];
-
-  @Field(() => [gql.Webview])
-  @Prop([{ type: gql.WebviewSchema }])
-  webviews: gql.Webview[];
-
-  @Field(() => [gql.Live])
-  @Prop([{ type: gql.LiveSchema }])
-  lives: gql.Live[];
-
-  @Field(() => [gql.CallRoom], { nullable: true })
-  @Prop([{ type: gql.CallRoomSchema }])
-  callRooms: gql.CallRoom[];
-
-  @Field(() => [gql.Dialogue], { nullable: true })
-  @Prop([{ type: gql.DialogueSchema }])
-  dialogues: gql.Dialogue[];
-
-  @Field(() => gql.MapConfig)
-  @Prop({ type: gql.MapConfigSchema })
-  config: gql.MapConfig;
+  @Field(() => MapConfig)
+  @Prop({ type: MapConfigSchema })
+  config: MapConfig;
 }
 
 // * 2. 다른 필드를 참조하는 값 Input형식으로 덮어씌우기
 @InputType({ isAbstract: true })
 class InputOverwrite {
   @Field(() => ID, { nullable: true })
-  top?: Id;
-  @Field(() => ID)
-  bottom: Id;
+  splash?: Id;
   @Field(() => ID, { nullable: true })
-  lighting?: Id;
-  @Field(() => [gql.PlacementInput], { nullable: true })
-  placements: gql.PlacementInput[];
-  @Field(() => [gql.CollisionInput])
-  collisions: gql.CollisionInput[];
-  @Field(() => [gql.WebviewInput])
-  webviews: gql.WebviewInput[];
-  @Field(() => [gql.LiveInput])
-  lives: gql.LiveInput[];
-  @Field(() => [gql.CallRoomInput], { nullable: true })
-  callRooms: gql.CallRoomInput[];
-  @Field(() => [gql.DialogueInput], { nullable: true })
-  dialogues: gql.DialogueInput[];
-  @Field(() => gql.MapConfigInput)
-  config: gql.MapConfigInput;
+  logo?: Id;
+  @Field(() => ID, { nullable: true })
+  miniView?: Id;
+  @Field(() => [MapPositionInput])
+  spawnPositions: MapPositionInput[];
+  @Field(() => MapConfigInput)
+  config: MapConfigInput;
 }
 
 // * 3. 보안필드, default 필드 생성 필수
@@ -87,11 +65,7 @@ class InputOverwrite {
 @InputType({ isAbstract: true })
 @Schema()
 class Tail extends Base {
-  @Field(() => [[gql.Tile]], { nullable: true })
-  @Prop([[{ type: gql.TileSchema }]])
-  tiles: gql.Tile[][];
-
-  @Field(() => [Int])
+  @Field(() => [Float])
   @Prop([{ type: Number, required: true, default: 0 }])
   wh: number[];
 
@@ -112,3 +86,12 @@ export class MapInput extends IntersectionType(InputOverwrite, Base, InputType) 
 export class Map extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class MapSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class MapSummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalMap: number;
+}

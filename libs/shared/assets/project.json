@@ -1,4 +1,5 @@
 {
+  "name": "shared/assets",
   "sourceRoot": "libs/shared/assets/src",
   "projectType": "library",
   "targets": {
@@ -21,7 +22,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/shared/assets"],
+      "outputs": ["{workspaceRoot}/coverage/libs/shared/assets"],
       "options": {
         "jestConfig": "libs/shared/assets/jest.config.ts",
         "passWithNoTests": true

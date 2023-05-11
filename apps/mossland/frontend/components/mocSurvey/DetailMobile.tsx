@@ -1,24 +1,8 @@
 import React from "react";
-import styled from "styled-components";
-import { Survey } from "@platform/ui-web";
 import { DetailBody } from ".";
-import { gql, utils, store } from "../../stores";
-import { useMocSurvey } from "./services/useMocSurvey";
+import { gql, st, store } from "../../stores";
 
 export const DetailMobile = () => {
-  const mocSurveyService = useMocSurvey();
-  if (!mocSurveyService.mocSurvey || !mocSurveyService.wallet) return <></>;
-
-  return (
-    <SurveyDetailContainer>
-      <DetailBody />
-    </SurveyDetailContainer>
-  );
+  const mocSurvey = st.use.mocSurvey();
+  return <div className="relative mt-[-2px] z-[2] p-[19px]">{mocSurvey !== "loading" && <DetailBody />}</div>;
 };
-
-const SurveyDetailContainer = styled.div`
-  position: relative;
-  margin-top: -2px;
-  z-index: 2;
-  padding: 19px;
-`;

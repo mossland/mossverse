@@ -14,7 +14,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/decentverse/ui-web"],
+      "outputs": ["{workspaceRoot}/coverage/libs/decentverse/ui-web"],
       "options": {
         "jestConfig": "libs/decentverse/ui-web/jest.config.ts",
         "passWithNoTests": true

@@ -1,3 +1,4 @@
+import { environment } from "../_environments/environment";
 import { ProductService } from "./product.service";
 import { TestSystem } from "@shared/test-server";
 import { ProductModule } from "./product.module";
@@ -6,14 +7,14 @@ import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 describe("Product Service", () => {
   const system = new TestSystem();
   let productService: ProductService;
   let fileService: srv.FileService;
   let file: db.File.Doc;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     productService = app.get<ProductService>(ProductService);
     fileService = app.get<srv.FileService>(srv.FileService);
     [file] = await fileService.addFiles([sample.fileStream()], "product", "test");

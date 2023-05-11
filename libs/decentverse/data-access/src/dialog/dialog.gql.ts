@@ -11,10 +11,10 @@ import {
   BaseGql,
   BaseArrayFieldGql,
   Int,
+  PickType,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
 import { Character } from "../character/character.gql";
-import { AvatarPosition, FlowStyle } from "../_scalar/scalar.gql";
 
 @InputType("FlowInput")
 export class FlowInput {
@@ -72,7 +72,16 @@ export class Dialog extends BaseGql(DialogInput) {
   status: cnst.DialogStatus;
 }
 
-export const dialogGraphQL = createGraphQL<"dialog", Dialog, DialogInput>(Dialog, DialogInput);
+@ObjectType("LightDialog", { _id: "id", gqlRef: "Dialog" })
+export class LightDialog extends PickType(Dialog, ["status"] as const) {}
+
+@ObjectType("DialogSummary")
+export class DialogSummary {
+  @Field(() => Int)
+  totalDialog: number;
+}
+
+export const dialogGraphQL = createGraphQL("dialog" as const, Dialog, DialogInput, LightDialog);
 export const {
   getDialog,
   listDialog,
@@ -83,7 +92,10 @@ export const {
   removeDialog,
   dialogFragment,
   purifyDialog,
+  crystalizeDialog,
+  lightCrystalizeDialog,
   defaultDialog,
+  mergeDialog,
 } = dialogGraphQL;
 
 @InputType("DialogueInput")
@@ -97,6 +109,12 @@ export class DialogueInput {
   @Field(() => Dialog)
   dialog: Dialog;
 }
+
+export const flowStyles = ["speak", "question"] as const;
+export type FlowStyle = typeof flowStyles[number];
+
+export const avatarPositions = ["left", "right", "center"] as const;
+export type AvatarPosition = typeof avatarPositions[number];
 
 @ObjectType("Dialogue")
 export class Dialogue extends BaseArrayFieldGql(DialogueInput) {}

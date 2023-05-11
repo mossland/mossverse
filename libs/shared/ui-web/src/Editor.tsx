@@ -1,64 +1,78 @@
-import React, { MutableRefObject, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import styled from "styled-components";
-import { ToolOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Modal, Button, Table, Space, Input, Radio, Col, Row, Select, List, Card } from "antd";
-import { gql, store } from "@social/data-access";
-import { Field, Img } from "@shared/ui-web";
-import { cnst, Utils } from "@shared/util";
-import "react-quill/dist/quill.snow.css";
 import dynamic from "next/dynamic";
-import ImageResize from "quill-image-resize-module-react";
-import { Quill } from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import React, { useRef } from "react";
+import SunEditorCore from "suneditor/src/lib/core";
+import { gql } from "@shared/data-access";
 
-export const Editor = dynamic(
-  async () => {
-    const { default: RQ, Quill } = await import("react-quill");
-    // const { default: ImageResize } = await import("quill-image-resize-module");
-    // Quill.register("modules/imageResize", ImageResize);
-    return function comp({ ref, addFiles, ...props }: any) {
-      const imageHandler = () => {
-        if (!ref.current) return;
-        const { getEditor } = ref.current;
-        const input = document.createElement("input");
-        input.setAttribute("type", "file");
-        input.setAttribute("accept", "image/*");
-        document.body.appendChild(input);
-        input.click();
-        const range = getEditor().getSelection(true);
-        input.onchange = async (e: any) => {
-          if (!e.target.files?.length) return;
-          const [file] = await addFiles(e.target.files);
-          getEditor().insertEmbed(range, "image", file.url);
-          getEditor().setSelection(range.index + 1);
-        };
-      };
-      const modules = {
-        toolbar: {
-          container: [
-            ["bold", "italic", "underline", "strike", "blockquote"],
-            [{ size: ["small", false, "large", "huge"] }, { color: [] }],
-            [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }, { align: [] }],
-            ["image"],
-          ],
-          handlers: {
-            // image: imageHandler,
+const SunEditor = dynamic(() => import("suneditor-react"), {
+  ssr: false,
+});
+
+export interface EditorProps {
+  addFilesGql: (fileList: FileList, id?: string) => Promise<gql.File[]>;
+  addFile: (file: gql.File | gql.File[], options?: { idx?: number; limit?: number }) => void;
+  onChange: (content: string) => void;
+  defaultValue?: string;
+}
+
+export const Editor = ({ addFilesGql, addFile, onChange, defaultValue }: EditorProps) => {
+  const editor = useRef<SunEditorCore>();
+
+  const options = {
+    // defaultStyle: "font-size: 20px",
+    buttonList: [
+      // ["undo", "redo"],
+      ["font", "fontSize", "formatBlock"],
+      // ["paragraphStyle", "blockquote"],
+      ["bold", "underline", "italic", "strike" /** 'subscript', 'superscript' */],
+      ["fontColor", "hiliteColor" /** , 'textStyle' */],
+      ["codeView"],
+      // ["outdent", "indent"],
+      ["align", "list", "lineHeight"], // "horizontalRule",
+      // '/', // Line break
+      ["table", "link", "image", "video" /**'video', 'audio' ,'math' */], // You must add the 'katex' library at options to use the 'math' plugin.
+      /** ['imageGallery'] */ // You must add the "imageGalleryUrl".
+      // ["fullScreen", "showBlocks", "codeView"],
+      // ["removeFormat"],
+      // ['preview', 'print'],
+      // ['save', 'template'],
+    ],
+    // plugins: [plugin],
+  };
+
+  const getSunEditorInstance = (sunEditor: SunEditorCore) => {
+    editor.current = sunEditor;
+  };
+
+  const handleImageUploadBefore = (files, info, uploadHandler) => {
+    (async () => {
+      const [file] = await addFilesGql(files);
+      addFile(file);
+      const response = {
+        result: [
+          {
+            url: `${file.url}`,
+            name: files[0].name,
+            size: files[0].size,
           },
-        },
-        // imageResize: {
-        //   parchment: Quill.import("parchment"),
-        //   modules: ["Resize", "DisplaySize", "Toolbar"],
-        // },
+        ],
       };
-      return (
-        <RQ
-          ref={ref}
-          modules={modules}
-          //   formats={cnst.quillEditorFormats}
-          {...props}
-        />
-      );
-    };
-  },
-  { ssr: false }
-);
+      uploadHandler(response);
+    })();
+    uploadHandler();
+  };
+
+  return (
+    <SunEditor
+      lang="ko"
+      getSunEditorInstance={getSunEditorInstance}
+      defaultValue={defaultValue}
+      placeholder="Please type here..."
+      width="100%"
+      height="1000px"
+      setOptions={options}
+      setAllPlugins={true}
+      onChange={onChange}
+      onImageUploadBefore={handleImageUploadBefore}
+    />
+  );
+};

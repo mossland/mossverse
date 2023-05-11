@@ -9,6 +9,8 @@ import {
   query,
   ObjectType,
   BaseGql,
+  PickType,
+  Int,
 } from "@shared/util-client";
 import { File } from "../file/file.gql";
 
@@ -30,7 +32,16 @@ export class Product extends BaseGql(ProductInput) {
   status: cnst.ProductStatus;
 }
 
-export const productGraphQL = createGraphQL<"product", Product, ProductInput>(Product, ProductInput);
+@ObjectType("LightProduct", { _id: "id", gqlRef: "Product" })
+export class LightProduct extends PickType(Product, ["name", "image", "description", "status"] as const) {}
+
+@ObjectType("ProductSummary")
+export class ProductSummary {
+  @Field(() => Int)
+  totalProduct: number;
+}
+
+export const productGraphQL = createGraphQL("product" as const, Product, ProductInput, LightProduct);
 export const {
   getProduct,
   listProduct,
@@ -41,5 +52,8 @@ export const {
   removeProduct,
   productFragment,
   purifyProduct,
+  crystalizeProduct,
+  lightCrystalizeProduct,
   defaultProduct,
+  mergeProduct,
 } = productGraphQL;

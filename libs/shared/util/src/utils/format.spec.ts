@@ -1,9 +1,6 @@
 import * as format from "./format";
 
 describe("Format Utils Test", () => {
-  it("prettyPrint", () => {
-    expect(format.prettyPrint({ foo: 1, bar: "abc" })).toEqual('{"foo":1,"bar":"abc"}');
-  });
   it("discordHashTagForm", () => {
     expect(format.discordHashTagForm({ username: "bassman", discriminator: "1324" })).toEqual("@bassman#1324");
   });
@@ -14,6 +11,6 @@ describe("Format Utils Test", () => {
     expect(format.numberWithCommas(100000)).toEqual("100,000");
   });
   it("toIsoString", () => {
-    expect(format.toIsoString(new Date("1999-01-01", true))).toEqual("1999-01-01");
+    expect(format.toIsoString(new Date("1999-01-01"), true)).toEqual("1999-01-01");
   });
 });

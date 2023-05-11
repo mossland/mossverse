@@ -1,8 +1,9 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
 import { Field, Float, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
-import * as gql from "../gql";
 import { cnst } from "@shared/util";
+import { gql as shared } from "@shared/module";
+import { SurveyResponse, SurveyResponseInput, SurveyResponseSchema } from "../_scalar/surveyResponse.gql";
 
 // * 1. 보안필드를 제외한 모든 필드
 @ObjectType({ isAbstract: true })
@@ -15,17 +16,17 @@ class Base {
 
   @Field(() => String)
   @Prop({ type: String, required: false })
-  description?: string;
+  content?: string;
 
   @Field(() => [String])
   @Prop([{ type: String, required: true }])
   selections: string[];
 
-  @Field(() => gql.shared.Contract)
+  @Field(() => shared.Contract)
   @Prop({ type: ObjectId, ref: "contract", required: true, index: true, immutable: true })
   contract: Id;
 
-  @Field(() => gql.shared.Wallet)
+  @Field(() => shared.Wallet)
   @Prop({ type: ObjectId, ref: "wallet", required: true, index: true, immutable: true })
   creator: Id;
 
@@ -80,17 +81,13 @@ class Tail extends Base {
   @Prop([{ type: Number, required: true, default: 0 }])
   selectWalletNum: number[]; // 선택지별로 몇개의 지갑이 투표했는지 ( 예/아니오 [50,50] )
 
-  @Field(() => [gql.SurveyResponse], { nullable: true })
-  @Prop([{ type: gql.SurveyResponseSchema }])
-  responses: gql.SurveyResponse[];
+  @Field(() => [SurveyResponse], { nullable: true })
+  @Prop([{ type: SurveyResponseSchema }])
+  responses: SurveyResponse[];
 
-  // @Field(() => [gql.Ownership]) //* 별도로 쿼리 진행
-  @Prop({ type: [gql.shared.OwnershipSchema], default: [], select: false })
-  snapshot: gql.shared.Ownership[];
-
-  @Field(() => Date)
-  @Prop({ type: Date, required: true, index: true, default: () => new Date() })
-  snapshotAt: Date;
+  // @Field(() => [Ownership]) //* 별도로 쿼리 진행
+  @Prop({ type: ObjectId, required: false })
+  snapshot?: Id;
 
   @Field(() => String)
   @Prop({ type: String, enum: cnst.surveyStatuses, required: true, default: "active" })
@@ -104,3 +101,12 @@ export class SurveyInput extends IntersectionType(InputOverwrite, Base, InputTyp
 export class Survey extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class SurveySchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class SurveySummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalSurvey: number;
+}

@@ -5,18 +5,19 @@ import * as gql from "../gql";
 import { Id } from "@shared/util-server";
 const c = new Chance();
 export const tradeInput = (token: Id, thing: Id): gql.TradeInput => ({
+  name: c.name(),
   inputs: [
     {
       type: "token",
       token,
-      num: 1,
+      value: 1,
     },
   ],
   outputs: [
     {
       type: "thing",
       thing,
-      num: 1,
+      value: 1,
     },
   ],
   policy: ["reversible"],

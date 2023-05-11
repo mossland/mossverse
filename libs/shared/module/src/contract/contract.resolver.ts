@@ -3,10 +3,9 @@ import { ContractService } from "./contract.service";
 import { Allow, Account, BaseResolver, Id } from "@shared/util-server";
 import * as db from "../db";
 import * as gql from "../gql";
-import * as srv from "../srv";
 import { UseGuards } from "@nestjs/common";
+import { NetworkService } from "../network/network.service";
 
-BaseResolver;
 @Resolver(() => gql.Contract)
 export class ContractResolver extends BaseResolver(
   gql.Contract,
@@ -15,15 +14,9 @@ export class ContractResolver extends BaseResolver(
   Allow.Every,
   Allow.Every
 ) {
-  constructor(private readonly contractService: ContractService, private readonly networkService: srv.NetworkService) {
+  constructor(private readonly contractService: ContractService, private readonly networkService: NetworkService) {
     super(contractService);
   }
-  @UseGuards(Allow.Every)
-  @Query(() => [gql.TokenItem])
-  async myInventory(@Args({ type: () => ID, name: "walletId" }) walletId: string) {
-    return await this.contractService.myInventory(new Id(walletId));
-  }
-
   @UseGuards(Allow.Every)
   @Mutation(() => gql.Contract)
   async generateContract(
@@ -37,12 +30,6 @@ export class ContractResolver extends BaseResolver(
   @Mutation(() => [gql.Ownership])
   async snapshotContract(@Args({ type: () => ID, name: "contractId" }) contractId: string) {
     return await this.contractService.snapshot(new Id(contractId));
-  }
-
-  @UseGuards(Allow.Every)
-  @Query(() => [gql.Ownership])
-  async getContractSnapshot(@Args({ type: () => ID, name: "contractId" }) contractId: string) {
-    return await this.contractService.getSnapshot(new Id(contractId));
   }
 
   @ResolveField(() => gql.Network)

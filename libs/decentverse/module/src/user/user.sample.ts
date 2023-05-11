@@ -8,10 +8,10 @@ const c = new Chance();
 export const userInput = (): gql.UserInput => ({
   nickname: c.word(),
   currentPosition: [10, 10],
-  hotkeys: [],
+  requestRoles: [],
 });
 export const createUser = async (app: TestingModule, keyringId: Id) => {
-  const userService = app.get<srv.UserService>(srv.UserService);
-  const user = await userService.whoAmI(keyringId);
+  const keyringService = app.get<srv.shared.KeyringService>(srv.shared.KeyringService);
+  const user = await keyringService.whoAmI(keyringId);
   return await user.merge(userInput()).save();
 };

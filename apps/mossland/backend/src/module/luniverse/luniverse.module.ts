@@ -2,7 +2,7 @@ import { Global, DynamicModule, Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { LuniverseService } from "./luniverse.service";
 import axios, { AxiosInstance } from "axios";
-import { MocOptions } from "../options";
+import { MocOptions } from "../option";
 @Global()
 @Module({})
 export class LuniverseModule {

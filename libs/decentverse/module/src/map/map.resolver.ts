@@ -15,20 +15,20 @@ export class MapResolver extends BaseResolver(gql.Map, gql.MapInput, Allow.Every
   @UseGuards(Allow.Admin)
   async addMapFiles(
     @Args({ name: "files", type: () => [gql.shared.FileUpload] }) files: gql.shared.FileUpload[],
-    @Args({ name: "mapId", type: () => String, nullable: true }) mapId?: string
+    @Args({ name: "mapId", type: () => ID, nullable: true }) mapId?: string
   ) {
     return await this.fileService.addFiles(files, "map", mapId);
   }
   @ResolveField(() => gql.shared.File)
-  async top(@Parent() map: gql.Map) {
-    return await this.fileService.load(map.top);
+  async splash(@Parent() map: db.Map.Doc) {
+    return await this.fileService.load(map.splash);
   }
   @ResolveField(() => gql.shared.File)
-  async bottom(@Parent() map: gql.Map) {
-    return await this.fileService.load(map.bottom);
+  async logo(@Parent() map: db.Map.Doc) {
+    return await this.fileService.load(map.logo);
   }
   @ResolveField(() => gql.shared.File)
-  async lighting(@Parent() map: gql.Map) {
-    return await this.fileService.load(map.lighting);
+  async miniView(@Parent() map: db.Map.Doc) {
+    return await this.fileService.load(map.miniView);
   }
 }

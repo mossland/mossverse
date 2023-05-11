@@ -1,7 +1,8 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
 import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
-import * as gql from "../gql";
+import { Character } from "../character/character.gql";
+import { Flow, FlowInput, FlowSchema } from "../_scalar/flow.gql";
 
 // * 1. 보안필드를 제외한 모든 필드
 @ObjectType({ isAbstract: true })
@@ -12,13 +13,13 @@ class Base {
   @Prop({ type: String, required: true, index: true })
   title: string;
 
-  @Field(() => [gql.Character])
+  @Field(() => [Character])
   @Prop([{ type: ObjectId, required: true }])
   characters: Id[];
 
-  @Field(() => [gql.Flow])
-  @Prop([{ type: gql.FlowSchema }])
-  flows: gql.Flow[];
+  @Field(() => [Flow])
+  @Prop([{ type: FlowSchema }])
+  flows: Flow[];
 }
 
 // * 2. 다른 필드를 참조하는 값 Input형식으로 덮어씌우기
@@ -26,8 +27,8 @@ class Base {
 class InputOverwrite {
   @Field(() => [ID])
   characters: Id[];
-  @Field(() => [gql.FlowInput])
-  flows: gql.FlowInput[];
+  @Field(() => [FlowInput])
+  flows: FlowInput[];
 }
 
 // * 3. 보안필드, default 필드 생성 필수
@@ -52,3 +53,12 @@ export class DialogInput extends IntersectionType(InputOverwrite, Base, InputTyp
 export class Dialog extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class DialogSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class DialogSummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalDialog: number;
+}

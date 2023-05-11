@@ -1,7 +1,6 @@
 import "reflect-metadata";
-import gql from "graphql-tag";
 import { Utils } from "@shared/util";
-import { BaseObject, ClassMeta, defaultMap, DefaultOf, FieldMeta, getFieldMetas, PurifyFunc } from "./scalar";
+import { BaseObject, ClassMeta, defaultMap, DefaultOf, FieldMeta, getFieldMetas, PurifyFunc, Type } from "./scalar";
 
 const getDefaultValue = (metadata: FieldMeta) => {
   if (metadata.default) return metadata.default;
@@ -11,8 +10,7 @@ const getDefaultValue = (metadata: FieldMeta) => {
   return defaultMap[metadata.name];
 };
 
-export const makeDefault = <T>(target: any, isChild?: boolean): DefaultOf<T> => {
-  Reflect.getOwnMetadata("class", target.prototype);
+export const makeDefault = <T>(target: Type<T>, isChild?: boolean): DefaultOf<T> => {
   const classMeta: ClassMeta | undefined = Reflect.getOwnMetadata("class", target.prototype);
   if (isChild && classMeta?._id) return null as any;
   const metadatas = getFieldMetas(target);

@@ -216,3 +216,55 @@ export interface Signature {
   signmessage: string;
   signaddress: string;
 }
+
+@InputType({ isAbstract: true })
+@ObjectType()
+@Schema()
+export class AccessStat {
+  @Field()
+  @Prop({ type: Number, required: true, default: 0 })
+  request: number;
+
+  @Field()
+  @Prop({ type: Number, required: true, default: 0 })
+  device: number;
+
+  @Field()
+  @Prop({ type: Number, required: true, default: 0 })
+  ip: number;
+
+  @Field()
+  @Prop({ type: Number, required: true, default: 0 })
+  country: number;
+}
+@InputType()
+export class AccessStatInput extends AccessStat {}
+export const AccessStatSchema = SchemaFactory.createForClass(AccessStat);
+
+@InputType({ isAbstract: true })
+@ObjectType()
+@Schema()
+export class AccessLog {
+  @Field()
+  @Prop({ type: Number, required: true, default: 0 })
+  period: number;
+
+  @Field()
+  @Prop({ type: Number, required: true, default: 0 })
+  device: number;
+
+  @Field()
+  @Prop({ type: Number, required: true, default: 0 })
+  ip: number;
+
+  @Field()
+  @Prop({ type: Number, required: true, default: 0 })
+  country: number;
+
+  @Field()
+  @Prop({ type: Date, required: true, default: () => new Date() })
+  at: Date;
+}
+@InputType()
+export class AccessLogInput extends AccessLog {}
+export const AccessLogSchema = SchemaFactory.createForClass(AccessLog);

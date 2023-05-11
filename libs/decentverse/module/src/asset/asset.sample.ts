@@ -9,10 +9,10 @@ export const assetInput = (top: Id, bottom: Id, lighting: Id): gql.AssetInput =>
   top,
   bottom,
   lighting,
-  collisions: [],
-  webviews: [],
-  dialogues: [],
-  lives: [],
+  // collisions: [],
+  // webviews: [],
+  // dialogues: [],
+  // lives: [],
 });
 export const createAsset = async (app: TestingModule, fileId: Id) => {
   const assetService = app.get<srv.AssetService>(srv.AssetService);

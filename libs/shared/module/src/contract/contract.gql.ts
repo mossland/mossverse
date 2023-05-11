@@ -1,16 +1,15 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId, validate } from "@shared/util-server";
 import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
-import { Schema as MongoSchema } from "mongoose";
-import * as gql from "../gql";
 import { cnst } from "@shared/util";
+import { Network } from "../network/network.gql";
 
 // * 1. 보안필드를 제외한 모든 필드
 @ObjectType({ isAbstract: true })
 @InputType({ isAbstract: true })
 @Schema()
 class Base {
-  @Field(() => gql.Network)
+  @Field(() => Network)
   @Prop({ type: ObjectId, ref: "network", required: true, index: true })
   network: Id;
 
@@ -61,14 +60,6 @@ class Tail extends Base {
   @Prop({ type: Number, required: true, default: -1 })
   bn: number;
 
-  // @Field(() => [gql.Ownership]) //* 별도로 쿼리 진행
-  @Prop({ type: [gql.OwnershipSchema], default: [], select: false })
-  snapshot: gql.Ownership[];
-
-  @Field(() => Date)
-  @Prop({ type: Date, required: true, index: true, default: () => new Date() })
-  snapshotAt: Date;
-
   @Field(() => String)
   @Prop({ type: String, enum: cnst.contractStatuses, required: true, default: "active" })
   status: cnst.ContractStatus;
@@ -81,3 +72,12 @@ export class ContractInput extends IntersectionType(InputOverwrite, Base, InputT
 export class Contract extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class ContractSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class ContractSummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalContract: number;
+}

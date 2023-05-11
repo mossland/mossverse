@@ -1,64 +1,43 @@
 // ! This File Needs to be Refactor
-import styled from "styled-components";
-import { store } from "@shared/data-access";
+import { gql, st } from "@shared/data-access";
 import { ConnectButton } from "./index";
 import { KlaytnIcon, LuniverseIcon, EthereumIcon, ModalContainer } from "../common";
 
 export type LoginSelectorProps = {
-  klaytn?: () => Promise<void>;
-  ethereum?: () => Promise<void>;
-  luniverse?: () => Promise<void>;
+  networkList: gql.LightNetwork[];
 };
 
-export const LoginSelector = ({ klaytn, ethereum, luniverse }: LoginSelectorProps) => {
-  const isOpenModal = store.keyring.use.isOpenModal();
+export const LoginSelector = ({ networkList }: LoginSelectorProps) => {
+  const keyringModal = st.use.keyringModal();
 
-  if (!isOpenModal) return null;
-
+  if (keyringModal !== "addWallet") return null;
   return (
     <ModalContainer
-      showModal={isOpenModal}
-      closeShowModal={() => store.keyring.setState({ isOpenModal: false })}
       title="Select Network"
+      showModal={keyringModal === "addWallet"}
+      closeShowModal={() => st.set({ keyringModal: null })}
     >
-      <LoginSelectorContainer>
-        {klaytn && (
-          <ConnectButton
-            title={"Klaytn"}
-            fontColor={"white"}
-            backgroundColor={"#69583F"}
-            icon={<KlaytnIcon />}
-            onClick={klaytn}
-          />
+      <div className="py-[24px] px-[22px] flex gap-[18px] flex-col z-[2]">
+        {networkList.map((network) =>
+          network.provider === "klaytn" ? (
+            <ConnectButton
+              title={"Klaytn"}
+              fontColor={"white"}
+              backgroundColor={"#69583F"}
+              icon={<KlaytnIcon />}
+              onClick={() => st.do.signuporinWallet("kaikas", network, { loginType: "skipReplace" })}
+            />
+          ) : network.provider === "ethereum" ? (
+            <ConnectButton
+              title={"Ethereum"}
+              fontColor={"white"}
+              backgroundColor={"#343434"}
+              icon={<EthereumIcon />}
+              onClick={() => st.do.signuporinWallet("metamask", network, { loginType: "skipReplace" })}
+            />
+          ) : null
         )}
-        {ethereum && (
-          <ConnectButton
-            title={"Ethereum"}
-            fontColor={"white"}
-            backgroundColor={"#343434"}
-            icon={<EthereumIcon />}
-            onClick={ethereum}
-          />
-        )}
-        {luniverse && (
-          <ConnectButton
-            title={"Luniverse"}
-            fontColor={"white"}
-            backgroundColor={"#1A97DB"}
-            icon={<LuniverseIcon />}
-            onClick={luniverse}
-          />
-        )}
-      </LoginSelectorContainer>
+      </div>
     </ModalContainer>
   );
 };
-
-const LoginSelectorContainer = styled.div`
-  padding: 24px 22px;
-  display: flex;
-  gap: 18px;
-  flex-direction: column;
-  z-index: 2;
-  /* height: 240px; */
-`;

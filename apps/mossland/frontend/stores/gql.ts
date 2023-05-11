@@ -1,6 +1,12 @@
 export { gql as shared } from "@shared/data-access";
+export { gql as social } from "@social/data-access";
 export { gql as platform } from "@platform/data-access";
 export { gql as decentverse } from "@decentverse/data-access";
 export * from "./mocWallet/mocWallet.gql";
 export * from "./mocSurvey/mocSurvey.gql";
+export * from "./user/user.gql";
 export * from "./_scalar/scalar.gql";
+export * from "./stakePool/stakePool.gql";
+export * from "./advertise/advertise.gql";
+export * from "./building/building.gql";
+export * from "./app/app.gql";

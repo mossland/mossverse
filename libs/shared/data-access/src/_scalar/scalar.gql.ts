@@ -1,12 +1,21 @@
 import graphql from "graphql-tag";
 import { cnst } from "@shared/util";
-import { BaseArrayFieldGql, createFragment, Field, InputType, Int, makeDefault, ObjectType } from "@shared/util-client";
+import {
+  BaseArrayFieldGql,
+  createFragment,
+  Field,
+  InputType,
+  Int,
+  makeDefault,
+  ObjectType,
+  Float,
+} from "@shared/util-client";
 import WalletConnect from "@walletconnect/client";
 
 @ObjectType("AccessToken")
 export class AccessToken {
   @Field(() => String)
-  accessToken: string;
+  jwt: string;
 }
 export const accessTokenFragment = createFragment(AccessToken);
 
@@ -61,17 +70,6 @@ export class TokenUrlInput {
 export class TokenUrl extends TokenUrlInput {}
 export const tokenUrlFragment = createFragment(TokenUrl);
 
-@InputType("ReferenceInput")
-export class ReferenceInput {
-  @Field(() => String)
-  type: string;
-  @Field(() => String)
-  ref: string;
-}
-@ObjectType("Reference")
-export class Reference extends BaseArrayFieldGql(ReferenceInput) {}
-export const referenceFragment = createFragment(Reference);
-
 @InputType("ExternalLinkInput")
 export class ExternalLinkInput {
   @Field(() => String, { default: "website" })
@@ -89,5 +87,69 @@ export type WalletConnectType = {
   accounts: string[];
   chainId: number;
 };
-export type LoginMethod = cnst.NetworkProvider | "walletConnect" | "guest" | "password" | "none";
 export type MetamaskProvider = "ethereum";
+
+@InputType("AccessStatInput")
+export class AccessStatInput {
+  @Field(() => Int)
+  request: number;
+
+  @Field(() => Int)
+  device: number;
+
+  @Field(() => Int)
+  ip: number;
+
+  @Field(() => Int)
+  country: number;
+}
+
+@ObjectType("AccessStat")
+export class AccessStat extends AccessStatInput {}
+
+@InputType("CoordinateInput")
+export class CoordinateInput {
+  @Field(() => String)
+  type: "Point";
+
+  @Field(() => [Float])
+  coordinates: number[];
+}
+@ObjectType("Coordinate")
+export class Coordinate extends CoordinateInput {}
+
+@InputType("AccessLogInput")
+export class AccessLogInput {
+  @Field(() => Int)
+  period: number;
+
+  @Field(() => String)
+  countryCode: string;
+
+  @Field(() => String)
+  countryName: string;
+
+  @Field(() => String, { nullable: true })
+  city: string | null;
+
+  @Field(() => Int, { nullable: true })
+  postal: number | null;
+
+  @Field(() => Coordinate)
+  location: Coordinate;
+
+  @Field(() => String)
+  ipv4: string;
+
+  @Field(() => String, { nullable: true })
+  state: string | null;
+
+  @Field(() => String)
+  userAgent: string;
+
+  @Field(() => Date)
+  at: Date;
+}
+
+@ObjectType("AccessLog")
+export class AccessLog extends AccessLogInput {}

@@ -1,58 +1,30 @@
 import React, { ReactNode } from "react";
-import styled, { keyframes } from "styled-components";
 import { BiX } from "react-icons/bi";
 import { ReduceIcon } from "./";
+import { twMerge } from "tailwind-merge";
 
 type WindowHeaderProps = {
-  title: string;
+  title: ReactNode;
   close: () => void;
   type?: "close" | "reduce";
+  className?: string;
 };
 
-export const WindowHeader = ({ title, close, type = "close" }: WindowHeaderProps) => {
+export const WindowHeader = ({ title, close, type = "close", className = "" }: WindowHeaderProps) => {
   return (
-    <WindowHeaderContainer className="modal-header">
-      <h2>{title}</h2>
-      <div className="close-button" onClick={close}>
-        {type === "close" ? <BiX className="bix" /> : <ReduceIcon />}
+    <div
+      className={twMerge(
+        "bg-white/60 relative border-b-[2px] border-black height-[36px] rounded-t-[6px] overflow-hidden text-center",
+        className
+      )}
+    >
+      <h2 className="text-[22px] m-0">{title}</h2>
+      <div
+        onClick={close}
+        className="h-[34px] absolute w-[40px] right-0 top-0 border-l-[2px] border-black cursor-pointer flex items-center justify-center"
+      >
+        {type === "close" ? <BiX className="text-[32px]" /> : <ReduceIcon />}
       </div>
-    </WindowHeaderContainer>
+    </div>
   );
 };
-
-const WindowHeaderContainer = styled.div`
-  position: relative;
-  border-bottom: 2px solid #000;
-  height: 36px;
-  background-color: rgba(255, 255, 255, 0.6);
-  border-top-right-radius: 6px;
-  border-top-left-radius: 6px;
-  overflow: hidden;
-  text-align: center;
-  h2 {
-    font-size: 22px;
-    margin: 0;
-  }
-  .close-button {
-    height: 34px;
-    position: absolute;
-    width: 40px;
-    right: 0;
-    top: 0;
-    /* background-color: rgba(255, 255, 255, 0.5); */
-    border-left: 2px solid #000;
-    cursor: pointer;
-    svg.bix {
-      font-size: 32px;
-      margin: 2px auto 0;
-    }
-    .reduce {
-      width: 18px;
-      margin: 7px auto 0;
-    }
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.8);
-      transition: 0.5s;
-    }
-  }
-`;

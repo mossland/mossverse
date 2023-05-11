@@ -1,12 +1,11 @@
 import "reflect-metadata";
-import { DocumentNode } from "graphql";
 import gql from "graphql-tag";
 import { Utils } from "@shared/util";
 import { FieldMeta, getClassMeta } from "./scalar";
 
-export const makeFragmentGqlStr = (refName: string, metadatas: FieldMeta[]) => {
+export const makeFragmentGqlStr = (refName: string, gqlRef: string, metadatas: FieldMeta[]) => {
   const gqlStr =
-    `\n  fragment ${Utils.lowerlize(refName)}Fragment on ${Utils.capitalize(refName)} {\n` +
+    `\n  fragment ${Utils.lowerlize(refName)}Fragment on ${Utils.capitalize(gqlRef)} {\n` +
     metadatas
       .map((metadata) => {
         return metadata.isClass

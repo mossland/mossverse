@@ -1,4 +1,5 @@
 {
+  "name": "mossland/backend",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/mossland/backend/src",
   "projectType": "application",
@@ -31,7 +32,7 @@
       "executor": "@nrwl/workspace:run-commands",
       "options": {
         "commands": [
-          "cross-env  SERVICE_ENV=script ENVIRONMENT={args.env} ts-node --project tsconfig.app.json -r tsconfig-paths/register --transpile-only ./src/{args.name}.ts "
+          "cross-env  SERVICE_ENV=script ENVIRONMENT={args.env} ts-node --project tsconfig.app.json -r tsconfig-paths/register --transpile-only ./src/{args.file}.ts "
         ],
         "cwd": "apps/mossland/backend",
         "parallel": false
@@ -52,7 +53,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/mossland/backend"],
+      "outputs": ["{workspaceRoot}/coverage/apps/mossland/backend"],
       "options": {
         "jestConfig": "apps/mossland/backend/jest.config.ts",
         "passWithNoTests": true

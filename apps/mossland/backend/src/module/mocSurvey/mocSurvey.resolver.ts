@@ -24,6 +24,14 @@ export class MocSurveyResolver extends BaseResolver(
 
   @Mutation(() => gql.MocSurvey)
   @UseGuards(Allow.User)
+  async createMocSurvey(
+    @Args({ name: "data", type: () => gql.MocSurveyInput }) data: gql.MocSurveyInput,
+    @Signature() address: string
+  ) {
+    return await this.mocSurveyService.generateMocSurvey(data);
+  }
+  @Mutation(() => gql.MocSurvey)
+  @UseGuards(Allow.User)
   async generateMocSurvey(
     @Args({ name: "data", type: () => gql.MocSurveyInput }) data: gql.MocSurveyInput,
     @Signature() address: string

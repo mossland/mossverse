@@ -1,7 +1,6 @@
 import { Prop, Schema } from "@nestjs/mongoose";
 import { BaseGql, dbConfig, Id, ObjectId } from "@shared/util-server";
 import { Field, ID, InputType, Int, IntersectionType, ObjectType } from "@nestjs/graphql";
-import * as gql from "../gql";
 import { cnst } from "@shared/util";
 
 @ObjectType({ isAbstract: true })
@@ -48,3 +47,12 @@ export class FileInput extends IntersectionType(InputOverwrite, Base, InputType)
 export class File extends IntersectionType(BaseGql(Base), Tail) {}
 @Schema()
 export class FileSchema extends Tail {}
+
+// * 4. 데이터 모니터링을 위한 Summary 모델
+@ObjectType({ isAbstract: true })
+@Schema()
+export class FileSummary {
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, min: 0, default: 0 })
+  totalFile: number;
+}

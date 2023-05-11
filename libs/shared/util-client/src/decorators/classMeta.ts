@@ -1,11 +1,8 @@
 import "reflect-metadata";
-import { DocumentNode } from "graphql";
-import gql from "graphql-tag";
-import { Utils } from "@shared/util";
 import { ClassMeta, ClassProps, FieldMeta, getClassMeta } from "./scalar";
 import { makeFragmentGqlStr } from "./fragment";
 import { makeDefault } from "./defaultValue";
-import { makePurify } from "./purify";
+import { makeCrystalize, makePurify } from "./purify";
 
 export const getChildClassRefs = (metadatas: FieldMeta[]) => {
   const childRefs = metadatas
@@ -19,11 +16,15 @@ export const getChildClassRefs = (metadatas: FieldMeta[]) => {
   ); // remove duplicates
 };
 
-export function ObjectType(refName: string, { _id, isAbstract }: ClassProps = {}) {
+export function ObjectType(refName: string, { _id, isAbstract, gqlRef = refName }: ClassProps = {}) {
   return function (target: any) {
     const metadataMap: Map<string, FieldMeta> = Reflect.getMetadata("fields", target.prototype) ?? new Map();
     for (const [field, metadata] of metadataMap)
-      if (metadata.className === target.name) metadataMap.set(field, { ...metadata, tailed: true });
+      metadataMap.set(field, {
+        ...metadata,
+        className: metadata.className ?? refName,
+        tailed: metadata.tailed || !metadata.className,
+      });
     Reflect.defineMetadata("fields", metadataMap, target.prototype);
     const metadatas = [...metadataMap.values()];
     const classMeta: ClassMeta = {
@@ -32,18 +33,26 @@ export function ObjectType(refName: string, { _id, isAbstract }: ClassProps = {}
       refName,
       modelRef: target,
       purify: makePurify(target),
+      crystalize: makeCrystalize(target),
       default: makeDefault(target),
-      gqlStr: makeFragmentGqlStr(refName, metadatas),
+      gqlRef,
+      gqlStr: makeFragmentGqlStr(refName, gqlRef, metadatas),
       childRefs: getChildClassRefs(metadatas),
+      hasFile: metadatas.some((metadata) => metadata.name === "File"),
     };
     Reflect.defineMetadata("class", classMeta, target.prototype);
   };
 }
-export function InputType(refName: string, { _id, isAbstract }: ClassProps = {}): ClassDecorator {
+export function InputType(refName: string, { _id, isAbstract, gqlRef = refName }: ClassProps = {}): ClassDecorator {
   return function (target: any) {
     const metadataMap: Map<string, FieldMeta> = Reflect.getMetadata("fields", target.prototype) ?? new Map();
     for (const [field, metadata] of metadataMap)
-      if (metadata.className === target.name) metadataMap.set(field, { ...metadata, tailed: false });
+      metadataMap.set(field, {
+        ...metadata,
+        className: metadata.className ?? refName,
+        tailed: !metadata.tailed && !!metadata.className,
+      });
+
     Reflect.defineMetadata("fields", metadataMap, target.prototype);
     const metadatas = [...metadataMap.values()];
     const classMeta: ClassMeta = {
@@ -52,9 +61,12 @@ export function InputType(refName: string, { _id, isAbstract }: ClassProps = {})
       refName,
       modelRef: target,
       purify: makePurify(target),
+      crystalize: makeCrystalize(target),
       default: makeDefault(target),
-      gqlStr: makeFragmentGqlStr(refName, metadatas),
+      gqlRef,
+      gqlStr: makeFragmentGqlStr(refName, gqlRef, metadatas),
       childRefs: getChildClassRefs(metadatas),
+      hasFile: metadatas.some((metadata) => metadata.name === "File"),
     };
     Reflect.defineMetadata("class", classMeta, target.prototype);
   };

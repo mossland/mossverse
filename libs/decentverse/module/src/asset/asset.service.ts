@@ -3,23 +3,26 @@ import { InjectModel } from "@nestjs/mongoose";
 import * as Asset from "./asset.model";
 import * as gql from "../gql";
 import * as db from "../db";
-import * as srv from "../srv";
+import { srv as shared } from "@shared/module";
 import { LoadService } from "@shared/util-server";
 
 @Injectable()
 export class AssetService extends LoadService<Asset.Mdl, Asset.Doc, Asset.Input> {
   constructor(
     @InjectModel(Asset.name) private readonly Asset: Asset.Mdl,
-    private readonly fileService: srv.shared.FileService
+    private readonly fileService: shared.FileService
   ) {
     super(AssetService.name, Asset);
   }
-  async create(data: Asset.Input) {
-    const files = await Promise.all([
-      this.fileService.load(data.top),
-      this.fileService.load(data.bottom),
-      this.fileService.load(data.lighting),
-    ]);
+  override async create(data: Asset.Input) {
+    const files = (
+      await Promise.all([
+        this.fileService.load(data.top),
+        this.fileService.load(data.wall),
+        this.fileService.load(data.bottom),
+        this.fileService.load(data.lighting),
+      ])
+    ).filter((f) => !!f);
     if (
       !files.every(
         (file) =>
@@ -28,6 +31,11 @@ export class AssetService extends LoadService<Asset.Mdl, Asset.Doc, Asset.Input>
       !files[0]
     )
       throw new Error("Image size is Different");
-    return await this.Asset.create({ ...data, wh: files[0].imageSize });
+    return await new this.Asset({ ...data, wh: files[0].imageSize }).save();
+  }
+  async summarize(): Promise<gql.AssetSummary> {
+    return {
+      totalAsset: await this.Asset.countDocuments({ status: { $ne: "inactive" } }),
+    };
   }
 }

@@ -10,6 +10,7 @@ export const characterInput = (file: Id): gql.CharacterInput => ({
   file,
   tileSize: [20, 20],
   totalSize: [100, 100],
+  description: c.sentence(),
   size: [10, 10],
   right: {
     idle: {

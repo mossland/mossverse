@@ -11,9 +11,10 @@ import {
   Int,
   BaseArrayFieldGql,
   createFragment,
+  PickType,
 } from "@shared/util-client";
 import { gql as shared } from "@shared/data-access";
-import { Collision } from "../_scalar/scalar.gql";
+import { Collision } from "../collision/collision.gql";
 import { Webview } from "../webview/webview.gql";
 import { Dialogue } from "../dialog/dialog.gql";
 import { Live } from "../live/live.gql";
@@ -27,22 +28,25 @@ export class AssetInput {
   top: shared.File | null;
 
   @Field(() => shared.File, { nullable: true })
+  wall: shared.File | null;
+
+  @Field(() => shared.File, { nullable: true })
   bottom: shared.File | null;
 
   @Field(() => shared.File, { nullable: true })
   lighting: shared.File | null;
 
-  @Field(() => [Collision])
-  collisions: Collision[];
+  //   @Field(() => [Collision])
+  //   collisions: Collision[];
 
-  @Field(() => [Webview])
-  webviews: Webview[];
+  //   @Field(() => [Webview])
+  //   webviews: Webview[];
 
-  @Field(() => [Live])
-  lives: Live[];
+  //   @Field(() => [Live])
+  //   lives: Live[];
 
-  @Field(() => [Dialogue])
-  dialogues: Dialogue[];
+  //   @Field(() => [Dialogue])
+  //   dialogues: Dialogue[];
 }
 
 @ObjectType("Asset", { _id: "id" })
@@ -54,7 +58,20 @@ export class Asset extends BaseGql(AssetInput) {
   status: cnst.AssetStatus;
 }
 
-export const assetGraphQL = createGraphQL<"asset", Asset, AssetInput>(Asset, AssetInput);
+@ObjectType("LightAsset", { _id: "id", gqlRef: "Asset" })
+export class LightAsset extends PickType(Asset, ["name", "bottom", "wall", "top", "lighting", "wh"] as const) {}
+
+@ObjectType("AssetSummary")
+export class AssetSummary {
+  @Field(() => Int)
+  totalAsset: number;
+}
+
+export const assetQueryMap = {
+  totalAsset: { status: { $ne: "inactive" } },
+};
+
+export const assetGraphQL = createGraphQL("asset" as const, Asset, AssetInput, LightAsset);
 export const {
   getAsset,
   listAsset,
@@ -65,36 +82,11 @@ export const {
   removeAsset,
   assetFragment,
   purifyAsset,
+  crystalizeAsset,
+  lightCrystalizeAsset,
   defaultAsset,
+  addAssetFiles,
+  mergeAsset,
 } = assetGraphQL;
 
-@InputType("PlacementInput")
-export class PlacementInput {
-  @Field(() => Asset)
-  asset: Asset;
-
-  @Field(() => [Int])
-  center: [number, number];
-
-  @Field(() => [Int])
-  wh: [number, number];
-}
-
-@ObjectType("Placement")
-export class Placement extends BaseArrayFieldGql(PlacementInput) {}
-export const placementFragment = createFragment(Placement);
-
-export type AssetFile = "top" | "bottom" | "lighting";
-
-// * Add AssetFiles Mutation
-export type AddAssetFilesMutation = { addAssetFiles: shared.File[] };
-export const addAssetFilesMutation = graphql`
-  ${shared.fileFragment}
-  mutation addAssetFiles($files: [Upload!]!, $assetId: String) {
-    addAssetFiles(files: $files, assetId: $assetId) {
-      ...fileFragment
-    }
-  }
-`;
-export const addAssetFiles = async (files: FileList, assetId?: string) =>
-  (await mutate<AddAssetFilesMutation>(addAssetFilesMutation, { files, assetId })).addAssetFiles;
+export type AssetFile = "top" | "wall" | "bottom" | "lighting";

@@ -13,7 +13,7 @@ import { DeleteOutlined } from "@ant-design/icons";
 export interface LivesProp {
   lives?: gql.Live[] | null;
 }
-export const Lives = ({ lives = store.map.use.lives() }: LivesProp) => {
+export const Lives = ({ lives = store.map((state) => state.mapForm.lives) }: LivesProp) => {
   return (
     <Suspense fallback={null}>
       {lives?.map((live, idx) => (
@@ -72,7 +72,7 @@ export const LivePreview = ({ mouse }: LivePreviewProps) => {
   const mesh = useRef<Mesh>(null);
   const plane = useRef<PlaneGeometry>(null);
   const point = useRef<[number, number] | null>();
-  const lives = store.map.use.lives();
+  const lives = store.map((state) => state.mapForm.lives);
   const updateMap = store.map.use.updateMap();
   const get = store.live.use.get();
   useEffect(() => {
@@ -109,7 +109,7 @@ export const LivePreview = ({ mouse }: LivePreviewProps) => {
         Math.abs(Math.floor(e.point.x - point.current[0])),
         Math.abs(Math.floor(e.point.y - point.current[1])),
       ] as [number, number];
-      store.map.setState({ lives: [...lives, { ...get(), center, wh, id: "" }] });
+      store.map.do.addLivesOnMap({ ...get(), center, wh, id: "" });
       plane.current?.copy(new PlaneGeometry(5, 5));
       point.current = null;
       await updateMap();
@@ -123,13 +123,13 @@ export const LivePreview = ({ mouse }: LivePreviewProps) => {
   );
 };
 export const LiveList = () => {
-  const lives = store.map.use.lives();
+  const lives = store.map((state) => state.mapForm.lives);
   const pointer = store.map.use.pointer();
   const updateMap = store.map.use.updateMap();
   if (!lives) return <></>;
   const targets = lives.filter((live) => Utils.isIn(pointer, live));
   const handleRemove = async (live: gql.Live) => {
-    store.map.setState({ lives: lives.filter((l) => l !== live) });
+    store.map.do.setLivesOnMap(lives.filter((l) => l !== live));
     await updateMap();
   };
   return (

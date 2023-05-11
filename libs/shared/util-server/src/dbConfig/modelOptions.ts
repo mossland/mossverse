@@ -4,6 +4,9 @@ export interface DefaultMdlStats<TDocument, TSchema> {
   pickAndWrite: (docId: Types.ObjectId | string, rawData: Partial<TSchema>) => Promise<TDocument>;
   pickOne: (query: FilterQuery<TSchema>) => Promise<TDocument>;
   pickById: (docId: Types.ObjectId | string | undefined) => Promise<TDocument>;
+  addSummary: (prefix?: string | string[], num?: number) => Promise<void>;
+  moveSummary: (prev: string, next: string, num?: number) => Promise<void>;
+  subSummary: (prefix?: string | string[], num?: number) => Promise<void>;
   sample: (query: FilterQuery<TSchema>, size?: number, aggregations?: PipelineStage[]) => Promise<TDocument[]>;
 }
 export const getDefaultModelStatics = <TDocument, TSchema>(): DefaultMdlStats<TDocument, TSchema> => ({
@@ -36,6 +39,26 @@ export const getDefaultModelStatics = <TDocument, TSchema>(): DefaultMdlStats<TD
     aggregations: PipelineStage[] = []
   ): Promise<TDocument[]> {
     return await this.aggregate([{ $match: { ...query } }, { $sample: { size } }, ...aggregations]);
+  },
+  addSummary: async function (prefix = "total", num = 1): Promise<void> {
+    const update = Array.isArray(prefix)
+      ? { $inc: { ...prefix.reduce((acc, cur) => ({ ...acc, [`${cur}${this.modelName}`]: num }), {}) } }
+      : { $inc: { [`${prefix}${this.modelName}`]: num } };
+    await this.db.collection("summaries").updateOne({ status: "active" }, update);
+  },
+  moveSummary: async function (prev: string, next: string, num = 1): Promise<void> {
+    await this.db
+      .collection("summaries")
+      .updateOne(
+        { status: "active" },
+        { $inc: { [`${prev}${this.modelName}`]: -num, [`${next}${this.modelName}`]: num } }
+      );
+  },
+  subSummary: async function (prefix = "total", num = 1): Promise<void> {
+    const update = Array.isArray(prefix)
+      ? { $inc: { ...prefix.reduce((acc, cur) => ({ ...acc, [`${cur}${this.modelName}`]: -num }), {}) } }
+      : { $inc: { [`${prefix}${this.modelName}`]: -num } };
+    await this.db.collection("summaries").updateOne({ status: "active" }, update);
   },
 });
 export interface DefaultQryHelps<TDocument, TQryHelps> {

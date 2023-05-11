@@ -19,7 +19,7 @@ export const DayNight = () => {
     checkDayNight();
   }, 600000);
 
-  if (daylight === "day" || !map || !map.config.dayNight) return null;
+  if (daylight === "day" || !map || !map.config.dayNight || map === "loading") return null;
   const center = [map.wh[0] / 2, map.wh[1] / 2];
   return (
     <Suspense fallback={null}>

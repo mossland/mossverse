@@ -1,8 +1,6 @@
-import { CSSProp } from "styled-components";
-
-interface CustomProps {
-  customStyle?: CSSProp;
-}
+// interface CustomProps {
+//   customStyle?: CSSProp;
+// }
 
 interface CustomButtonProps {
   backgroundColor?: string;
@@ -27,11 +25,11 @@ export type UiWebTextAreaProps = React.DetailedHTMLProps<
 > &
   CustomTextInputProps;
 
-export type UiWebTextProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement> &
-  CustomProps;
+// export type UiWebTextProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement> &
+//   CustomProps;
 
-export type UiWebImageProps = React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement> &
-  CustomProps;
+// export type UiWebImageProps = React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement> &
+//   CustomProps;
 
 export type UiWebTextInputProps = React.DetailedHTMLProps<
   React.InputHTMLAttributes<HTMLInputElement>,
@@ -45,5 +43,5 @@ export type UiWebNumberInputProps = React.DetailedHTMLProps<
 > &
   CustomNumberInputProps;
 
-export type UiWebDivProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLHeadingElement> &
-  CustomProps;
+// export type UiWebDivProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLHeadingElement> &
+//   CustomProps;

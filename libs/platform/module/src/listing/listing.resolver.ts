@@ -40,7 +40,7 @@ export class ListingResolver extends BaseResolver(
   async purchaseListing(
     @Args({ name: "listingId", type: () => ID }) listingId: Id,
     @Args({ name: "priceTag", type: () => gql.PriceTagInput }) priceTag: gql.PriceTagInput,
-    @Args({ name: "num", type: () => Float }) num: number,
+    @Args({ name: "value", type: () => Float }) value: number,
     @Args({ name: "shipInfo", type: () => gql.ShipInfoInput, nullable: true }) shipInfo: gql.ShipInfoInput | null,
     @Auth() account: Account,
     @Signature() address: string
@@ -48,7 +48,7 @@ export class ListingResolver extends BaseResolver(
     return await this.listingService.purchaseListing(
       new Id(listingId),
       priceTag,
-      num,
+      value,
       shipInfo,
       new Id(account.keyring),
       address

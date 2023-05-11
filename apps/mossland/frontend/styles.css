@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind variants;
+
+@layer base {
+  html {
+    font-family: notosans, system-ui, sans-serif;
+    color: #3b5341;
+    overflow-x: hidden;
+  }
+  @media screen and (max-width: 1024px) {
+    .slide {
+      height: auto !important;
+    }
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  button {
+    transition: all 0.5s;
+
+    /* border: 2px solid; */
+  }
+  .ant-btn-default:not(:disabled):hover {
+    border-color: black;
+    color: black;
+  }
+  button:enabled:hover {
+    filter: brightness(90%);
+    /* color: black; */
+    cursor: pointer;
+    /* background-color: ; */
+  }
+  button:disabled {
+    cursor: auto;
+    opacity: 0.5;
+    /* background-color: ; */
+  }
+  div {
+    font-size: 14px;
+    font-weight: 400;
+    font-family: Ubuntu Mono;
+    /* line-height: 1em; */
+  }
+
+  input {
+    padding: 10px 11px;
+    font-size: 16px;
+    /* height: 30px; */
+    border-radius: 6px;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #d9d9d9;
+    transition: all 0.5s;
+  }
+  input:read-only:hover {
+  }
+  input:read-only:focus {
+    border-width: 1px;
+    outline: 0;
+  }
+  /* input:active:hover {
+    border: 1px solid #40a9ff;
+    outline: 0;
+  }
+  input:active:focus {
+    border-color: #40a9ff;
+    outline: 0;
+  } */
+
+  textarea {
+    transition: all 0.5s;
+  }
+  textarea:focus {
+    border-color: #40a9ff;
+    outline: 0;
+  }
+  textarea:hover {
+    border: 1px solid #40a9ff;
+  }
+
+  .fill-available {
+    @supports (-webkit-touch-callout: none) {
+      height: -webkit-fill-available;
+    }
+  }
+
+  .user-drag-none {
+    -webkit-user-drag: none;
+  }
+
+  .twitter-embed > div {
+    overflow: auto;
+    height: 80vh;
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  #profile-name-edit-form .ant-space {
+    margin-top: 0;
+    gap: 0;
+  }
+
+  #profile-name-edit-form .ant-input {
+    border: 2px solid #000;
+    border-radius: 4px;
+  }
+
+  #profile-name-edit-form .ant-input {
+    border: 2px solid #000;
+    border-radius: 4px;
+  }
+  .primary-btn-color {
+    background-color: red;
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-width: 0;
+    border-style: solid;
+    border-color: #000;
+  }
+
+  .webcam {
+    -webkit-transform: rotateY(180deg); /* Safari and Chrome */
+    transform: rotateY(180deg);
+    -moz-transform: rotateY(180deg); /* Firefox */
+  }
+
+  .inventoryDot {
+    /* width: 93px;
+    height: 93px; */
+    margin-top: -2px;
+    background: linear-gradient(to right, #848484 2px, transparent 2px) 0 0,
+      linear-gradient(to right, #848484 2px, transparent 2px) 0 100%,
+      linear-gradient(to left, #848484 2px, transparent 2px) 100% 0,
+      linear-gradient(to left, #848484 2px, transparent 2px) 100% 100%,
+      linear-gradient(to bottom, #848484 2px, transparent 2px) 0 0,
+      linear-gradient(to bottom, #848484 2px, transparent 2px) 100% 0,
+      linear-gradient(to top, #848484 2px, transparent 2px) 0 100%,
+      linear-gradient(to top, #848484 2px, transparent 2px) 100% 100%;
+
+    background-repeat: no-repeat;
+    background-size: 8px 8px;
+  }
+
+  html {
+    @apply text-black;
+  }
+}

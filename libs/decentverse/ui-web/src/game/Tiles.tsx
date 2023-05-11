@@ -14,58 +14,9 @@ export interface MapProp {
 
 export const Tiles = ({ player, scope, mouse }: MapProp) => {
   const screen = store.game.use.screen();
-  const tiles = store.map((state) => state.map?.tiles);
-  const tileSize = store.map((state) => state.map?.tileSize);
-  // const renderLines = useMemo(
-  //   () => [
-  //     [
-  //       tileMap.tileSize[0] * tileMap.renderLimit[0],
-  //       tileMap.tileSize[0] * tileMap.derenderLimit[0],
-  //       tileMap.tileSize[0] * (1 - tileMap.derenderLimit[0]),
-  //       tileMap.tileSize[0] * (1 - tileMap.renderLimit[0]),
-  //       tileMap.tileSize[0],
-  //     ],
-  //     [
-  //       tileMap.tileSize[1] * tileMap.renderLimit[1],
-  //       tileMap.tileSize[1] * tileMap.derenderLimit[1],
-  //       tileMap.tileSize[1] * (1 - tileMap.derenderLimit[1]),
-  //       tileMap.tileSize[1] * (1 - tileMap.renderLimit[1]),
-  //       tileMap.tileSize[1],
-  //     ],
-  //   ],
-  //   []
-  // );
-  // const { camera, set, gl, scene } = useThree();
+
   useInterval(() => {
     if (!player || !scope) return;
-    // // 1. Update Tiles
-    // const tilePos = [
-    //   player.current.position[0] % tileMap.tileSize[0],
-    //   player.current.position[1] % tileMap.tileSize[1],
-    // ];
-    // const state = [
-    //   renderLines[0].findIndex((line) => tilePos[0] < line) - 2,
-    //   renderLines[1].findIndex((line) => tilePos[1] < line) - 2,
-    // ];
-    // if (tileStatus.current.state[0] === state[0] && tileStatus.current.state[1] === state[1]) return;
-    // const tileIdx = [
-    //   Math.floor(player.current.position[0] / tileMap.tileSize[0]),
-    //   Math.floor(player.current.position[1] / tileMap.tileSize[1]),
-    // ];
-    // const tiles = [[...render.tiles[0]], [...render.tiles[1]]];
-    // state.map((st, idx) => {
-    //   if (st === -2) tiles[idx][0] = Math.max(tileIdx[idx] - 1, 0);
-    //   else if (st === 2) tiles[idx][1] = Math.min(tileIdx[idx] + 2, tileMap.maxTileNum[idx] + 1);
-    //   else if (st === 0) tiles[idx] = [tileIdx[idx], tileIdx[idx] + 1];
-    // });
-    // tileStatus.current.state = state;
-    // if (tileStatus.current.idx[0] !== tileIdx[0] || tileStatus.current.idx[1] !== tileIdx[1]) {
-    //   tileStatus.current.idx = tileIdx;
-    //   return;
-    // }
-    // setTiles(tiles);
-
-    // 2. Update Scope
     const showBox = {
       min: [player.current.position[0] - screen.size[0], player.current.position[1] - screen.size[1] / 4],
       max: [player.current.position[0] + screen.size[0] / 4, player.current.position[1] + screen.size[1] / 4],
@@ -95,6 +46,10 @@ export const Tiles = ({ player, scope, mouse }: MapProp) => {
     (e.button === 0 || e.button === 1) && (aux.current = false);
   const handlePointerDown = (e: ThreeEvent<PointerEvent> | any) =>
     (e.button === 0 || e.button === 1) && (aux.current = true);
+
+  const tiles = store.map((state) => state.map?.tiles);
+  const tileSize = store.map((state) => state.map?.tileSize);
+  if (store.map === "loading") return <></>;
 
   return (
     <Suspense fallback={null}>

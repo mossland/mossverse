@@ -1,19 +1,19 @@
+import { environment } from "../_environments/environment";
 import { ThingService } from "./thing.service";
 import { TestSystem } from "@shared/test-server";
 import { ThingModule } from "./thing.module";
-
 import * as sample from "../sample";
 import * as db from "../db";
 import * as srv from "../srv";
 import * as gql from "../gql";
-import { registerModules } from "../modules";
+import { registerModules } from "../module";
 describe("Thing Service", () => {
   const system = new TestSystem();
   let thingService: ThingService;
   let fileService: srv.FileService;
   let file: db.File.Doc;
   beforeAll(async () => {
-    const app = await system.init(registerModules);
+    const app = await system.init(registerModules(environment));
     thingService = app.get<ThingService>(ThingService);
     fileService = app.get<srv.FileService>(srv.FileService);
     [file] = await fileService.addFiles([sample.fileStream()], "thing", "test");

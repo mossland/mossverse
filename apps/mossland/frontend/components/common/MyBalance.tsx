@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { MyBalanceInfo } from "@platform/ui-web";
-import styled from "styled-components";
-import { gql, utils, store } from "../../stores";
+import { gql, st, store } from "../../stores";
 import { Utils } from "@shared/util";
 
 type MyBalanceProps = {
@@ -10,33 +9,42 @@ type MyBalanceProps = {
 };
 
 export const MyBalance = (props: MyBalanceProps) => {
-  // const address = useUser((state) => state.address);
-  const self = store.platform.user.use.self();
-  // const wallet = store.shared.wallet.use.wallet();
-  const MMOC = self && self.items.find((item) => item.thing.name === "MMOC");
-
+  //!need to change
+  const self = st.use.self();
+  const ownershipList = st.use.ownershipListInMoney();
+  const [MMOC, setMMOC] = useState<gql.shared.LightOwnership>();
   useEffect(() => {
     if (!self?.keyring) return;
-    store.shared.wallet.setState({ wallet: self.keyring.wallets[0] });
+    // st.set({ wallet: self.keyring.wallets[0] });
   }, [self?.keyring]);
 
+  useEffect(() => {
+    if (ownershipList === "loading") return;
+    const mmoc = ownershipList.find((item) => item.thing && item.thing.name === "MMOC");
+    mmoc && setMMOC(mmoc);
+  }, [ownershipList]);
+
+  const itemClassName = "flex items-center justify-between";
+  const labelClassName = "font-bold text-[22px] text-[#555]";
+  const imageClassName = "inline-block mt-[-2px] w-[16px] mr-[4px]";
+
   return (
-    <MyBalanceInfoContainer>
+    <div className="w-full md:mt-[6px]">
       {MMOC ? (
-        <div className="balance-item">
-          <div className="label">
-            <img src={MMOC.thing.image.url} />
-            {MMOC.thing.name ?? "MMOC"}
+        <div className={itemClassName}>
+          <div className={labelClassName}>
+            <img className={imageClassName} src={MMOC?.thing?.image.url} />
+            {MMOC?.thing?.name ?? "MMOC"}
           </div>
-          <div className="balance">{MMOC.num ? Utils.numberWithCommas(MMOC.num) : 0}</div>
+          <div className="text-[22px]">{MMOC.value ? Utils.numberWithCommas(MMOC.value) : 0}</div>
         </div>
       ) : (
-        <div className="balance-item">
-          <div className="label">
-            <img src="/images/mm_coin.png" />
+        <div className={itemClassName}>
+          <div className={labelClassName}>
+            <img className={imageClassName} src="/images/mm_coin.png" />
             {"MMOC"}
           </div>
-          <div className="balance">{0}</div>
+          <div className="text-[22px]">{0}</div>
         </div>
       )}
 
@@ -47,33 +55,6 @@ export const MyBalance = (props: MyBalanceProps) => {
       ) : (
         <Connect />
       )} */}
-    </MyBalanceInfoContainer>
+    </div>
   );
 };
-
-const MyBalanceInfoContainer = styled.div`
-  margin-top: 6px;
-  width: 100%;
-  .balance-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    .label {
-      font-weight: bold;
-      font-size: 22px;
-      color: #555555;
-      img {
-        display: inline-block;
-        margin-top: -2px;
-        width: 16px;
-        margin-right: 4px;
-      }
-    }
-    .balance {
-      font-size: 22px;
-    }
-  }
-  @media screen and (max-width: 800px) {
-    margin-top: 0px;
-  }
-`;

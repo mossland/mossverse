@@ -1,4 +1,5 @@
 {
+  "name": "platform/data-access",
   "sourceRoot": "libs/platform/data-access/src",
   "projectType": "library",
   "targets": {
@@ -22,7 +23,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/platform/data-access"],
+      "outputs": ["{workspaceRoot}/coverage/libs/platform/data-access"],
       "options": {
         "jestConfig": "libs/platform/data-access/jest.config.ts",
         "passWithNoTests": true
