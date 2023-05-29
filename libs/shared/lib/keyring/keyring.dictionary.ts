@@ -1,0 +1,37 @@
+import { Keyring, KeyringSummary } from "./keyring.fetch";
+import { Translate, baseTrans } from "@util/client";
+
+export const keyringTrans = {
+  ...baseTrans,
+  name: ["Name", "이름"],
+  user: ["User", "유저"],
+  wallets: ["Wallets", "지갑"],
+  holds: ["Holds", "Holds"],
+  discord: ["Discord", "디스코드"],
+  accountId: ["ID", "아이디"],
+  phone: ["Phone", "휴대폰"],
+  phoneCodeAts: ["PhoneCodeAts", "PhoneCodeAts"],
+  verifies: ["Verifies", "Verifies"],
+  isOnline: ["IsOnline", "온라인"],
+  lastLoginAt: ["LastLoginAt", "마지막로그인일시"],
+  totalKeyring: ["Total Keyring", "총 키링수"],
+  prevPassword: ["Password", "기존 비밀번호"],
+  password: ["Password", "비밀번호"],
+  newPassword: ["New Password", "새 비밀번호"],
+  passwordConfirm: ["Confirm Password", "비밀번호 확인"],
+  changePassword: ["Change Password", "비밀번호 변경"],
+  forgotPassword: ["Forgot password?", "비밀번호 찾기"],
+  forgotPasswordDesc: [
+    "Enter your account ID or E-mail to receive temporal password.",
+    "임시비밀번호 발급을 위한 아이디 또는 이메일을 입력하세요.",
+  ],
+  sendResetEmail: ["Send reset e-mail", "재설정 이메일 발송"],
+  signup: ["Create new account", "회원가입"],
+  signWithGithub: ["Sign in with Github", "Github 로그인"],
+  signWithGoogle: ["Sign in with Google", "구글 로그인"],
+  signWithFacebook: ["Sign in with Facebook", "페이스북 로그인"],
+  signWithTwitter: ["Sign in with Twitter", "트위터 로그인"],
+  signWithNaver: ["Sign in with Naver", "네이버 로그인"],
+  signWithKakao: ["Sign in with Kakao", "카카오 로그인"],
+  signWithApple: ["Sign in with Apple", "Apple 로그인"],
+} satisfies Translate<Keyring & KeyringSummary>;
