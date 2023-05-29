@@ -1,0 +1,10 @@
+export { doc as shared } from "@shared/server";
+export { doc as social } from "@social/server";
+export { doc as platform } from "@platform/server";
+export { doc as decentverse } from "@decentverse/server";
+export * as MocWallet from "./mocWallet/mocWallet.document";
+export * as MocSurvey from "./mocSurvey/mocSurvey.document";
+export * as User from "./user/user.document";
+export * as Summary from "./summary/summary.document";
+export * as StakePool from "./stakePool/stakePool.document";
+export * as Advertise from "./advertise/advertise.document";
