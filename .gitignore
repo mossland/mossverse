@@ -62,7 +62,6 @@ schema.gql
 
 **/environment.**.ts
 **/.env
-**/.env.*
 **/env.**.ts
 **/env.ts
 # Kubernetes
@@ -76,3 +75,18 @@ schema.gql
 **/.secret/*
 **/**.p8
 dump
+
+# Expo
+node_modules/
+.expo/
+.yarn/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+cache/
