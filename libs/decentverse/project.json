@@ -1,0 +1,43 @@
+{
+  "name": "decentverse",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/decentverse",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:swc",
+      "defaultConfiguration": "frontend",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "tsConfig": "libs/decentverse/tsconfig.json",
+        "packageJson": "libs/decentverse/package.json"
+      },
+      "configurations": {
+        "backend": {
+          "outputPath": "dist/libs/decentverse/server",
+          "main": "libs/decentverse/server.ts"
+        },
+        "frontend": {
+          "outputPath": "dist/libs/decentverse/client",
+          "main": "libs/decentverse/client.ts"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/decentverse/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/decentverse"],
+      "options": {
+        "jestConfig": "libs/decentverse/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

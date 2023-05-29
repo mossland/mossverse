@@ -1,0 +1,16 @@
+export { fetch as shared } from "@shared/client";
+export * from "./asset/asset.fetch";
+export * from "./character/character.fetch";
+export * from "./dialog/dialog.fetch";
+export * from "./map/map.fetch";
+export * from "./role/role.fetch";
+export * from "./user/user.fetch";
+export * from "./_decentverse/decentverse.fetch";
+export * from "./summary/summary.fetch";
+export * from "./callRoom/callRoom.fetch";
+export * from "./webview/webview.fetch";
+export * from "./placement/placement.fetch";
+export * from "./collision/collision.fetch";
+export * from "./live/live.fetch";
+export * from "./tile/tile.fetch";
+export * from "./teleport/teleport.fetch";
