@@ -1,0 +1,98 @@
+{
+  "name": "mossland",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/mossland",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["nx run-many --targets=build-backend,build-frontend --projects=mossland --parallel"],
+        "parallel": true
+      },
+      "configurations": {
+        "backend": {
+          "commands": ["nx run mossland:build-backend"]
+        },
+        "frontend": {
+          "commands": ["nx run mossland:build-frontend"]
+        }
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["nx run mossland:serve-backend", "nx run mossland:serve-frontend"],
+        "parallel": true
+      },
+      "configurations": {
+        "backend": {
+          "commands": ["nx run mossland:serve-backend"]
+        },
+        "frontend": {
+          "commands": ["nx run mossland:serve-frontend"]
+        }
+      }
+    },
+    "build-backend": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/mossland/backend",
+        "main": "apps/mossland/server.ts",
+        "tsConfig": "apps/mossland/tsconfig.backend.json",
+        "isolatedConfig": true,
+        "webpackConfig": "apps/mossland/webpack.backend.config.js",
+        "generatePackageJson": true
+      }
+    },
+    "serve-backend": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["cross-env HMR=true nx run mossland:build-backend --watch"]
+      }
+    },
+    "build-frontend": {
+      "executor": "@nx/next:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "root": "apps/mossland",
+        "outputPath": "dist/apps/mossland/frontend"
+      }
+    },
+    "serve-frontend": {
+      "executor": "@nx/next:server",
+      "options": {
+        "buildTarget": "mossland:build-frontend"
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/apps/mossland"],
+      "options": {
+        "jestConfig": "apps/mossland/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/mossland/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "script": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "cross-env ENVIRONMENT={args.env} ts-node --project tsconfig.backend.json -r tsconfig-paths/register --transpile-only ./{args.file}.ts "
+        ],
+        "cwd": "apps/mossland",
+        "parallel": false
+      }
+    }
+  },
+  "tags": []
+}

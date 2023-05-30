@@ -1,0 +1,43 @@
+{
+  "name": "platform",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/platform",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:swc",
+      "defaultConfiguration": "frontend",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "tsConfig": "libs/platform/tsconfig.json",
+        "packageJson": "libs/platform/package.json"
+      },
+      "configurations": {
+        "backend": {
+          "outputPath": "dist/libs/platform/server",
+          "main": "libs/platform/server.ts"
+        },
+        "frontend": {
+          "outputPath": "dist/libs/platform/client",
+          "main": "libs/platform/client.ts"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/platform/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/platform"],
+      "options": {
+        "jestConfig": "libs/platform/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

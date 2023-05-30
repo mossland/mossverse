@@ -1,0 +1,13 @@
+export { fetch as shared } from "@shared/client";
+export { fetch as social } from "@social/client";
+export { fetch as platform } from "@platform/client";
+export { fetch as decentverse } from "@decentverse/client";
+export * from "./mocWallet/mocWallet.fetch";
+export * from "./mocSurvey/mocSurvey.fetch";
+export * from "./user/user.fetch";
+export * from "./summary/summary.fetch";
+export * from "./_mossland/mossland.fetch";
+export * from "./stakePool/stakePool.fetch";
+export * from "./advertise/advertise.fetch";
+export * from "./building/building.fetch";
+export * from "./mossland/mossland.fetch";

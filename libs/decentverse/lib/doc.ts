@@ -1,0 +1,15 @@
+export { doc as shared } from "@shared/server";
+export * as User from "./user/user.document";
+export * as Asset from "./asset/asset.document";
+export * as Character from "./character/character.document";
+export * as Map from "./map/map.document";
+export * as Role from "./role/role.document";
+export * as Dialog from "./dialog/dialog.document";
+export * as Summary from "./summary/summary.document";
+export * as CallRoom from "./callRoom/callRoom.document";
+export * as Webview from "./webview/webview.document";
+export * as Placement from "./placement/placement.document";
+export * as Collision from "./collision/collision.document";
+export * as Live from "./live/live.document";
+export * as Tile from "./tile/tile.document";
+export * as Teleport from "./teleport/teleport.document";

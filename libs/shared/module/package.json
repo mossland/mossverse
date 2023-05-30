@@ -1,7 +1,0 @@
-{
-  "name": "@shared/module",
-  "version": "0.0.1",
-  "devDependencies": {
-    "@types/nodemailer": "^6.4.6"
-  }
-}
