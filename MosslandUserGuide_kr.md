@@ -38,7 +38,7 @@
 |:--:|
 |*로그인 네트워크 선택 팝업*|
 
-#### 1 )루니버스 로그인
+#### 1-1) 루니버스 로그인
 | ![1_Sds_EEYmGhrTtMiXA1WryA](https://github.com/mossland/mossverse/assets/13128375/70683c47-bd77-4ed2-ac28-4f4f48e62552)|
 |:--:|
 |*루니버스 로그인*|
