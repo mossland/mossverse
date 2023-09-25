@@ -87,7 +87,8 @@ c. 메시지를 서명(Sign) 하면 캐릭터 선택 화면이 나타나게 됩�
 |*기능 활성화 버튼(PC)*|
 
 #### 1) PC
-<kbd>W</kbd>, <kbd>A</kbd>, <kbd>S</kbd>, <kbd>D</kbd> 키 또는 화살표 키를 사용하여 캐릭터를 이동할 수 있습니다. 또한, 특수 기능이 있는 건물 근처에서 ‘Press SPACE’라는 UI가 표시되며, 스페이스 키를 눌러 해당 기능을 활성화할 수 있습니다.
+<kbd>W</kbd>, <kbd>A</kbd>, <kbd>S</kbd>, <kbd>D</kbd> 키 또는 화살표 키를 사용하여 캐릭터를 이동할 수 있습니다.<br>
+특수 기능이 있는 건물 근처에서 ‘Press SPACE’라는 UI가 표시되며, 스페이스 키를 눌러 해당 기능을 활성화할 수 있습니다.
 
 |![1_POWeMOKdNM47JFoWRy0Q4g](https://github.com/mossland/mossverse/assets/13128375/17ffdc85-c156-4f22-a087-8ceeb1da7b7d)|
 |:--:|
