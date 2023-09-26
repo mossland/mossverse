@@ -1,113 +1,475 @@
+![1_VI2aStOsd3IWrxZsLTR_VA](https://github.com/mossland/mossverse/assets/13128375/adb373b8-96bd-413c-8475-27b1ccf5435a)
+
 모스랜드 메타버스 (모스버스) 사용 설명서
 =============
 ###### PC 는 크롬 브라우저를 기반으로 작성했습니다.
 
-## 1. 로그인
-* ![image25](https://user-images.githubusercontent.com/13128375/197930180-d4d739b5-d085-459b-8b6f-e53f4a18cea4.png)
+목차
+=================
+<!--ts-->
+   * [로그인](#로그인)
+   * [인터페이스](#인터페이스)
+   * [프로필](#프로필)
+   * [커뮤니케이션](#커뮤니케이션)
+   * [맵 구성](#맵-구성)
+      * [게임센터](#게임센터)
+      * [상점](#상점)
+      * [전광판](#전광판)
+      * [환전소](#환전소)
+      * [투표소](#투표소)
+<!--te-->
+ 
 
-* 1번은 [카이카스](https://chrome.google.com/webstore/detail/kaikas/jblndlipeogpafnldhgmapagcccfchpi?hl=en ) (Klaytn) 또는 [메타마스크](https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn?hl=en ) (이더리움) 지갑을 통해서 로그인할 수 있습니다.
-* 2번은 게스트 로그인입니다. 게스트 로그인은 간단하게 모스버스를 체험할수 있습니다. 
-* ![image2](https://user-images.githubusercontent.com/13128375/197930223-54fcf8a8-dc9a-44b4-83a6-65b11ff1262e.png)
-* ![image3](https://user-images.githubusercontent.com/13128375/197930264-7eb33672-629b-4144-9b97-5873ceef77cc.png)
-* 게스트 로그인은 닉네임을 변경할 수 없습니다. 지갑 로그인의 경우 닉네임을 설정할 수 있습니다.
-* ![image23](https://user-images.githubusercontent.com/13128375/197930341-1c75ae23-de6a-4d3f-b6d3-93e67242edaf.png)
-* 다음 단계에서 모스버스에서 음성 채팅과 영상 채팅의 사용유무를 선택하는데,   
-모스버스에서 음성 및 영상채팅을 사용하려면, 브라우저에서 해당 권한을 허용해야 합니다.
+로그인
+============
 
-## 2. 인터페이스
-* PC버전 
-  * <kbd>W</kbd>, <kbd>A</kbd>, <kbd>S</kbd>, <kbd>D</kbd>키 또는 화살표 키로 이동 
-  * 액션 아이템 공간 (상점, 환전소, 투표소) 에서는 <kbd>SPACE</kbd>키로 활성화
-* 모바일 버전
-  * 화면 왼쪽 하단 ![image31](https://user-images.githubusercontent.com/13128375/197930378-a21f010d-31a7-43d2-b743-8de13c508bfc.png) 드래그 버튼으로 이동
-  * 액션 아이템 공간에서는 화면 오른쪽 하단의 ![image19](https://user-images.githubusercontent.com/13128375/197930452-6fbdd3c8-fa8c-422d-b907-19c644eff76f.png)버튼으로 활성화
-* 공통
-  * 음성/영상 채팅 영역에 들어가면 자동으로 해당 기능 활성화
-  * 채팅 및 이모지는 약 3초 후 사라짐
+| ![1_CPuvVetiKnngml1DdFFzFQ](https://github.com/mossland/mossverse/assets/13128375/93e5896d-a583-4f12-8c20-84689a79c1f1)|
+|:--:|
+|*모스랜드 메타버스 로그인 옵션*|
 
-## 3. 커뮤니케이션
-* 채팅
-  * ![image24](https://user-images.githubusercontent.com/13128375/197930775-cfb1ffc6-595e-4ab0-87f7-2758f9dca11c.png)
-  * 채팅 입력은 화면 하단부에 type... 부분에 입력 후 Enter버튼을 클릭하거나 <kbd>Enter</kbd>키를 누르면 화면에 표시됩니다.
-  * ![image18](https://user-images.githubusercontent.com/13128375/197930825-6ee825e4-2066-4563-8283-fb4c89ffd333.png)
-  * 입력된 텍스트 메시지는 내 캐릭터 화면 상단에 표시됩니다.
-* 이모지
-  * ![image7](https://user-images.githubusercontent.com/13128375/197930897-9a4160e9-bc6e-4d9f-a6a0-57135e966e7e.png)
-  * ![image14](https://user-images.githubusercontent.com/13128375/197930965-8ec42b19-e24f-456a-b319-967e983106e5.png)
-  * 화면 왼쪽 하단의 ![image9](https://user-images.githubusercontent.com/13128375/197930982-6177e919-5a89-4ce5-9382-0f3d672fb46d.png)아이콘을 클릭하면 이모지 목록이 나오고, 선택하면 아래처럼 캐릭터 머리 위에 표시됩니다
-  * ![image33](https://user-images.githubusercontent.com/13128375/197931018-7e35cb3d-33fc-4be1-89c1-a8643236fb71.png)
-* 음성/영상 채팅
-  * 모스버스의 특정 커뮤니케이션 영역에 들어가면, 주변이 어두워지면서 마이크와 비디오 아이콘이 활성화는 것을 확인할 수 있습니다.
-  * ![image10](https://user-images.githubusercontent.com/13128375/197931046-1ef2a80c-e31b-4c12-a3ff-4b8471feab0c.gif)
-  * ![image5](https://user-images.githubusercontent.com/13128375/197931067-f850229d-2392-4373-966b-c00269867bf3.png)
-  * ![image1](https://user-images.githubusercontent.com/13128375/197931075-7bdd6ded-beb9-4bbf-bc75-20827abafc4b.png)
-  * 커뮤니케이션 공간에 들어갔을때 마이크 아이콘을 눌러서 음성채팅을 활성화 또는 비활성화할 수 있습니다.
+로그인 옵션은 다음과 같이 두 가지가 있습니다.
 
-## 4. 맵 구성
-* 전체 맵
-  * ![image32](https://user-images.githubusercontent.com/13128375/197931130-417790b5-38ad-4b50-bca4-a8869b4cdf09.png)
-* 특수 기능 공간
-  * 1, 2, 3번 공간은 특수한 기능이 있는 공간입니다.
-  * 1번은 상점, 2번은 환전소, 3번은 투표소입니다. 
-  * 각각의 기능들은 아래에서 다시 설명하겠습니다.
-* 커뮤니케이션 공간
-  * 맵에는 여러 영역에 커뮤니케이션 공간이 존재합니다.
-  * 다른 유저와 음성 또는 영상 채팅을 하기 위한 공간입니다.
-  
-## 5. 상점
-* 상점은 MossMarket에서 제품을 살 수 있고, 유저들간의 P2P 거래를 할 수 있습니다. 상점은 1번에 위치합니다.
-* ![image22](https://user-images.githubusercontent.com/13128375/197931175-efb5de35-b63b-4150-b647-9f9ecf173b5a.png)
-* ![image6](https://user-images.githubusercontent.com/13128375/197931198-3f0c417b-3744-45aa-9072-55243732a1ef.png)
-* ![image13](https://user-images.githubusercontent.com/13128375/197931223-713723bb-7679-4d1d-9e4c-3cc4baa202c6.png)
-* 구입할 재화를 선택하고 Buy 버튼을 누르면 구매가 완료됩니다.
-* ![image8](https://user-images.githubusercontent.com/13128375/197931270-d17ed23e-fb56-4791-9711-918777c2f475.png)
-* ![image21](https://user-images.githubusercontent.com/13128375/197931289-abc84a27-32bb-4dc2-b00b-db2d98e09c32.jpg)
-* 구매한 아이템은 화면 우측상단 Inventory에서 확인이 가능합니다.
+**1) 지갑 로그인:**
+ 이 옵션을 선택하면 카이카스 지갑과 메타마스크 지갑을 사용하여 로그인할 수 있습니다.
 
-## 6. 환전소
-* 모스버스 내에서는 MetaMOC(이하 MMOC)라는 가상통화를 사용합니다.    
-환전소에서는 MMOC와 MOC를 교환하는 공간이고, MMOC와 MOC는 1:1비율로 교환됩니다. 환전소는 2번에 위치합니다.
-* ![image26](https://user-images.githubusercontent.com/13128375/197931337-b19677ba-d378-4387-a3f3-9b6ea7a075d2.png)
-* ![image16](https://user-images.githubusercontent.com/13128375/197931391-53ec6a36-916a-41cb-964e-55d1fcf5d0f4.png)
-* 노란 박스 안의 주소가 MOC 입금 주소 (Deposit Address) 입니다. 
-꼭 루니버스 기반 (LMT) 의 MOC를 입금하셔야 합니다.
-* ![image27](https://user-images.githubusercontent.com/13128375/197931409-b11af210-4b11-4095-91bc-4dc16bafa18b.png)
+**2) 게스트 로그인:**
+ 게스트 로그인은 일부 기능에 제한이 있지만 메타버스를 간단하게 체험할 수 있는 옵션입니다.
 
-* 입금이 완료되면, History에서 내역을 확인할 수 있습니다.
-* ![image20](https://user-images.githubusercontent.com/13128375/197931539-bf5d8952-5063-4c4d-abf1-3fa465d7e400.png)
-* MOC 출금은 출금할 MMOC의 수량과 지갑주소를 입력한후 MMOC → MOC버튼을 클릭하면 됩니다.
-* ![image30](https://user-images.githubusercontent.com/13128375/197931583-11c63cae-32e2-4dde-b6be-927b76c8860d.png)
-* 출금 요청이 완료되면 성공 팝업을 확인할 수 있습니다.
-* ![image12](https://user-images.githubusercontent.com/13128375/197931623-edf5fb13-3c2a-4afa-bbb3-fd5b434cdd61.png)
-* History에서 출금 내역도 확인할 수 있습니다.
+아래는 ‘Connect’ 버튼을 선택했을 때 나타나는 지갑 로그인 화면입니다.
 
-## 7. 투표소
-* 투표소는 Mossland DAO의 투표 기능이 구현된 공간입니다. 3번에 위치합니다.
-* ![image15](https://user-images.githubusercontent.com/13128375/197931680-b066e4d4-33c9-473f-b987-e4780485e096.png)
-* ![image28](https://user-images.githubusercontent.com/13128375/197931727-a72967cd-9fcf-4001-9e19-5dd742889fe5.png)
-* 투표소에서는 투표 목록들을 확인할 수 있으며, 투표를 제안할 수도 있습니다.    
-투표를 제안하려면, MMOC 를 1 이상 소유하고 있어야 합니다.
-* ![image11](https://user-images.githubusercontent.com/13128375/197931770-ca26e3f1-7d85-4aef-8e09-1991854aeddc.png)
-* 투표를 제안할 때는 내용, 기간, 선택 항목을 입력합니다. 내용들을 입력하고 Create 버튼을 누르면 생성이 완료됩니다.   
-***최종적으로 관리자가 제안을 승인하면 투표가 활성화됩니다.***
-* ![image29](https://user-images.githubusercontent.com/13128375/197931798-f68ecee5-591a-40a1-bda8-83478e1ff5f2.png)
-* 관리자가 승인한 제안은 리스트에서 확인이 가능하며, 항목을 선택후 Submit버튼을 누르면 투표가 완료됩니다.
+| ![1_jL25IHb7aB3JMtB6GU-jwQ](https://github.com/mossland/mossverse/assets/13128375/6cd6984f-05e5-443e-b0c0-b33d45987d90)|
+|:--:|
+|*로그인 네트워크 선택 팝업*|
 
-## 8. 프로필
-* ![image17](https://user-images.githubusercontent.com/13128375/197931863-3fa7d89f-143b-4bf7-9278-2cf6febb9f4e.png)
-* 화면 좌측 상단에서 나의 프로필을 확인할수있습니다. 캐릭터 얼굴과 MMOC와 포인트(추후 업데이트 기능)의 잔고가 표시됩니다.
-* 캐릭터 얼굴을 클릭하면 나오는 화면에서, 닉네임 설정과 지갑 추가/삭제를 할 수 있습니다.
-* ![image4](https://user-images.githubusercontent.com/13128375/197931887-e9ccd3b7-972a-45c2-9b5c-4cd2299e4d7a.png)
-* 1번 버튼을 클릭하면 닉네임을 변경할 수 있습니다. ***단, 게스트 로그인시 변경이 불가 합니다.***    
-* 2번 버튼을 클릭하면 지갑을 추가할 수 있습니다.    
-* 지갑이 여러 개 소유한 경우, 지갑 옆에 있는 - 버튼으로 지갑을 제거할 수 있습니다.
+**1-1) 루니버스 로그인**
+
+| ![1_Sds_EEYmGhrTtMiXA1WryA](https://github.com/mossland/mossverse/assets/13128375/70683c47-bd77-4ed2-ac28-4f4f48e62552)|
+|:--:|
+|*루니버스 로그인*|
+
+루니버스 로그인을 선택하여 다음 단계를 따릅니다.
+
+  a. 메타마스크에 Password를 입력하여 로그인합니다.
+
+  b. 만약 메타마스크에서 루니버스 네트워크가 선택되어 있지 않다면 루니버스 네트워크로 변경하고 Swich network를 누릅니다.
+
+  c. 메시지를 서명(Sign) 하면 캐릭터 선택 화면이 나타나게 됩니다.
+
+**1–2) 클레이튼(카이카스) 로그인**
+
+|![1_E-K9_D_g7hQjJTGs0gNQMg](https://github.com/mossland/mossverse/assets/13128375/c407d56e-34b3-4d23-9c8f-e2825eaa50d3)|
+|:--:|
+|*클레이튼 로그인*|
+
+클레이튼 로그인을 선택하여 다음 단계를 따릅니다.
+
+a. 카이카스에 Password를 입력하여 로그인합니다.
+
+b. 메타버스와 카이카스 지갑을 연결(Connect) 합니다.
+
+c. 메시지를 서명(Sign) 하면 캐릭터 선택 화면이 나타나게 됩니다.
+
+**1-3) 이더리움 로그인**
+
+|![1_n0Jj5Ka-JKCoGdvws39Adg](https://github.com/mossland/mossverse/assets/13128375/0591cc2e-1728-4d31-9e92-a3aba2d18ee4)|
+|:--:|
+|*이더리움 로그인*|
+
+이더리움 로그인을 선택하여 다음 단계를 따릅니다.
+
+a. 메타마스크에 Password를 입력하여 로그인합니다.
+
+b. 만약 메타마스크에서 이더리움 네트워크가 선택되어 있지 않다면 이더리움 네트워크로 변경하고 Swich network를 누릅니다.
+
+c. 메시지를 서명(Sign) 하면 캐릭터 선택 화면이 나타나게 됩니다.
 
 
+인터페이스
+============
+|![1_mu-IO8qYt9z3dWY2FwHo6w](https://github.com/mossland/mossverse/assets/13128375/5ea2d7df-7dcd-47e3-a960-784c7c6dc6fb)|
+|:--:|
+|*기능 활성화 버튼(PC)*|
+
+**1) PC**
+
+<kbd>W</kbd>, <kbd>A</kbd>, <kbd>S</kbd>, <kbd>D</kbd> 키 또는 화살표 키를 사용하여 캐릭터를 이동할 수 있습니다.<br>
+특수 기능이 있는 건물 근처에서 ‘Press SPACE’라는 UI가 표시되며, 스페이스 키를 눌러 해당 기능을 활성화할 수 있습니다.
+
+|![1_POWeMOKdNM47JFoWRy0Q4g](https://github.com/mossland/mossverse/assets/13128375/17ffdc85-c156-4f22-a087-8ceeb1da7b7d)|
+|:--:|
+|*캐릭터 조작버튼 / 기능 활성화 버튼(모바일)*|
+
+**2) 모바일**
+
+
+화면 왼쪽 하단에 위치한 드래그 버튼을 사용하여 캐릭터 이동을 조작합니다. 메타버스 내에서 특수 기능이 있는 건물 근처로 다가가면, 화면에 ‘Press’라는 안내 UI가 표시됩니다. 
+<br>동시에, 오른쪽 하단에는 말머리 모양의 기능 활성화 버튼이 나타납니다. 이 버튼을 눌러 원하는 기능을 활성화할 수 있습니다.
+
+프로필
+============
+|![1_AGHcIOF0eJvD-JTEyoOd1A](https://github.com/mossland/mossverse/assets/13128375/740a7a37-fd4b-451c-81c3-955d467ddd0c)|
+|:--:|
+|*프로필과 인벤토리 위치*|
+
+메타버스에 로그인하면 화면 상단 좌측에 프로필이 위치하고 있으며, 우측에는 인벤토리가 있습니다.
+
+|![1_ytSmd7ZUVNzjxC_Etv5x7Q](https://github.com/mossland/mossverse/assets/13128375/0a5d71ae-8071-4469-ac34-fff3e9836bff)|
+|:--:|
+|*프로필*|
+1) 프로필 페이지에서는 지갑을 추가하는 옵션과 캐릭터 닉네임을 수정하는 기능을 제공합니다.</br>
+향후 업데이트에서는 구매한 캐릭터 스킨 내역을 확인하고 스킨을 교체할 수 있는 추가 기능도 예정되어 있습니다.
+
+
+![1_s6AgHP8agordZvuKA-oeoQ](https://github.com/mossland/mossverse/assets/13128375/d2fba4a7-64de-44e6-99ba-9ba61fbf5b59)
+|:--:|
+|*인벤토리 예시*|
+
+2) 인벤토리는 상점에서 구입한 아이템들을 보여주며, 각 아이템에 대한 상세 설명도 확인할 수 있습니다.
+
+
+커뮤니케이션
+============
+모스랜드 메타버스에서는 다른 사용자들과의 소통을 위해 세 가지 커뮤니케이션 옵션을 제공합니다.
+
+**1) 텍스트 채팅**
+
+텍스트를 입력할 수 있는 영역(1번)과 다른 사용자들의 채팅 내용이 표시되는 채팅창(2번)이 있습니다.
+
+|![1_hipTyz7PHm9D1vuOutM5DQ](https://github.com/mossland/mossverse/assets/13128375/700e56f0-1fff-4797-8d66-17fead0e4163)|
+|:--:|
+|*텍스트 채팅*|
+
+**2) 이모지**
+
+텍스트 입력 부분 왼쪽에 있는 이모지 선택 버튼을 통해 다양한 이모지를 확인하고 선택할 수 있습니다. 선택한 이모지는 캐릭터 상단에 표시됩니다.
+
+
+|![1_MtVVLOa8_Y3oy3wso8W59A](https://github.com/mossland/mossverse/assets/13128375/3bf5d35d-c7fe-4713-966c-4fd748be285a)| ![1_iMGwC6JDS__D5gLT6wlH_g](https://github.com/mossland/mossverse/assets/13128375/eeb1b881-c168-4b04-a7db-dcf7ad4031d2)|![1_m5gcqzErM4-VNTl02CbUvg](https://github.com/mossland/mossverse/assets/13128375/0e92ed8f-2341-4200-8f58-0d43e0fef52f)|
+|:--:|:--:|:--:|
+|*이모지 선택 버튼*|*이모지 팝업*|*이모지 실행화면*|
+
+**3) 화상/음성 채팅**
+
+|![1_RclgAvOhCyBJ3HUlEaNKhA](https://github.com/mossland/mossverse/assets/13128375/bda9952e-87c7-4387-96ca-97fb01ae9384)|
+|:--:|
+|*화상/음성 채팅 예시*|
+
+메타버스 맵을 탐험하다 보면 화상 및 음성 채팅이 활성화되는 특정 장소들이 있습니다. 
+<br>이 장소에서는 헤드폰과 마이크 표시를 on/off 하여 다른 사용자들과 화상 및 음성 채팅을 할 수 있습니다.
 
 
 
+맵 구성
+============
 
-  
+모스랜드 메타버스는 여러 가지 기능을 제공하는 건물과 공간으로 가득합니다. 사용자들은 이러한 공간들을 다양한 목적을 위해 활용할 수 있습니다.
+
+게임센터
+-----
+|![1_qIZsbWScR0y3-dVtFqo2SQ](https://github.com/mossland/mossverse/assets/13128375/77977313-17b3-42db-98b7-c2bfcb7fbd59)|
+|:--:|
+|*전체 맵*|
 
 
-  
+게임센터는 전체 맵 ①에 위치하고 있습니다.
+
+|![1_Muyw9FQFpeht7FMulL-Y9A](https://github.com/mossland/mossverse/assets/13128375/92d9b235-4d2e-4521-ab97-8c697a673db1)|
+|:--:|
+|*게임센터 건물*|
+
+게임 센터 근처로 이동하여 ‘Press SPACE’ UI가 활성화되면 ‘SPACE’ 키를 누르고 입장합니다.
+<br>게임 센터에 입장하면 아래와 같은 팝업이 나타납니다.
+
+|![1_GQGjd3WDumEIbUGv50BRwg](https://github.com/mossland/mossverse/assets/13128375/72e5c5be-a853-418e-aa07-d7a175dd2f1c)|
+|:--:|
+|*게임 센터 홈*|
+
+**1) 홈 화면 이동 버튼 :**
+ 게임센터 팝업 홈 화면으로 이동합니다.
+
+**2) 무료 충전 버튼**
+|![1_E2ocLUHzKEqsw21Ge6yb7A](https://github.com/mossland/mossverse/assets/13128375/110ab82f-8d79-4bf1-b35c-021eb3591e9e)|
+|:--:|
+|*무료 충전 진행 화면*|
+
+무료 충전 버튼을 클릭하면 충전 페이지로 이동하게 되며, 이 페이지에서는 봇이 아닌 사용자임을 확인하는 체크 과정이 필요합니다. 체크를 통과한 후에 요청 버튼을 누르면 1000포인트가 사용자의 계정에 충전됩니다.
+<br>단, 무료 충전 기능은 사용자의 보유 포인트가 1000포인트 이하일 때에만 활성화됩니다.
+
+**3) 미니게임 실행 버튼**
+
+|![1_sdkYldwx2hVUxDuy-ZL_rA](https://github.com/mossland/mossverse/assets/13128375/9f859a87-ebef-4b0f-9cf8-35fb3345e9e6)|
+|:--:|
+|*미니게임 화면*|
+
+게임 센터에는 미니 게임을 즐길 수 있습니다. 현재는 간단하면서도 재미있는 가위바위보 게임이 제공되고 있습니다. 누구나 쉽고 자유롭게 즐길 수 있으며, 게임을 즐기기 위해서는 포인트가 필요합니다. 
+<br>포인트는 위의 안내된 내용처럼 무료로 충전할 수 있습니다.
+
+상점
+-----
+
+|![1_qIZsbWScR0y3-dVtFqo2SQ](https://github.com/mossland/mossverse/assets/13128375/77977313-17b3-42db-98b7-c2bfcb7fbd59)|
+|:--:|
+|*전체 맵*|
+
+상점은 전체 맵 ②에 위치하고 있습니다.
+
+|![1_niBWnVSloOx36NsqisI-Xg](https://github.com/mossland/mossverse/assets/13128375/8ce4ef46-9342-472c-9a04-49c35e11ab2f)|
+|:--:|
+|*상점*|
+
+상점 근처로 이동하면 ‘Press SPACE’ UI가 활성화되며 ‘SPACE’ 키를 누르고 입장할 수 있습니다.
+
+|![1_R0gYD_20GhPufj7MEUmC0w](https://github.com/mossland/mossverse/assets/13128375/2bf36739-e023-4161-afba-e1b89abe8bd5)|
+|:--:|
+|*상점 판매 리스트*|
+
+상점에서는 기프티콘 등 다양한 상품을 구매할 수 있으며, 현재 판매 중인 상품들은 각각 고유한 특징과 내용을 가지고 있습니다. 
+<br>사용자들은 이러한 다양한 옵션 중에서 선택하여 구매할 수 있습니다.
+
+1. 사이버덕 굿즈
+2. 기프티콘
+3. 캐릭터 스킨
+4. 라플 티켓
+
+위의 상품들을 구매하는 과정은 다음과 같습니다.
+
+**기프티콘의 경우,**
+|![1_KpE8uoQJyD5ViNCMt66x6Q](https://github.com/mossland/mossverse/assets/13128375/3f3e6eec-2c29-40f1-935e-96aaac9b62a3)|
+|:--:|
+|*기프티콘 구매 예시*|
+
+a. 원하는 상품을 클릭합니다.
+
+b. 받을 핸드폰 번호를 추가로 입력합니다.
+
+c. 상품 가격에 해당하는 MMOC가 차감됩니다.
+
+d. 상품 구입이 완료되고, 구매한 상품은 인벤토리에서 확인 가능합니다.
+
+다만, 상품의 타입에 따라 인벤토리에서 확인할 수 없는 상품을 포함할 수 있습니다.
+
+**캐릭터 스킨의 경우,**
+|![1_PzYNHsfiAJzf9dD0tCQRbg](https://github.com/mossland/mossverse/assets/13128375/312c5c93-6846-4024-8de4-e87ff88f51d0)|
+|:--:|
+|*커스텀 스킨업로드 예시*|
+
+모든 메타버스 사용자들은 자신이 제작한 캐릭터 스킨을 상점에 등록하고 판매할 수 있습니다. <br> 다만, 스킨 등록은 검수를 거쳐 승인을 받아야 합니다. <br>
+<br>
+아래는 캐릭터 스킨 등록 과정입니다.
+
+a. 커스텀 제작을 위한 안내를 읽고 필요한 파일을 제작합니다.
+
+b. 제작한 이미지 파일을 업로드합니다.
+
+c. 스킨의 이름과 설명을 작성합니다.
+
+d. “Submit” 버튼을 클릭하여 등록 신청을 완료합니다.
+
+e. 등록된 스킨은 검수를 거쳐 승인되면 마켓에 판매 등록이 완료됩니다.
+
+**라플 티켓의 경우,**
+
+|![1__Sv3zp0n_0upM-lCCPionQ](https://github.com/mossland/mossverse/assets/13128375/e86fab2e-712c-43f9-b3ab-9074548fc6e1)|
+|:--:|
+|*라플 티켓*|
+
+MMOC로 라플 티켓을 구매할 수 있습니다. 이 구매한 티켓을 사용하여 상품 추첨에 참여할 수 있습니다. 
+<br>상품 추첨에 참여할 수 있는 기간은 제한되어 있으며, 그 기간 동안에만 응모할 수 있습니다. 또한, 추첨 결과가 발표되면 당첨자에게 상품이 전달됩니다.
+
+
+전광판
+-----
+
+|![1_qIZsbWScR0y3-dVtFqo2SQ](https://github.com/mossland/mossverse/assets/13128375/77977313-17b3-42db-98b7-c2bfcb7fbd59)|
+|:--:|
+|*전체 맵*|
+
+전광판은 메타버스 내 전체 지도의 ③번 위치에 위치하고 있습니다.
+
+전광판은 사용자가 입찰을 통해 낙찰에 성공하면 사용자가 등록한 광고가 표시되는 기능을 제공합니다. 
+<br>현재는 하나의 전광판만 이용 가능하지만, 향후 업데이트를 통해 전광판의 개수가 추가될 예정입니다.
+
+|![1_8Zzk5hA6WzMHOdVefTTVqQ](https://github.com/mossland/mossverse/assets/13128375/76a03a16-9ebf-4bb8-ad44-a36ad59621e8)|
+|:--:|
+|*전광판*|
+
+
+전광판 근처로 이동하면 ‘Press SPACE’ UI가 활성화되며 ‘SPACE’ 키를 누르고 입장할 수 있습니다.
+<br>전광판에 입장하면 아래와 같은 팝업이 나타납니다.
+
+|![1_oV4kfFOSfPCCALFohEi2pA](https://github.com/mossland/mossverse/assets/13128375/de9141d4-2b31-453f-945e-753df204cd73)|
+|:--:|
+|*전광판 입찰 팝업창*|
+
+
+|![1_yMJvXW3Eiowo_NJDGhudSQ](https://github.com/mossland/mossverse/assets/13128375/5abb5528-1ddf-4fd2-91ab-34d9c5069485)|
+|:--:|
+|*입찰 내용 입력 예시*|
+
+광고 입찰을 진행하기 위해서는 다음 단계를 따라야 합니다.
+
+a. 광고 시작 날짜를 선택합니다.
+
+b. 원하는 입찰 금액을 입력합니다.
+
+c. 광고의 링크주소를 입력합니다.
+
+d. 광고에 사용할 영상 또는 이미지 파일을 업로드합니다.
+
+
+|![1_roTNz4RJgZTgTTQwlVvNYA](https://github.com/mossland/mossverse/assets/13128375/6548927f-b99c-47a1-90f4-5f6c8ea84abc)|
+|:--:|
+|*내 입찰*|
+
+또한, ‘내 입찰’ 탭을 통해서 사용자는 자신의 입찰 기록들을 확인할 수 있습니다.
+
+|![1_UjFk5fIEqtj7puEdin23Ig](https://github.com/mossland/mossverse/assets/13128375/83ed4195-fb4c-4dba-ac6b-17fc3a8c2b8d)|
+|:--:|
+|*입찰 관리*|
+
+‘입찰 관리’에서는 링크 주소나 이미지 등을 수정할 수 있습니다
+
+환전소
+-----
+
+|![1_qIZsbWScR0y3-dVtFqo2SQ](https://github.com/mossland/mossverse/assets/13128375/77977313-17b3-42db-98b7-c2bfcb7fbd59)|
+|:--:|
+|*전체 맵*|
+
+
+환전소는 메타버스 내 전체 지도의 ④번 위치에 위치하고 있습니다.
+
+이 공간에서는 MOC와 메타버스에서 사용할 MMOC를 서로 교환하는 기능을 제공합니다.
+
+|![1_2XuMIpAwaihWXiMABcr-3A](https://github.com/mossland/mossverse/assets/13128375/36ee22bd-6073-40db-9258-7063067d88ea)|
+|:--:|
+|*환전소*|
+
+환전소 근처로 이동하면 ‘Press SPACE’ UI가 활성화되며 ‘SPACE’ 키를 누르고 입장할 수 있습니다.
+<br>환전소에 입장하면 아래와 같은 팝업이 나타납니다.
+
+|![1_Wn66nM-RxPMfT4Y8X1OXbw](https://github.com/mossland/mossverse/assets/13128375/f0bff876-0d57-4efa-9b58-a6950dc9c5cb)|
+|:--:|
+|*환전소 팝업*|
+
+환전소 팝업은 크게 4가지 기능을 제공합니다:
+
+**1) 사용자 잔고 표시:**
+사용자의 현재 MMOC 잔고를 표시합니다.
+
+**2) 환전 기록:**
+사용자가 MOC에서 MMOC로 또는 MMOC에서 MOC로 환전한 기록을 확인할 수 있습니다.
+
+**3) MOC를 MMOC로 교환:**
+사용자는 메타버스 지갑으로 MOC를 입금하면 해당 MOC 수량이 1:1 비율로 MMOC로 충전됩니다. 충전된 MMOC를 이용하여 메타버스의 다양한 서비스를 이용할 수 있습니다.
+
+MOC를 MMOC로 교환하기 위한 단계는 다음과 같습니다.
+
+|![1_FQwat_u_I32E1pSwxc614g](https://github.com/mossland/mossverse/assets/13128375/a36cf707-376a-4d07-bde5-c7bb0a51c948)|
+|:--:|
+|*입금주소 확인하기*|
+
+a. 거래소 또는 개인 지갑에서 MOC를 준비합니다.
+
+b. 메타버스 내의 환전소에서 ‘Get Address’ 버튼을 클릭합니다.
+
+c. ‘I understand’ 버튼을 클릭하여 약관에 동의합니다.
+
+| ![1_8fhlUDhRjABxfMMXWqr4oQ](https://github.com/mossland/mossverse/assets/13128375/beafbe01-98df-4437-ac71-6513dea92058)|
+|:--:|
+|*입금주소*|
+
+d. 노란 박스로 표시된 생성된 주소(Deposit Address)로 MOC를 입금합니다.
+
+e. 주의: 반드시 루니버스 기반 (LMT)의 MOC를 해당 주소로 입금해야 합니다.
+
+f. 입금 기록은 ‘History’ 항목에서 확인할 수 있습니다.
+
+**4) MMOC를 MOC로 교환:**
+또한 충전된 MMOC를 MOC로 교환할 수도 있습니다.
+
+|![1_3kAmcYDd8XqGpIToD-SEYg](https://github.com/mossland/mossverse/assets/13128375/046180ee-9cdf-49e2-b35e-d131bd8786e7)|
+|:--:|
+|*출금 UI*|
+
+노란 박스로 표시된 부분은 MMOC를 MOC로 교환할 때 사용됩니다.
+
+a. 환전을 원하는 수량과 MOC를 받을 거래소 또는 개인 지갑의 주소(Deposit Address)를 입력합니다.
+
+b. 환전 금액과 주소를 다시 확인해 달라는 메시지를 확인하고 체크합니다.
+
+c. MMOC -> MOC 교환 버튼을 클릭하면 입력한 주소로 MOC가 전송됩니다.
+
+d. 출금 기록은 ‘History’ 항목에서 확인할 수 있습니다.
+
+
+투표소
+-----
+
+|![1_qIZsbWScR0y3-dVtFqo2SQ](https://github.com/mossland/mossverse/assets/13128375/77977313-17b3-42db-98b7-c2bfcb7fbd59)|
+|:--:|
+|*전체 맵*|
+
+투표소는 현재 메타버스 전체 지도의 ⑤번 위치에 위치하고 있습니다.
+
+모스코인 홀더들이 메타버스와 관련된 제안을 하고 이에 대해 투표할 수 있는 중요한 기능을 제공합니다.
+
+|![1_eh6yqcb5N22jZZvAW7qKdg](https://github.com/mossland/mossverse/assets/13128375/513b6bba-6fe1-4429-ba73-e8f64bd747f3)|
+|:--:|
+|*투표소*|
+
+투표소 근처로 이동하면 ‘Press SPACE’ UI가 활성화되며 ‘SPACE’ 키를 누르고 입장할 수 있습니다.
+<br>투표소에 입장하면 아래와 같은 팝업이 나타납니다.
+
+|![1__MlD49Cfg_wrLMgb4BufVA](https://github.com/mossland/mossverse/assets/13128375/1c67f53c-4e36-4264-9283-a50e8ee272b9)|
+|:--:|
+|*투표창 화면*|
+
+**1) 투표 보기 필터**
+사용자는 전체 보기와 활성화된 투표만 보기 등의 검색 필터를 이용할 수 있습니다. 활성화된 투표는 현재 투표 가능한 제안들만을 볼 수 있습니다.
+
+**2) 제안된 투표 리스트 및 투표 실행**
+
+|![1_L1Tq7QrjN9aQLcFyi3uYxg](https://github.com/mossland/mossverse/assets/13128375/f2ce3aa8-a4db-489b-bc8d-0da229723aa9)|
+|:--:|
+|*안건 내용 확인*|
+
+투표소에서는 제안된 투표 리스트에서 투표 제목을 누르면 안건 내용을 확인할 수 있습니다.
+
+|![1_XsHfAoCJ14920OHbC5brdQ](https://github.com/mossland/mossverse/assets/13128375/62282a37-8177-4028-abc4-6eddb6a029dd)|
+|:--:|
+|*투표 실행 예시*|
+
+안건자가 투표를 생성할 때 작성한 답변에 따라 투표를 진행할 수 있습니다.
+
+|![1_jA63yeKkPiyyQbIqHj0c2Q](https://github.com/mossland/mossverse/assets/13128375/e8f59aa0-85cd-40c7-895f-93880bce8baf)|
+|:--:|
+|*댓글 기능 창*|
+
+또한, 댓글 기능을 이용하여 해당 안건에 대한 내 의견을 작성할 수 있습니다.
+
+**3) 제안 생성**
+MMOC를 보유한 홀더들은 새로운 투표 제안을 생성할 수도 있습니다.
+
+|![1_AsHJmUYryrsxn-dteI5SCA](https://github.com/mossland/mossverse/assets/13128375/cc7ad188-8c98-41cc-8464-14e5a5e77bab)|
+|:--:|
+|*제안 생성*|
+
+새로운 제안을 생성하는 방법은 다음과 같습니다.
+
+a. 안건 내용을 작성합니다.
+양식은 자유롭게 작성 가능하며, EDIT 기능을 통해 글꼴, 색상, 크기, 모양, 표, 링크, 이미지 등을 활용하여 작성할 수 있습니다.
+
+b. 기간을 입력합니다.
+기본적으로 투표 기간은 3개월로 설정되어 있지만, 날짜를 선택하여 3개월 이내로 기간을 변경할 수 있습니다.
+
+c. 답변 옵션을 입력합니다.
+한 글자 이상의 긍정 또는 부정 답변을 자유롭게 작성할 수 있으며, ‘+Add new answer’ 버튼을 클릭하여 답변 옵션을 추가할 수 있습니다.
+
+d. 작성한 내용을 확인하고 ‘Create new proposal’ 버튼을 클릭합니다.
+
+e. 생성된 제안은 제안 리스트에 즉시 표시되지 않으며, 관리자가 내용 검수를 완료한 후에 제안 리스트에 표시됩니다.
+
+f. 제안 리스트에 나타난 안건은 설정한 기간 동안에만 투표가 가능합니다.
+
+이러한 투표 기능은 탈 중앙화 자율 조직에 의해 운영되며, 메타버스와 관련된 의사 결정에 중요한 역할을 합니다.
